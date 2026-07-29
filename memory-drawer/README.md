@@ -401,16 +401,105 @@ AI는 종이에서 날짜·장소·글자를 찾아 입력 부담을 줄이고, 
 
 ---
 
-## 10. 추후 추가할 구현 문서
+## 10. 개발 환경
 
-개발 환경이 확정되면 다음 내용을 README 또는 별도 문서에 추가합니다.
+### 10.1 프론트엔드
 
-- 기술 스택과 버전
+| 구분 | 사용 기술 |
+|---|---|
+| 언어 | JavaScript |
+| 라이브러리 | React |
+| 빌드 도구 | Vite |
+| 패키지 관리자 | npm |
+
+프론트엔드는 화면 표시와 사용자 입력을 담당하며, Upstage API를 직접 호출하지 않습니다. 모든 AI 요청과 API 키 관리는 백엔드에서 처리합니다.
+
+### 10.2 백엔드
+
+| 구분 | 사용 기술 |
+|---|---|
+| 언어 | Java 21 |
+| 프레임워크 | Spring Boot 3.5.x |
+| 빌드 도구 | Gradle Wrapper |
+| 데이터베이스 | MySQL 8.4 |
+| 인증 | Spring Security + JWT |
+| 테스트 | JUnit 5, H2 Database |
+| API 테스트 | Postman |
+| 개발 도구 | IntelliJ IDEA |
+
+Spring Boot 프로젝트에는 다음 의존성을 사용합니다.
+
+- Spring Web
+- Spring Data JPA
+- Spring Security
+- Spring Validation
+- MySQL Driver
+- H2 Database
+
+### 10.3 API 명세 기준 AI 호출 위치
+
+| API 명세 | 엔드포인트 | 사용 기술 | 역할 |
+|---|---|---|---|
+| 5장 | `POST /memory-drafts/analyze` | Upstage Document Parse | 업로드한 종이 이미지의 전체 텍스트와 문서 구조 인식 |
+| 5장 | `POST /memory-drafts/{draftId}/document-type/confirm` | Upstage Information Extract | 확정한 문서 유형에 맞는 날짜·가게명·행사명·장소·좌석·본문 추출 |
+| 6장 | `POST /memory-drafts/{draftId}/ticket-recall/title` | Upstage Solar | 사용자가 작성한 답변만을 바탕으로 제목 한 줄 생성 |
+
+`POST /memory-drafts/{draftId}/ticket-recall/questions`는 고정 질문 은행을 반환하므로 Solar를 호출하지 않습니다. AI가 확신할 수 없는 추출값은 임의로 채우지 않고 `null`로 반환하며, 사용자가 확인한 값만 최종 카드에 저장합니다.
+
+자세한 요청·응답 형식은 [`docs/API_SPEC.md`](docs/API_SPEC.md)를 따릅니다.
+
+### 10.4 환경 변수
+
+실제 비밀값은 Git에 커밋하지 않습니다. 저장소의 `.env.example`에는 변수 이름과 예시 형식만 작성합니다.
+
+```dotenv
+# Backend
+DB_URL=jdbc:mysql://localhost:3306/memory_drawer
+DB_USERNAME=
+DB_PASSWORD=
+JWT_SECRET=
+UPSTAGE_API_KEY=
+```
+
+Upstage API 키와 JWT 비밀키는 백엔드에서만 읽으며 프론트엔드 코드나 빌드 결과물에 포함하지 않습니다.
+프론트엔드의 API 주소 변수명은 초기 설정에서 빌드 도구가 확정된 뒤 추가합니다.
+
+### 10.5 로컬 실행
+
+백엔드 실행:
+
+```powershell
+cd backend
+.\gradlew.bat bootRun
+```
+
+백엔드 테스트:
+
+```powershell
+cd backend
+.\gradlew.bat test
+```
+
+프론트엔드 실행:
+
+```powershell
+cd frontend
+npm install
+npm run dev
+```
+
+프론트엔드 검사 및 빌드:
+
+```powershell
+cd frontend
+npm run lint
+npm run build
+```
+
+### 10.6 추후 추가할 구현 문서
+
 - 프로젝트 디렉터리 구조
-- 환경 변수 설정
-- 로컬 실행 방법
-- API 명세서
 - 데이터베이스 구조
-- 테스트 방법과 테스트 계정
+- 테스트 계정
 - 배포 주소 또는 데모 영상
 - AI 프롬프트·검증 결과

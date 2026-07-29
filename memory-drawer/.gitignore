@@ -1,0 +1,25 @@
+# Environment variables and secrets
+.env
+.env.*
+!.env.example
+
+# Frontend
+node_modules/
+dist/
+.npm-cache/
+backend-bootstrap.zip
+
+# Backend / Gradle
+.gradle/
+.gradle-cache/
+build/
+**/build/
+
+# IDE
+.idea/
+*.iml
+.vscode/
+
+# OS
+.DS_Store
+Thumbs.db
