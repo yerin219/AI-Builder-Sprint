@@ -149,6 +149,14 @@ Authorization: Bearer {accessToken}
 - 다른 사용자의 `draftId` 또는 `cardId`로 접근하면 `403 Forbidden`을 반환합니다.
 - 백엔드는 요청 본문의 사용자 ID를 신뢰하지 않고 인증 토큰의 사용자 ID를 사용합니다.
 
+### 2.8 카드 배경 규칙
+
+- 영수증·티켓·손편지 카드의 배경은 모두 흰색으로 통일합니다.
+- 원본 종이 이미지의 형태와 내용은 흰색 카드 안에서 표시하되, 원본 이미지의 색상을 카드 배경색으로 추출하거나 반영하지 않습니다.
+- 카드 배경색 선택·변경 기능을 제공하지 않습니다.
+- 카드 배경색과 관련된 필드를 요청·응답에 포함하지 않습니다.
+- 흰색 배경은 프론트엔드 표시 규칙이며 백엔드가 별도 값으로 저장하거나 반환하지 않습니다.
+
 ---
 
 ## 3. 임시 기록 처리 방식
@@ -499,8 +507,7 @@ AI의 판단이 맞으면 제안된 유형을, 틀리면 사용자가 직접 선
     "front": {
       "eventName": "흠뻑쇼",
       "venue": "부산아시아드주경기장",
-      "seat": null,
-      "representativeColor": "#3478C9"
+      "seat": null
     },
     "draftStatus": "FRONT_CONFIRMED",
     "nextAction": "WRITE_BACK"
@@ -508,7 +515,8 @@ AI의 판단이 맞으면 제안된 유형을, 틀리면 사용자가 직접 선
 }
 ```
 
-- `representativeColor`는 원본 티켓 이미지에서 추출한 카드 기본 색상입니다.
+- 티켓도 영수증·손편지와 동일하게 흰색 카드 배경을 사용합니다.
+- 카드 배경색은 이 응답에서 추출하거나 반환하지 않습니다.
 - 이 단계에서는 티켓 세부 유형을 추정하거나 반환하지 않습니다. 사용자가 뒷면에서 `AI 질문으로 떠올리기`를 선택했을 때만 6.1 API를 호출합니다.
 
 #### Response — 손편지 이미지 처리 예시
@@ -984,7 +992,6 @@ Solar 호출이 실패하면 사용자의 답변을 그대로 유지하고 제�
           "eventName": "흠뻑쇼",
           "venue": "부산아시아드주경기장",
           "seat": null,
-          "representativeColor": "#3478C9",
           "frontImageUrl": "/files/cards/e89ed42d/front"
         }
       },
@@ -1028,7 +1035,6 @@ Solar 호출이 실패하면 사용자의 답변을 그대로 유지하고 제�
       "eventName": "흠뻑쇼",
       "venue": "부산아시아드주경기장",
       "seat": null,
-      "representativeColor": "#3478C9",
       "frontImageUrl": "/files/cards/e89ed42d/front"
     },
     "back": {
@@ -1067,7 +1073,7 @@ Solar 호출이 실패하면 사용자의 답변을 그대로 유지하고 제�
 | 기록 유형 | 앞면 | 뒷면 |
 |---|---|---|
 | 영수증 | `storeName`, `frontImageUrl` | `companions`, `weather`, `mood`, `diaryText`, `backPhotoUrls` |
-| 티켓 직접 기록 | `eventName`, `venue`, `seat`, `representativeColor`, `frontImageUrl` | 공통 정보, `writingMode`, `title`, `memoryText` |
+| 티켓 직접 기록 | `eventName`, `venue`, `seat`, `frontImageUrl` | 공통 정보, `writingMode`, `title`, `memoryText` |
 | 티켓 AI 질문 | 티켓 직접 기록과 동일 | 공통 정보, `writingMode`, `ticketSubtype`, `title`, `answers` |
 | 손편지 | `ocrText`, `frontImageMode`, `frontImageUrl` | `companions`, `weather`, `mood`, `diaryText`, `backPhotoUrls` |
 
@@ -1275,7 +1281,7 @@ upstage:
 | 티켓 세부 유형 | AI 질문 선택 후에만 후보 표시·수정 | 해당 시점에만 Solar로 후보 계산하고 최종 선택값 검증 |
 | 회상 질문 | 유형별 질문 전체와 입력칸 표시 | 고정 질문 은행 반환 |
 | AI 제목 | 후보를 수정 가능한 형태로 표시 | `questionId`를 서버 질문 은행과 검증하고 사용자 답변만 근거로 제목 한 줄 생성 |
-| 카드 미리보기 | 앞·뒷면 렌더링, 빈 선택 항목 숨김 | 확정 데이터와 이미지 처리 결과 제공 |
+| 카드 미리보기 | 세 유형 모두 흰색 배경으로 앞·뒷면 렌더링, 빈 선택 항목 숨김 | 확정 데이터와 이미지 처리 결과 제공, 배경색 값은 저장·반환하지 않음 |
 | 최종 저장 | 최종 뒷면 데이터와 사진 전송 | 카드 저장 및 실제 날짜의 연도 서랍 배치 |
 | 서랍 화면 | 최근 연도부터 표시, 카드 펼침·앞뒤 전환 | 사용자별 연도와 카드 데이터 반환 |
 
@@ -1313,6 +1319,7 @@ upstage:
 - 음식·풍경·영상·음성 기록
 - 영수증·손편지 AI 회상 질문
 - 영수증 가격·지도·위치·스티커
+- 카드 배경색 추출·선택·변경 및 관련 API 필드
 - 티켓 직접 기록 시 세부 유형 분류
 - 질문 두 개만 선택하는 로직
 - AI가 만드는 별도의 한 줄 추억
