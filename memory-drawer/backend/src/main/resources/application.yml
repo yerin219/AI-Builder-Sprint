@@ -1,0 +1,22 @@
+spring:
+  application:
+    name: memory-drawer-backend
+  datasource:
+    url: ${DB_URL:jdbc:mysql://localhost:3306/memory_drawer}
+    username: ${DB_USERNAME:root}
+    password: ${DB_PASSWORD:}
+  jpa:
+    hibernate:
+      ddl-auto: update
+    open-in-view: false
+
+server:
+  port: 8080
+  servlet:
+    context-path: /api
+
+app:
+  jwt:
+    secret: ${JWT_SECRET:}
+  upstage:
+    api-key: ${UPSTAGE_API_KEY:}

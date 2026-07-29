@@ -1,0 +1,15 @@
+spring:
+  datasource:
+    url: jdbc:h2:mem:memory_drawer;MODE=MySQL;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE
+    driver-class-name: org.h2.Driver
+    username: sa
+    password:
+  jpa:
+    hibernate:
+      ddl-auto: create-drop
+
+app:
+  jwt:
+    secret: test-only-secret-key-test-only-secret-key
+  upstage:
+    api-key: test-only-key
