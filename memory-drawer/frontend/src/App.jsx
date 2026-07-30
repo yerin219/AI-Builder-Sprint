@@ -1,16 +1,47 @@
-import './App.css'
+import { useState } from 'react'
+import CardDetail from './features/drawer/CardDetail'
+import DrawerCardList from './features/drawer/DrawerCardList'
+import DrawerHome from './features/drawer/DrawerHome'
 
 function App() {
-  const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || '/api'
+  const [screen, setScreen] = useState('DRAWERS')
+  const [selectedYear, setSelectedYear] = useState(null)
+  const [selectedCardId, setSelectedCardId] = useState(null)
+  const [yearCards, setYearCards] = useState([])
 
-  return (
-    <main className="setup">
-      <p className="eyebrow">Memory Drawer</p>
-      <h1>프론트엔드 개발환경이 준비되었습니다.</h1>
-      <p>React와 Vite로 실행되는 초기 프로젝트입니다.</p>
-      <p className="api-base">API 기본 경로: {apiBaseUrl}</p>
-    </main>
-  )
+  function openYear(year) {
+    setSelectedYear(year)
+    setScreen('CARDS')
+  }
+
+  function openCard(cardId) {
+    setSelectedCardId(cardId)
+    setScreen('CARD_DETAIL')
+  }
+
+  if (screen === 'CARDS') {
+    return (
+      <DrawerCardList
+        year={selectedYear}
+        onBack={() => setScreen('DRAWERS')}
+        onCardsLoaded={setYearCards}
+        onSelectCard={openCard}
+      />
+    )
+  }
+
+  if (screen === 'CARD_DETAIL') {
+    return (
+      <CardDetail
+        cardId={selectedCardId}
+        cardsInYear={yearCards}
+        onBack={() => setScreen('CARDS')}
+        onSelectCard={setSelectedCardId}
+      />
+    )
+  }
+
+  return <DrawerHome onSelectYear={openYear} />
 }
 
 export default App

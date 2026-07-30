@@ -1,8 +1,8 @@
 :root {
-  color: #111827;
-  background: #f9fafb;
-  font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI',
-    sans-serif;
+  color: #362313;
+  background: #fbf5ea;
+  font-family: Pretendard, 'Noto Sans KR', system-ui, -apple-system, BlinkMacSystemFont,
+    'Segoe UI', sans-serif;
   font-synthesis: none;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
@@ -16,7 +16,5 @@ body {
 }
 
 #root {
-  display: grid;
   min-height: 100vh;
-  place-items: center;
 }
