@@ -47,6 +47,15 @@ public class LocalBackPhotoStorage implements BackPhotoStorage {
 	}
 
 	@Override
+	public byte[] load(String key) {
+		try {
+			return Files.readAllBytes(resolveSafely(key));
+		} catch (IOException exception) {
+			throw new IllegalStateException("카드 뒷면 이미지를 읽을 수 없습니다.", exception);
+		}
+	}
+
+	@Override
 	public void deleteAll(List<String> keys) {
 		for (String key : keys) {
 			try {

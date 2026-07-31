@@ -112,3 +112,15 @@ Document Parse는 한 이미지에 한 번만 호출해야 하므로 서버에�
 - 검증 결과: 메인 코드 컴파일과 전체 테스트 성공. `CONCERT_PERFORMANCE` 추천, 고정 질문 3개, Solar 제목 생성, DIRECT·AI_RECALL 카드 2장 저장, 2025년 서랍·목록·두 저장 방식의 상세 조회 성공.
 - 발생한 문제와 해결: `CardCreateService`에 생성자가 두 개라 Spring이 생성자를 선택하지 못한 문제를 확인해 운영 생성자에 `@Autowired`를 명시함. 이미 저장된 draft 재호출은 `DRAFT_003`으로 차단되고 기존 카드가 정상 조회됨을 확인함.
 - 관련 브랜치: `feature/be-ticket-recall`.
+
+### API 6·7·8 계약 감사 및 프론트 연동 보완
+
+- 사용 모델·도구: Codex, Git, Gradle, Node.js E2E, 로컬 MySQL, 실제 Upstage API. 단위·Controller 테스트에서는 Mock 서버를 사용하고 최종 E2E에서만 개인정보 없는 합성 티켓 이미지를 실제 Upstage로 전송함.
+- 작업 목적: 최신 `backend` 병합본의 티켓 AI 회상, 카드 저장, 서랍 조회 구현을 `docs/API_SPEC.md`와 다시 대조하고 프론트 연동에 필요한 누락을 보완함.
+- 사용한 프롬프트 요약: API 명세를 기준으로 API 6·7·8 백엔드를 점검하고 부족한 부분을 수정한 뒤, 기존 API 3·4·5와 같은 방식으로 프론트와 연결하고 반복 검증하도록 요청함.
+- AI가 제안·수정한 내용: 빈 티켓 subtype은 `TICKET_001`, null·개수 불일치 답변은 `TICKET_003`으로 일관되게 처리함. Solar 구조화 응답의 대상 필드가 문자열인지 검증하고 잘못된 UUID 경로도 공통 오류 envelope로 반환함. 카드 조회 응답이 제공하던 `/files/cards/{cardId}/front`와 `/files/cards/{cardId}/back/{index}`를 실제 인증 이미지 endpoint로 연결하고, 카드 소유권·1부터 시작하는 뒷면 사진 index·저장 확장자 기반 media type을 검증함. 보호 이미지의 Bearer 인증·binary 응답 계약을 API 명세에 추가하고 장기 만료 방식만 TODO로 유지함.
+- 팀원이 직접 결정·수정한 내용: 명세 TODO인 제목 길이, 추가 사진 제한, 임시 기록 만료 즉시 차단 정책은 확정하지 않음. 이미지 endpoint에는 기존 전역 Bearer 인증과 카드 소유권 정책을 그대로 적용함.
+- 실행한 테스트: 티켓 회상·카드 이미지 대상 Gradle 테스트, 전체 `gradlew.bat test`, 전체 `gradlew.bat build`, `git diff --check`, 별도 18080 서버에서 회원가입→API 3→4→5→6→7→8 실제 E2E.
+- 테스트 결과: 대상 테스트 22개 통과, 전체 테스트 91개 통과, 전체 빌드 및 diff 검사 성공. E2E에서 `CONCERT_PERFORMANCE` 추천, 질문 3개, Solar 제목, DIRECT·AI_RECALL 카드 2장, 2026년 서랍·상세·PNG 이미지 조회가 성공했고 잘못된 답변 `TICKET_003`, 중복 저장 `DRAFT_003`, 무토큰 `AUTH_001`, 타 사용자 카드·이미지 `CARD_001`을 확인함.
+- 발생한 문제와 해결: API 8 응답은 이미지 URL을 만들지만 실제 파일 제공 endpoint가 없어 404가 발생하는 문제를 찾아 저장소 읽기와 보호된 이미지 Controller를 추가함. Bean Validation이 도메인 오류 코드를 선점하던 문제는 DTO 제약을 서비스 검증으로 넘겨 명세 오류 코드로 통일함. 사용자 스크린샷의 외부 전송은 중단하고 코드가 생성한 무개인정보 합성 티켓으로 실제 E2E를 수행함.
+- 관련 브랜치: `feature/be-api6-8-fixes`. 커밋·push·PR은 진행하지 않음.
