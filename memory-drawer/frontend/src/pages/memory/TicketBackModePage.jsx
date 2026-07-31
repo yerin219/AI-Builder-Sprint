@@ -1,13 +1,15 @@
 import { useState } from "react";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
 import { suggestTicketSubtype } from "../../api/ticketRecall";
+import { getFrontConfirmed } from "../../utils/draftStorage";
 import "./TicketRecall.css";
 
 export default function TicketBackModePage() {
     const { draftId } = useParams();
     const location = useLocation();
     const navigate = useNavigate();
-    const frontConfirmed = location.state?.frontConfirmed;
+    const frontConfirmed =
+        location.state?.frontConfirmed || getFrontConfirmed(draftId);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState("");
 

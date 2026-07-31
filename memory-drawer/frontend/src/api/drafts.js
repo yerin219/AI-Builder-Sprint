@@ -1,4 +1,4 @@
-import { request } from './http'
+import { request } from './http.js'
 
 export const analyzeImage = (file) => {
     const formData = new FormData()

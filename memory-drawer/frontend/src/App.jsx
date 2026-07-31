@@ -14,6 +14,8 @@ import TicketBackModePage from "./pages/memory/TicketBackModePage";
 import TicketRecallSubtypePage from "./pages/memory/TicketRecallSubtypePage";
 import TicketRecallQuestionsPage from "./pages/memory/TicketRecallQuestionsPage";
 import TicketRecallTitlePage from "./pages/memory/TicketRecallTitlePage";
+import RequireAuth from "./routes/RequireAuth";
+import { getFrontConfirmed } from "./utils/draftStorage";
 import { getTicketRecall } from "./utils/ticketRecallStorage";
 
 function App() {
@@ -22,18 +24,20 @@ function App() {
       <Route path="/" element={<Navigate to="/login" replace />} />
       <Route path="/login" element={<LoginPage />} />
       <Route path="/signup" element={<SignupPage />} />
-      <Route path="/home" element={<DrawerHomeRoute />} />
-      <Route path="/drawers/:year" element={<DrawerCardListRoute />} />
-      <Route path="/cards/:cardId" element={<CardDetailRoute />} />
-      <Route path="/memories/new" element={<ImageSelectPage />} />
-      <Route path="/memories/preview" element={<ImagePreviewPage />} />
-      <Route path="/memories/:draftId/type" element={<DocumentTypePage />} />
-      <Route path="/memories/:draftId/front" element={<FrontConfirmPage />} />
-      <Route path="/memories/:draftId/back" element={<TicketBackModePage />} />
-      <Route path="/memories/:draftId/ticket-recall/subtype" element={<TicketRecallSubtypePage />} />
-      <Route path="/memories/:draftId/ticket-recall/questions" element={<TicketRecallQuestionsPage />} />
-      <Route path="/memories/:draftId/ticket-recall/title" element={<TicketRecallTitlePage />} />
-      <Route path="/memories/:draftId/save" element={<CardSaveRoute />} />
+      <Route element={<RequireAuth />}>
+        <Route path="/home" element={<DrawerHomeRoute />} />
+        <Route path="/drawers/:year" element={<DrawerCardListRoute />} />
+        <Route path="/cards/:cardId" element={<CardDetailRoute />} />
+        <Route path="/memories/new" element={<ImageSelectPage />} />
+        <Route path="/memories/preview" element={<ImagePreviewPage />} />
+        <Route path="/memories/:draftId/type" element={<DocumentTypePage />} />
+        <Route path="/memories/:draftId/front" element={<FrontConfirmPage />} />
+        <Route path="/memories/:draftId/back" element={<TicketBackModePage />} />
+        <Route path="/memories/:draftId/ticket-recall/subtype" element={<TicketRecallSubtypePage />} />
+        <Route path="/memories/:draftId/ticket-recall/questions" element={<TicketRecallQuestionsPage />} />
+        <Route path="/memories/:draftId/ticket-recall/title" element={<TicketRecallTitlePage />} />
+        <Route path="/memories/:draftId/save" element={<CardSaveRoute />} />
+      </Route>
       <Route path="*" element={<Navigate to="/login" replace />} />
     </Routes>
   );
@@ -62,7 +66,7 @@ function CardDetailRoute() {
 function CardSaveRoute() {
   const { draftId } = useParams();
   const location = useLocation();
-  const frontConfirmed = location.state?.frontConfirmed;
+  const frontConfirmed = location.state?.frontConfirmed || getFrontConfirmed(draftId);
   const ticketRecall = location.state?.ticketRecall || getTicketRecall(draftId);
 
   if (!frontConfirmed?.documentType) {

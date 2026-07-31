@@ -50,8 +50,10 @@ export default function DocumentTypePage() {
         } catch (err) {
             const messages = {
                 DOCUMENT_002: "지원하지 않는 문서 유형입니다.",
+                DOCUMENT_001: "문서 내용을 읽을 수 없습니다. 다른 사진으로 다시 시도해주세요.",
                 DRAFT_001: "임시 기록을 찾을 수 없습니다. 사진부터 다시 선택해주세요.",
                 DRAFT_002: "현재 단계에서는 문서 유형을 확정할 수 없습니다.",
+                DRAFT_004: "다른 사용자의 임시 기록에는 접근할 수 없습니다.",
                 AI_001: "정보 추출 서비스 오류입니다. 다시 시도해주세요.",
             };
 
