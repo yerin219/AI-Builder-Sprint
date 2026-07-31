@@ -5,6 +5,7 @@ import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 import org.springframework.web.multipart.MaxUploadSizeExceededException;
 import org.springframework.web.multipart.MultipartException;
 import org.springframework.web.multipart.support.MissingServletRequestPartException;
@@ -22,7 +23,8 @@ public class GlobalExceptionHandler {
 
 	@ExceptionHandler({
 		MethodArgumentNotValidException.class,
-		HttpMessageNotReadableException.class
+		HttpMessageNotReadableException.class,
+		MethodArgumentTypeMismatchException.class
 	})
 	public ResponseEntity<ApiErrorResponse> handleValidationException() {
 		return response(ErrorCode.VALIDATION_001);
@@ -34,8 +36,13 @@ public class GlobalExceptionHandler {
 	}
 
 	@ExceptionHandler(MissingServletRequestPartException.class)
-	public ResponseEntity<ApiErrorResponse> handleMissingRequestPart() {
-		return response(ErrorCode.IMAGE_001);
+	public ResponseEntity<ApiErrorResponse> handleMissingRequestPart(
+		MissingServletRequestPartException exception
+	) {
+		ErrorCode errorCode = "card".equals(exception.getRequestPartName())
+			? ErrorCode.VALIDATION_001
+			: ErrorCode.IMAGE_001;
+		return response(errorCode);
 	}
 
 	@ExceptionHandler(MultipartException.class)

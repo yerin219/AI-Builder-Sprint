@@ -123,7 +123,13 @@ public class CardCreateService {
 		} catch (DataIntegrityViolationException exception) {
 			backPhotoStorage.deleteAll(storedPhotoKeys);
 			throw new ApiException(ErrorCode.DRAFT_003, exception);
-		} catch (JsonProcessingException | IllegalStateException exception) {
+		} catch (JsonProcessingException exception) {
+			backPhotoStorage.deleteAll(storedPhotoKeys);
+			throw new ApiException(ErrorCode.CARD_003, exception);
+		} catch (ApiException exception) {
+			backPhotoStorage.deleteAll(storedPhotoKeys);
+			throw exception;
+		} catch (RuntimeException exception) {
 			backPhotoStorage.deleteAll(storedPhotoKeys);
 			throw new ApiException(ErrorCode.CARD_003, exception);
 		}

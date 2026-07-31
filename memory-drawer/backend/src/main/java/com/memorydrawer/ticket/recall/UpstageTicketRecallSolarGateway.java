@@ -128,7 +128,11 @@ public final class UpstageTicketRecallSolarGateway implements TicketRecallSolarG
 			throw new ApiException(ErrorCode.AI_002);
 		}
 		try {
-			String value = objectMapper.readTree(content).path(fieldName).asText("").trim();
+			JsonNode field = objectMapper.readTree(content).path(fieldName);
+			if (!field.isTextual()) {
+				throw new ApiException(ErrorCode.AI_002);
+			}
+			String value = field.textValue().trim();
 			if (value.isBlank()) {
 				throw new ApiException(ErrorCode.AI_002);
 			}
