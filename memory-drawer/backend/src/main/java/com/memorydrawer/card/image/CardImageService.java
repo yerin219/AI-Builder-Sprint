@@ -1,5 +1,6 @@
 package com.memorydrawer.card.image;
 
+import java.nio.file.NoSuchFileException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
@@ -87,7 +88,12 @@ public class CardImageService {
 	private CardImageResource load(String key, ImageLoader loader) {
 		try {
 			return new CardImageResource(loader.load(key), mediaType(key));
-		} catch (IllegalArgumentException | IllegalStateException exception) {
+		} catch (IllegalStateException exception) {
+			if (exception.getCause() instanceof NoSuchFileException) {
+				throw new CardNotFoundException();
+			}
+			throw new ApiException(ErrorCode.CARD_003, exception);
+		} catch (IllegalArgumentException exception) {
 			throw new ApiException(ErrorCode.CARD_003, exception);
 		}
 	}

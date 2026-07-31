@@ -7,6 +7,7 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import java.nio.file.NoSuchFileException;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.util.Optional;
@@ -111,6 +112,18 @@ class CardImageServiceTest {
 			.isInstanceOfSatisfying(ApiException.class, exception ->
 				assertThat(exception.getErrorCode()).isEqualTo(ErrorCode.CARD_003)
 			);
+	}
+
+	@Test
+	void mapsMissingStoredImageToCardNotFound() {
+		MemoryCard card = card("drafts/owner/card/original.jpg", "[]");
+		when(memoryCardRepository.findById(CARD_ID)).thenReturn(Optional.of(card));
+		when(originalImageStorage.load(card.getOriginalImageKey())).thenThrow(
+			new IllegalStateException("image is missing", new NoSuchFileException(card.getOriginalImageKey()))
+		);
+
+		assertThatThrownBy(() -> cardImageService.front(OWNER_ID, CARD_ID))
+			.isInstanceOf(CardNotFoundException.class);
 	}
 
 	private MemoryCard card(String originalImageKey, String backPhotoKeys) {
