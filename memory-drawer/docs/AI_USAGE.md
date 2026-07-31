@@ -10,4 +10,4 @@
 - 실행한 테스트: `npm test` 반복 실행, `npm run lint`, `npm run build`, `git diff --check`, 별도 18080 서버에서 `npm run test:e2e:api6-8` 실제 호출.
 - 테스트 결과: 프론트 계약 테스트 27개 전부 통과, lint 오류 0개, Vite production build 성공(57 modules). E2E에서 API 6 추천·질문 3개·제목, API 7 DIRECT·AI_RECALL 저장, API 8 서랍·상세·보호 이미지와 주요 오류 응답이 모두 통과함.
 - 발생한 문제와 해결: DIRECT 화면에서 AI_RECALL만 선택하면 회상 질문 없이 저장되어 검증 오류가 나던 막다른 흐름을 실제 API 6 시작 경로로 연결함. 앱 context path가 `/api`인데 이미지 URL이 `/files/...`라 직접 fetch 시 404가 되던 문제는 공통 API URL 해석 함수를 사용해 `/api/files/...`로 요청하도록 해결함. 사용자 스크린샷의 외부 전송 대신 테스트 스크립트가 합성 PNG를 자체 생성하도록 구성함.
-- 관련 브랜치: `feature/fe-api3-5-integration`. 커밋·push·PR은 진행하지 않음.
+- 관련 브랜치: `feature/fe-api6-8-integration`. 기능 브랜치 push 완료, PR은 진행하지 않음.
