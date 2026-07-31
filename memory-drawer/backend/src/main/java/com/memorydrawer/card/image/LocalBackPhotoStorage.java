@@ -1,6 +1,7 @@
 package com.memorydrawer.card.image;
 
 import java.io.IOException;
+import java.io.OutputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
@@ -36,8 +37,14 @@ public class LocalBackPhotoStorage implements BackPhotoStorage {
 				);
 				Path target = resolveSafely(key);
 				Files.createDirectories(target.getParent());
-				Files.write(target, image.bytes(), StandardOpenOption.CREATE_NEW);
-				storedKeys.add(key);
+				try (OutputStream output = Files.newOutputStream(
+					target,
+					StandardOpenOption.CREATE_NEW,
+					StandardOpenOption.WRITE
+				)) {
+					storedKeys.add(key);
+					output.write(image.bytes());
+				}
 			}
 			return List.copyOf(storedKeys);
 		} catch (IOException exception) {

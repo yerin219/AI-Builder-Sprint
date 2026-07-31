@@ -36,8 +36,13 @@ public class GlobalExceptionHandler {
 	}
 
 	@ExceptionHandler(MissingServletRequestPartException.class)
-	public ResponseEntity<ApiErrorResponse> handleMissingRequestPart() {
-		return response(ErrorCode.IMAGE_001);
+	public ResponseEntity<ApiErrorResponse> handleMissingRequestPart(
+		MissingServletRequestPartException exception
+	) {
+		ErrorCode errorCode = "card".equals(exception.getRequestPartName())
+			? ErrorCode.VALIDATION_001
+			: ErrorCode.IMAGE_001;
+		return response(errorCode);
 	}
 
 	@ExceptionHandler(MultipartException.class)

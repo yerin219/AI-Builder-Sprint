@@ -123,4 +123,13 @@ Document Parse는 한 이미지에 한 번만 호출해야 하므로 서버에�
 - 실행한 테스트: 티켓 회상·카드 이미지 대상 Gradle 테스트, 전체 `gradlew.bat test`, 전체 `gradlew.bat build`, `git diff --check`, 별도 18080 서버에서 회원가입→API 3→4→5→6→7→8 실제 E2E.
 - 테스트 결과: 대상 테스트 22개 통과, 전체 테스트 91개 통과, 전체 빌드 및 diff 검사 성공. E2E에서 `CONCERT_PERFORMANCE` 추천, 질문 3개, Solar 제목, DIRECT·AI_RECALL 카드 2장, 2026년 서랍·상세·PNG 이미지 조회가 성공했고 잘못된 답변 `TICKET_003`, 중복 저장 `DRAFT_003`, 무토큰 `AUTH_001`, 타 사용자 카드·이미지 `CARD_001`을 확인함.
 - 발생한 문제와 해결: API 8 응답은 이미지 URL을 만들지만 실제 파일 제공 endpoint가 없어 404가 발생하는 문제를 찾아 저장소 읽기와 보호된 이미지 Controller를 추가함. Bean Validation이 도메인 오류 코드를 선점하던 문제는 DTO 제약을 서비스 검증으로 넘겨 명세 오류 코드로 통일함. 사용자 스크린샷의 외부 전송은 중단하고 코드가 생성한 무개인정보 합성 티켓으로 실제 E2E를 수행함.
-- 관련 브랜치: `feature/be-api6-8-fixes`. 커밋·push·PR은 진행하지 않음.
+- 관련 브랜치: `feature/be-api6-8-fixes`. 기능 브랜치 push 완료, PR은 진행하지 않음.
+
+### API 9~12 최종 저장·조회 안정성 점검
+
+- 사용 모델·도구: Codex, Gradle Wrapper, JUnit 5, Mockito.
+- 작업 목적: 최종 카드 저장과 서랍 조회 흐름을 최신 API 번호 기준으로 재점검하고, 저장 실패 시 데이터와 파일이 어긋나는 문제를 방지함.
+- AI가 제안·수정한 내용: `/cards`의 필수 `card` JSON 파트 누락을 `VALIDATION_001`로 구분하고, DB 저장 중 일반 런타임 오류가 발생해도 저장된 뒷면 사진을 삭제한 뒤 `CARD_003`으로 응답하도록 보완함. 사진 파일 쓰기 도중 실패한 경우에도 새로 생성된 부분 파일이 정리 대상에 포함되도록 저장 순서를 수정함.
+- 실행한 테스트: 관련 `CardCreateServiceTest`, `GlobalExceptionHandlerTest`, 전체 `gradlew.bat test`, `git diff --check`.
+- 팀 결정이 필요한 입력 길이·사진 개수·토큰 만료·이미지 URL 장기 정책은 기존 TODO로 유지함.
+- 관련 브랜치: `feature/be-api6-8-fixes`.
