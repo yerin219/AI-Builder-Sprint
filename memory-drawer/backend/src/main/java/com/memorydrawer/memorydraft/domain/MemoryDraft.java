@@ -14,6 +14,8 @@ import jakarta.persistence.Id;
 import jakarta.persistence.Lob;
 import jakarta.persistence.Table;
 
+import com.memorydrawer.ticket.recall.TicketSubtype;
+
 @Entity
 @Table(name = "memory_drafts")
 public class MemoryDraft {
@@ -48,6 +50,10 @@ public class MemoryDraft {
 	@Lob
 	@Column(name = "front_candidate", columnDefinition = "LONGTEXT")
 	private String frontCandidate;
+
+	@Enumerated(EnumType.STRING)
+	@Column(name = "ticket_subtype", length = 32)
+	private TicketSubtype ticketSubtype;
 
 	@Enumerated(EnumType.STRING)
 	@Column(name = "draft_status", nullable = false, length = 32)
@@ -141,6 +147,10 @@ public class MemoryDraft {
 		return draftStatus;
 	}
 
+	public TicketSubtype getTicketSubtype() {
+		return ticketSubtype;
+	}
+
 	public Instant getCreatedAt() {
 		return createdAt;
 	}
@@ -168,5 +178,23 @@ public class MemoryDraft {
 		}
 		this.frontCandidate = confirmedFront;
 		this.draftStatus = DraftStatus.FRONT_CONFIRMED;
+	}
+
+	public void confirmTicketSubtype(TicketSubtype ticketSubtype) {
+		if (draftStatus != DraftStatus.FRONT_CONFIRMED
+			|| documentType != DocumentType.TICKET) {
+			throw new IllegalStateException("티켓 회상을 진행할 수 없는 임시 기록 상태입니다.");
+		}
+		if (ticketSubtype == null) {
+			throw new IllegalArgumentException("티켓 세부 유형은 비어 있을 수 없습니다.");
+		}
+		this.ticketSubtype = ticketSubtype;
+	}
+
+	public void markSaved() {
+		if (draftStatus != DraftStatus.FRONT_CONFIRMED) {
+			throw new IllegalStateException("카드를 저장할 수 없는 임시 기록 상태입니다.");
+		}
+		this.draftStatus = DraftStatus.SAVED;
 	}
 }

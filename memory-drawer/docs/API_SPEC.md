@@ -994,7 +994,7 @@ Solar 호출이 실패하면 사용자의 답변을 그대로 유지하고 제�
 
 `GET /drawers/{year}/cards`
 
-선택한 연도의 카드를 실제 추억 날짜 기준으로 반환합니다. 프론트엔드는 이 응답 순서를 이용해 같은 연도의 다른 기록을 넘겨봅니다.
+선택한 연도의 카드를 실제 추억 날짜가 오래된 것부터 최신인 것 순서로 반환합니다. 프론트엔드는 이 응답 순서를 이용해 같은 연도의 다른 기록을 넘겨봅니다.
 
 #### Path Parameter
 
@@ -1014,6 +1014,15 @@ Solar 호출이 실패하면 사용자의 답변을 그대로 유지하고 제�
     "year": 2026,
     "cards": [
       {
+        "cardId": "e10e31cb-9ea1-4aaa-9822-e13358defb03",
+        "documentType": "RECEIPT",
+        "memoryDate": "2026-04-02",
+        "front": {
+          "storeName": "서면카페",
+          "frontImageUrl": "/files/cards/e10e31cb/front"
+        }
+      },
+      {
         "cardId": "e89ed42d-1a89-4eea-8ddc-dca90a5c78c4",
         "documentType": "TICKET",
         "memoryDate": "2026-07-25",
@@ -1023,15 +1032,6 @@ Solar 호출이 실패하면 사용자의 답변을 그대로 유지하고 제�
           "seat": null,
           "frontImageUrl": "/files/cards/e89ed42d/front"
         }
-      },
-      {
-        "cardId": "e10e31cb-9ea1-4aaa-9822-e13358defb03",
-        "documentType": "RECEIPT",
-        "memoryDate": "2026-04-02",
-        "front": {
-          "storeName": "서면카페",
-          "frontImageUrl": "/files/cards/e10e31cb/front"
-        }
       }
     ]
   }
@@ -1040,7 +1040,7 @@ Solar 호출이 실패하면 사용자의 답변을 그대로 유지하고 제�
 
 - 해당 연도에 카드가 없으면 `cards: []`을 반환합니다.
 - `seat`가 `null`이면 프론트엔드는 좌석 항목명까지 숨깁니다.
-- 날짜 오름차순과 내림차순 중 어느 방향으로 반환할지는 공통 TODO에서 확정합니다.
+- 같은 연도의 카드는 `memoryDate` 오름차순, 즉 오래된 날짜부터 최신 날짜 순서로 반환합니다.
 
 ### 8.3 카드 상세 조회
 
@@ -1348,6 +1348,7 @@ memory-drawer:
 - 날씨·기분 선택지와 실제 enum 코드
 - 제목, 추억, 일기, 질문 답변의 최대 글자 수
 - 같은 연도 카드의 날짜 정렬 방향
+- 이미지 URL의 인증 방식과 만료 여부
 - 카드 앞면을 합성 이미지로 저장할지 데이터와 원본으로 매번 렌더링할지
 
 API 3 관련 이미지 형식·용량·HEIC 처리·임시 보관·이미지 접근·Solar 모델·외부 요청 설정은 5.1절과 9.5~9.6절의 확정값을 사용합니다.
