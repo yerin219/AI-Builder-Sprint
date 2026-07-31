@@ -52,7 +52,8 @@ function DrawerCardListRoute() {
   const { year } = useParams();
   const navigate = useNavigate();
   const [cards, setCards] = useState([]);
-  return <DrawerCardList year={Number(year)} onBack={() => navigate("/home")} onCardsLoaded={setCards} onSelectCard={(cardId) => navigate(`/cards/${cardId}`, { state: { cardsInYear: cards } })} />;
+  const numericYear = Number(year);
+  return <DrawerCardList year={numericYear} onBack={() => navigate("/home")} onCardsLoaded={setCards} onSelectCard={(cardId) => navigate(`/cards/${cardId}`, { state: { cardsInYear: cards, year: numericYear } })} />;
 }
 
 function CardDetailRoute() {
@@ -60,7 +61,8 @@ function CardDetailRoute() {
   const location = useLocation();
   const navigate = useNavigate();
   const cardsInYear = location.state?.cardsInYear || [];
-  return <CardDetail cardId={cardId} cardsInYear={cardsInYear} onBack={() => navigate(-1)} onSelectCard={(nextCardId) => navigate(`/cards/${nextCardId}`, { state: { cardsInYear } })} />;
+  const year = location.state?.year;
+  return <CardDetail cardId={cardId} cardsInYear={cardsInYear} onBack={() => navigate(year ? `/drawers/${year}` : "/home", { replace: true })} onSelectCard={(nextCardId) => navigate(`/cards/${nextCardId}`, { replace: true, state: { cardsInYear, year } })} />;
 }
 
 function CardSaveRoute() {
@@ -78,9 +80,9 @@ function CardSaveRoute() {
     <CardSavePage
       draftId={draftId}
       documentType={frontConfirmed.documentType}
+      frontConfirmed={frontConfirmed}
       ticketRecall={ticketRecall}
-      onStartRecall={() => navigate(`/memories/${draftId}/back`, { state: { frontConfirmed } })}
-      onOpenDrawer={(year) => navigate(`/drawers/${year}`)}
+      onOpenDrawer={(year) => navigate(`/drawers/${year}`, { replace: true })}
     />
   );
 }

@@ -23,7 +23,14 @@ function splitCompanions(value) {
   return value.split(',').map((companion) => companion.trim()).filter(Boolean)
 }
 
-function CardSavePage({ draftId, documentType, ticketRecall, onSaved, onStartRecall, onOpenDrawer }) {
+function PreviewField({ label, value }) {
+  const displayValue = Array.isArray(value) ? value.join(', ') : value
+  if (displayValue === null || displayValue === undefined || displayValue === '') return null
+
+  return <div><dt>{label}</dt><dd>{displayValue}</dd></div>
+}
+
+function CardSavePage({ draftId, documentType, frontConfirmed, ticketRecall, onSaved, onOpenDrawer }) {
   const [companionInput, setCompanionInput] = useState('')
   const [companions, setCompanions] = useState([])
   const [weather, setWeather] = useState('')
@@ -37,6 +44,7 @@ function CardSavePage({ draftId, documentType, ticketRecall, onSaved, onStartRec
   const [saveError, setSaveError] = useState('')
   const [isSaving, setIsSaving] = useState(false)
   const [savedCard, setSavedCard] = useState(null)
+  const [previewBack, setPreviewBack] = useState(null)
 
   const isTicket = documentType === 'TICKET'
   const isRecallFlow = isTicket && Boolean(ticketRecall)
@@ -124,39 +132,38 @@ function CardSavePage({ draftId, documentType, ticketRecall, onSaved, onStartRec
     return ''
   }
 
-  async function handleSubmit(event) {
+  function validateForm() {
+    if (!draftId) return '앞면이 확정된 기록에서만 카드를 저장할 수 있습니다.'
+    if (!isSupportedDocument) return '지원하지 않는 기록 유형입니다.'
+    if (!weather.trim() || !mood.trim()) return '날씨와 기분을 입력해주세요.'
+    if (!isTicket && !hasDiaryOrPhoto) return '자유 기록 또는 추가 사진 중 하나 이상을 입력해주세요.'
+    return isTicket ? validateTicket() : ''
+  }
+
+  function handlePreview(event) {
     event.preventDefault()
     setFormError('')
     setSaveError('')
 
-    if (!draftId) {
-      setFormError('앞면이 확정된 기록에서만 카드를 저장할 수 있습니다.')
-      return
-    }
-    if (!isSupportedDocument) {
-      setFormError('지원하지 않는 기록 유형입니다.')
-      return
-    }
-    if (!weather.trim() || !mood.trim()) {
-      setFormError('날씨와 기분을 입력해주세요.')
-      return
-    }
-    if (!isTicket && !hasDiaryOrPhoto) {
-      setFormError('자유 기록 또는 추가 사진 중 하나 이상을 입력해주세요.')
+    const validationError = validateForm()
+    if (validationError) {
+      setFormError(validationError)
       return
     }
 
-    const ticketError = isTicket ? validateTicket() : ''
-    if (ticketError) {
-      setFormError(ticketError)
-      return
-    }
+    setPreviewBack(buildBack())
+    window.scrollTo({ top: 0, behavior: 'smooth' })
+  }
+
+  async function handleSave() {
+    if (!previewBack) return
 
     setIsSaving(true)
+    setSaveError('')
     try {
       const saved = await saveCard({
         draftId,
-        back: buildBack(),
+        back: previewBack,
         backPhotos: isTicket ? [] : backPhotos,
       })
       removeFrontConfirmed(draftId)
@@ -190,9 +197,68 @@ function CardSavePage({ draftId, documentType, ticketRecall, onSaved, onStartRec
     )
   }
 
+  if (previewBack) {
+    const front = frontConfirmed?.front || {}
+    const answeredRecall = Array.isArray(previewBack.answers)
+      ? previewBack.answers.filter(({ answer }) => answer)
+      : []
+
+    return (
+      <main className="card-save-page">
+        <section className="card-preview">
+          <header className="card-preview__header">
+            <p className="card-save-form__eyebrow">최종 미리보기</p>
+            <h1>앞면과 뒷면을 확인해주세요.</h1>
+            <p>비어 있는 선택 항목은 카드에 표시되지 않아요.</p>
+          </header>
+
+          <div className="card-preview__grid">
+            <article className="card-preview__side">
+              <span>앞면</span>
+              <h2>{documentLabel}</h2>
+              <dl className="card-preview__fields">
+                <PreviewField label="기억 날짜" value={frontConfirmed?.memoryDate} />
+                {documentType === 'RECEIPT' && <PreviewField label="가게 이름" value={front.storeName} />}
+                {documentType === 'TICKET' && <PreviewField label="행사명" value={front.eventName} />}
+                {documentType === 'TICKET' && <PreviewField label="장소" value={front.venue} />}
+                {documentType === 'TICKET' && <PreviewField label="좌석" value={front.seat} />}
+                {documentType === 'LETTER' && <PreviewField label="편지 내용" value={front.ocrText} />}
+              </dl>
+            </article>
+
+            <article className="card-preview__side">
+              <span>뒷면</span>
+              <h2>그날의 기억</h2>
+              <dl className="card-preview__fields">
+                <PreviewField label="함께한 사람" value={previewBack.companions.length ? previewBack.companions : '혼자'} />
+                <PreviewField label="날씨" value={previewBack.weather} />
+                <PreviewField label="기분" value={previewBack.mood} />
+                <PreviewField label="제목" value={previewBack.title} />
+                <PreviewField label="추억" value={previewBack.memoryText} />
+                <PreviewField label="일기" value={previewBack.diaryText} />
+                {!isTicket && backPhotos.length > 0 && <PreviewField label="추가 사진" value={`${backPhotos.length}장`} />}
+              </dl>
+              {answeredRecall.length > 0 && (
+                <ol className="card-preview__answers">
+                  {answeredRecall.map(({ questionId, answer }, index) => <li key={questionId}><strong>회상 답변 {index + 1}</strong><p>{answer}</p></li>)}
+                </ol>
+              )}
+            </article>
+          </div>
+
+          {saveError && <p className="form-error" role="alert">{saveError}</p>}
+          <div className="card-preview__actions">
+            <button className="secondary-button" type="button" disabled={isSaving} onClick={() => setPreviewBack(null)}>수정하기</button>
+            <button className="primary-button" type="button" disabled={isSaving} onClick={handleSave}>{isSaving ? '저장 중...' : '이대로 저장하기'}</button>
+          </div>
+        </section>
+      </main>
+    )
+  }
+
   return (
     <main className="card-save-page">
-      <form className="card-save-form" onSubmit={handleSubmit}>
+      <form className="card-save-form" onSubmit={handlePreview}>
         <header className="card-save-form__header">
           <p className="card-save-form__eyebrow">추가 정보 입력</p>
           <h1>{documentLabel} 뒷면을 채워주세요.</h1>
@@ -226,8 +292,8 @@ function CardSavePage({ draftId, documentType, ticketRecall, onSaved, onStartRec
                 <span className="form-label">기록 방식</span>
                 <div className="writing-mode" role="group" aria-label="티켓 기록 방식">
                   <button className="writing-mode__button writing-mode__button--selected" type="button">직접 기록하기</button>
-                  <button className="writing-mode__button" type="button" disabled={!onStartRecall} onClick={() => onStartRecall?.()}>AI 질문으로 떠올리기</button>
                 </div>
+                <p className="field-help">AI 질문 방식은 이전 기록 방식 선택 화면에서 고를 수 있어요.</p>
               </section>
             )}
             <section className="form-section">
@@ -248,7 +314,7 @@ function CardSavePage({ draftId, documentType, ticketRecall, onSaved, onStartRec
         )}
 
         {(formError || saveError) && <p className="form-error" role="alert">{formError || saveError}</p>}
-        <button className="primary-button" type="submit" disabled={isSaving}>{isSaving ? '저장 중...' : '카드 저장하기'}</button>
+        <button className="primary-button" type="submit">앞·뒷면 미리보기</button>
       </form>
     </main>
   )

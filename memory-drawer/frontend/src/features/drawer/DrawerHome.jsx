@@ -78,9 +78,6 @@ function DrawerHome({ onCreateMemory, onSelectYear }) {
       <button type="button" className="memory-create-button" onClick={() => onCreateMemory?.()}>
         <span aria-hidden="true">＋</span> 기억 담기
       </button>
-
-      {/* TODO(API 8.2 연동): 연도를 누르면 해당 연도의 카드 목록 화면으로 이동하도록 onSelectYear에 라우팅을 연결한다. */}
-      {/* TODO(이미지 분석 흐름 연동): 기억 담기 버튼은 이미지 선택·분석 화면이 구현되면 onCreateMemory에 이동 로직을 연결한다. */}
     </main>
   )
 }

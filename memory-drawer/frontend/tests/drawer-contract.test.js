@@ -33,6 +33,7 @@ const {
 } = await import("../src/features/drawer/drawerApi.js");
 const { setAccessToken } = await import("../src/utils/tokenStorage.js");
 const { resolveApiUrl } = await import("../src/api/http.js");
+const { getImageUrl } = await import("../src/features/drawer/drawerViewUtils.js");
 
 const successResponse = (data) => ({
     ok: true,
@@ -119,10 +120,12 @@ describe("API 8 drawer read contracts", () => {
             resolveApiUrl("/files/cards/card-1/front"),
             "/api/files/cards/card-1/front",
         );
-        assert.equal(
-            resolveApiUrl("https://cdn.example.com/card.jpg"),
-            "https://cdn.example.com/card.jpg",
+        assert.throws(
+            () => resolveApiUrl("https://cdn.example.com/card.jpg"),
+            /외부 API URL은 허용되지 않습니다/,
         );
+        assert.equal(getImageUrl("https://cdn.example.com/card.jpg"), null);
+        assert.equal(getImageUrl("/files/cards/card-1/front"), "/files/cards/card-1/front");
     });
 
     it("preserves AbortError so route changes can cancel drawer requests", async () => {
