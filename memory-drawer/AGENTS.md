@@ -100,12 +100,16 @@ DB_URL
 DB_USERNAME
 DB_PASSWORD
 UPSTAGE_API_KEY
+JWT_SECRET
+JWT_ACCESS_TOKEN_EXPIRATION_SECONDS
 ```
 
 규칙:
 
 - Upstage API 키는 백엔드의 `UPSTAGE_API_KEY` 환경 변수로만 관리한다.
 - `application.yml`에는 실제 키가 아니라 `${UPSTAGE_API_KEY}` 참조만 작성한다.
+- JWT 서명 키는 32자 이상의 `JWT_SECRET` 환경 변수로만 관리한다.
+- 액세스 토큰 만료 시간은 초 단위의 `JWT_ACCESS_TOKEN_EXPIRATION_SECONDS` 환경 변수로 관리한다.
 - DB 주소, 사용자명과 비밀번호도 환경 변수 또는 Git에서 제외된 로컬 설정으로 관리한다.
 - 실제 `.env`, `.env.local`, 비밀번호, 토큰과 API 키는 Git에 포함하지 않는다.
 - 예시 환경 파일에는 변수명과 가짜 값만 작성한다.
