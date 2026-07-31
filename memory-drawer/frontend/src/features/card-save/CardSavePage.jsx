@@ -28,8 +28,8 @@ function CardSavePage({ draftId, documentType, ticketRecall, onSaved }) {
   const [mood, setMood] = useState('')
   const [diaryText, setDiaryText] = useState('')
   const [backPhotos, setBackPhotos] = useState([])
-  const [writingMode, setWritingMode] = useState('DIRECT')
-  const [title, setTitle] = useState(ticketRecall?.titleCandidate || '')
+  const [writingMode, setWritingMode] = useState(ticketRecall ? 'AI_RECALL' : 'DIRECT')
+  const [title, setTitle] = useState(ticketRecall?.title || ticketRecall?.titleCandidate || '')
   const [memoryText, setMemoryText] = useState('')
   const [formError, setFormError] = useState('')
   const [saveError, setSaveError] = useState('')
@@ -37,6 +37,7 @@ function CardSavePage({ draftId, documentType, ticketRecall, onSaved }) {
   const [savedCard, setSavedCard] = useState(null)
 
   const isTicket = documentType === 'TICKET'
+  const isRecallFlow = isTicket && Boolean(ticketRecall)
   const documentLabel = documentType === 'LETTER' ? '손편지' : isTicket ? '티켓' : '영수증'
   const isSupportedDocument = SUPPORTED_DOCUMENT_TYPES.has(documentType)
   const hasDiaryOrPhoto = diaryText.trim().length > 0 || backPhotos.length > 0
@@ -207,13 +208,20 @@ function CardSavePage({ draftId, documentType, ticketRecall, onSaved }) {
 
         {isTicket ? (
           <>
-            <section className="form-section">
-              <span className="form-label">기록 방식</span>
-              <div className="writing-mode" role="group" aria-label="티켓 기록 방식">
-                <button className={writingMode === 'DIRECT' ? 'writing-mode__button writing-mode__button--selected' : 'writing-mode__button'} type="button" onClick={() => setWritingMode('DIRECT')}>직접 기록하기</button>
-                <button className={writingMode === 'AI_RECALL' ? 'writing-mode__button writing-mode__button--selected' : 'writing-mode__button'} type="button" onClick={() => setWritingMode('AI_RECALL')}>AI 질문으로 떠올리기</button>
-              </div>
-            </section>
+            {isRecallFlow ? (
+              <section className="form-section recall-summary">
+                <span className="form-label">기록 방식</span>
+                <p>AI 회상 질문으로 정리한 기억을 저장합니다.</p>
+              </section>
+            ) : (
+              <section className="form-section">
+                <span className="form-label">기록 방식</span>
+                <div className="writing-mode" role="group" aria-label="티켓 기록 방식">
+                  <button className={writingMode === 'DIRECT' ? 'writing-mode__button writing-mode__button--selected' : 'writing-mode__button'} type="button" onClick={() => setWritingMode('DIRECT')}>직접 기록하기</button>
+                  <button className={writingMode === 'AI_RECALL' ? 'writing-mode__button writing-mode__button--selected' : 'writing-mode__button'} type="button" onClick={() => setWritingMode('AI_RECALL')}>AI 질문으로 떠올리기</button>
+                </div>
+              </section>
+            )}
             <section className="form-section">
               <label htmlFor="ticket-title">제목 <span aria-hidden="true">*</span></label>
               <input id="ticket-title" value={title} onChange={(event) => setTitle(event.target.value)} placeholder="제목을 입력해주세요" required />
