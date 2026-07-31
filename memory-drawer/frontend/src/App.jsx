@@ -6,6 +6,10 @@ import ImageSelectPage from "./pages/memory/ImageSelectPage";
 import ImagePreviewPage from "./pages/memory/ImagePreviewPage";
 import DocumentTypePage from "./pages/memory/DocumentTypePage";
 import FrontConfirmPage from "./pages/memory/FrontConfirmPage";
+import TicketBackModePage from "./pages/memory/TicketBackModePage";
+import TicketRecallSubtypePage from "./pages/memory/TicketRecallSubtypePage";
+import TicketRecallQuestionsPage from "./pages/memory/TicketRecallQuestionsPage";
+import TicketRecallTitlePage from "./pages/memory/TicketRecallTitlePage";
 
 function App() {
   return (
@@ -37,6 +41,26 @@ function App() {
       <Route
         path="/memories/:draftId/front"
         element={<FrontConfirmPage />}
+      />
+
+      <Route
+        path="/memories/:draftId/back"
+        element={<TicketBackModePage />}
+      />
+
+      <Route
+        path="/memories/:draftId/ticket-recall/subtype"
+        element={<TicketRecallSubtypePage />}
+      />
+
+      <Route
+        path="/memories/:draftId/ticket-recall/questions"
+        element={<TicketRecallQuestionsPage />}
+      />
+
+      <Route
+        path="/memories/:draftId/ticket-recall/title"
+        element={<TicketRecallTitlePage />}
       />
 
       {/* 없는 주소로 들어가면 로그인으로 이동 */}
