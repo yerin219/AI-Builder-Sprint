@@ -1,0 +1,138 @@
+.drawer-view,
+.card-detail-page {
+  box-sizing: border-box;
+  min-height: 100vh;
+  max-width: 40rem;
+  margin: 0 auto;
+  padding: 1.5rem;
+}
+
+.drawer-view__header,
+.card-detail-page__header {
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+  margin-bottom: 2rem;
+}
+
+.drawer-view__header p,
+.card-detail-page__header p {
+  margin: 0 0 0.25rem;
+  color: #a46c3c;
+  font-size: 0.78rem;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+}
+
+.drawer-view__header h1 {
+  margin: 0;
+  color: #362313;
+  font-family: Georgia, 'Times New Roman', serif;
+  font-size: 1.9rem;
+}
+
+.back-button {
+  display: grid;
+  width: 2.5rem;
+  height: 2.5rem;
+  padding: 0;
+  border: 1px solid #dfc7ab;
+  border-radius: 50%;
+  background: #fffdf9;
+  color: #5e3521;
+  font-size: 2rem;
+  line-height: 1;
+  place-items: center;
+}
+
+.drawer-view__status,
+.drawer-view__message {
+  margin: 0;
+  padding: 2rem 1.25rem;
+  border: 1px solid #ead9c1;
+  border-radius: 1rem;
+  background: #fffdf9;
+  color: #795e48;
+  text-align: center;
+}
+
+.drawer-view__message p {
+  margin: 0;
+}
+
+.drawer-view__message button {
+  margin-top: 1rem;
+  padding: 0.7rem 1rem;
+  border: 0;
+  border-radius: 0.6rem;
+  background: #6e432a;
+  color: #fff;
+  font: inherit;
+  font-weight: 700;
+}
+
+.memory-card-list {
+  display: grid;
+  gap: 1rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.memory-card-list__item {
+  display: grid;
+  grid-template-columns: 5.5rem 1fr auto;
+  align-items: center;
+  gap: 1rem;
+  width: 100%;
+  padding: 0.75rem;
+  border: 1px solid #ead9c1;
+  border-radius: 0.9rem;
+  background: #fffdf9;
+  color: #3e291c;
+  cursor: pointer;
+  text-align: left;
+}
+
+.memory-card-list__image {
+  display: grid;
+  width: 5.5rem;
+  height: 5.5rem;
+  overflow: hidden;
+  border-radius: 0.55rem;
+  background: #f2e5d3;
+  color: #92633b;
+  font-size: 0.8rem;
+  place-items: center;
+}
+
+.memory-card-list__image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.memory-card-list__body {
+  display: grid;
+  gap: 0.35rem;
+}
+
+.memory-card-list__body strong {
+  font-size: 1rem;
+}
+
+.memory-card-list__body > span:last-child,
+.memory-card-list__type {
+  color: #795e48;
+  font-size: 0.8rem;
+}
+
+.memory-card-list__type {
+  color: #a46c3c;
+  font-weight: 700;
+}
+
+.memory-card-list__arrow {
+  color: #9a714e;
+  font-size: 1.6rem;
+}

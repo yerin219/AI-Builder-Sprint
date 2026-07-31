@@ -18,6 +18,7 @@ export async function request(path, options = {}) {
         method = "GET",
         body,
         auth = true,
+        signal,
     } = options;
 
     const headers = {};
@@ -41,6 +42,7 @@ export async function request(path, options = {}) {
         const response = await fetch(`${API_BASE_URL}${path}`, {
             method,
             headers,
+            signal,
             body:
                 body instanceof FormData
                     ? body
