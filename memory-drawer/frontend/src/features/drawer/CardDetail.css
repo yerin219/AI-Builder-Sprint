@@ -65,7 +65,7 @@
 .memory-card--letter .memory-card__diary {
   margin-right: 0.5rem;
   color: #443d35;
-  font-family: Georgia, 'Times New Roman', serif;
+  font-family: "NanumGoDing", "Noto Sans KR", sans-serif;
 }
 
 .memory-card--letter .memory-card__metadata {
@@ -130,7 +130,7 @@
 
 .memory-card--receipt .memory-card__diary {
   color: #2c2925;
-  font-family: Georgia, 'Times New Roman', serif;
+  font-family: "NanumGoDing", "Noto Sans KR", sans-serif;
 }
 
 .memory-card__date {
@@ -151,7 +151,7 @@
 .memory-card--front h1,
 .memory-card__ticket-memory h1 {
   margin: 0;
-  font-family: Georgia, 'Times New Roman', serif;
+  font-family: "NanumGoDing", "Noto Sans KR", sans-serif;
   font-size: 1.55rem;
   line-height: 1.35;
 }
