@@ -7,10 +7,6 @@
   --paper: #f7e8cd;
 }
 
-* {
-  box-sizing: border-box;
-}
-
 body {
   margin: 0;
   background: var(--background);

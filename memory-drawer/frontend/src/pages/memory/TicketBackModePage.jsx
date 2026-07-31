@@ -10,7 +10,6 @@ export default function TicketBackModePage() {
     const frontConfirmed = location.state?.frontConfirmed;
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState("");
-    const [notice, setNotice] = useState("");
 
     if (!frontConfirmed) {
         return <FlowResetPage navigate={navigate} />;
@@ -32,7 +31,6 @@ export default function TicketBackModePage() {
     const handleRecallStart = async () => {
         setLoading(true);
         setError("");
-        setNotice("");
 
         try {
             const subtypeSuggestion = await suggestTicketSubtype(draftId);
@@ -63,7 +61,7 @@ export default function TicketBackModePage() {
             </p>
 
             <section className="ticket-mode-list" aria-label="티켓 기록 방식">
-                <button type="button" className="ticket-mode-card" onClick={() => setNotice("직접 기록은 API 7 카드 저장 화면에서 이어집니다.")}>
+                <button type="button" className="ticket-mode-card" onClick={() => navigate(`/memories/${draftId}/save`, { state: { frontConfirmed } })}>
                     <span aria-hidden="true">✎</span>
                     <strong>직접 기록하기</strong>
                     <small>제목과 추억을 자유롭게 작성해요.</small>
@@ -75,10 +73,8 @@ export default function TicketBackModePage() {
                 </button>
             </section>
 
-            {notice && <p className="ticket-recall-note">{notice}</p>}
             {error && <p className="form-error">{error}</p>}
 
-            {/* TODO(API 7 화면 연결): 직접 기록과 AI 회상 완료 후에는 카드 저장 화면으로 이동해 공통 뒷면 정보와 최종 저장을 진행한다. */}
             {/* TODO(API 5 복구 흐름): 현재 앞면 확정 응답은 location.state로 전달된다. 새로고침 복구용 임시기록 조회 API가 정해지면 이 화면도 복구 처리한다. */}
         </main>
     );

@@ -9,7 +9,6 @@ export default function TicketRecallTitlePage() {
     const navigate = useNavigate();
     const recallState = location.state;
     const [title, setTitle] = useState(recallState?.titleCandidate || "");
-    const [isConfirmed, setIsConfirmed] = useState(false);
     const [error, setError] = useState("");
 
     if (!recallState?.frontConfirmed || !Array.isArray(recallState.answers)) {
@@ -35,8 +34,17 @@ export default function TicketRecallTitlePage() {
             title: finalTitle,
             answers: recallState.answers,
         });
-        setIsConfirmed(true);
         setError("");
+        navigate(`/memories/${draftId}/save`, {
+            state: {
+                frontConfirmed: recallState.frontConfirmed,
+                ticketRecall: {
+                    writingMode: "AI_RECALL",
+                    title: finalTitle,
+                    answers: recallState.answers,
+                },
+            },
+        });
     };
 
     return (
@@ -56,16 +64,9 @@ export default function TicketRecallTitlePage() {
             </label>
 
             {error && <p className="form-error">{error}</p>}
-            {!isConfirmed ? (
-                <button className="ticket-primary-button" onClick={handleConfirm}>제목 확정하기</button>
-            ) : (
-                <section className="ticket-recall-complete" aria-live="polite">
-                    <strong>제목을 확정했어요.</strong>
-                    <p>이제 동행인·날씨·기분을 입력한 뒤 추억 카드를 저장하면 돼요.</p>
-                </section>
-            )}
+            <button className="ticket-primary-button" onClick={handleConfirm}>제목 확정하기</button>
 
-            {/* TODO(API 7 화면 연결): 확정한 title과 answers는 sessionStorage에 보관했다. 카드 저장 화면에서 draftId를 기준으로 이 값을 읽어 AI_RECALL 저장 요청에 사용하며, ticketSubtype는 API 7 요청에 다시 보내지 않는다. */}
+            {/* TODO(API 5 복구 흐름): 새로고침 복구용 임시기록 조회 API가 확정되면 title·answers 상태도 함께 복구한다. */}
         </main>
     );
 }
