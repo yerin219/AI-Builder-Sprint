@@ -7,15 +7,29 @@
   --paper: #f7e8cd;
 }
 
+@font-face {
+  font-family: "NanumGoDing";
+  src: url("./assets/fonts/NanumGoDing.ttf") format("truetype");
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+}
+
 body {
   margin: 0;
   background: var(--background);
   color: var(--text);
-  font-family: Arial, "Noto Sans KR", sans-serif;
+  font-family: "NanumGoDing", "Noto Sans KR", sans-serif;
+}
+
+button,
+input,
+textarea,
+select {
+  font: inherit;
 }
 
 button {
-  font: inherit;
   cursor: pointer;
 }
 

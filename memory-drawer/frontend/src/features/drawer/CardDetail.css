@@ -44,6 +44,95 @@
   color: #35271e;
 }
 
+/* LETTER 카드만 사용자가 제공한 쪽지 종이 템플릿을 앞면·뒷면에 공통 적용한다. */
+.memory-card--letter {
+  min-height: 31rem;
+  border: 0;
+  border-radius: 0;
+  background-color: #f5f3ed;
+  background-image: url('../../assets/letter-note-template.png');
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: 100% 100%;
+  box-shadow: 0 0.8rem 1.5rem rgb(70 45 26 / 14%);
+}
+
+.memory-card--letter .memory-card__date {
+  color: #766c61;
+}
+
+.memory-card--letter .memory-card__letter-text,
+.memory-card--letter .memory-card__diary {
+  margin-right: 0.5rem;
+  color: #443d35;
+  font-family: "NanumGoDing", "Noto Sans KR", sans-serif;
+}
+
+.memory-card--letter .memory-card__metadata {
+  border-color: rgb(123 111 96 / 35%);
+}
+
+.memory-card--letter .memory-card__metadata div {
+  border-color: rgb(123 111 96 / 28%);
+}
+
+/* TICKET 카드만 사용자가 제공한 티켓 템플릿을 앞면·뒷면에 공통 적용한다. */
+.memory-card--ticket {
+  min-height: 31rem;
+  border: 0;
+  border-radius: 0;
+  background-color: #fff;
+  background-image: url('../../assets/ticket-template.jpg');
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: 100% 100%;
+  box-shadow: 0 0.8rem 1.5rem rgb(45 45 45 / 15%);
+}
+
+.memory-card--ticket .memory-card__date,
+.memory-card--ticket .memory-card__front-fields p,
+.memory-card--ticket .memory-card__metadata dt {
+  color: #5a5a5a;
+}
+
+.memory-card--ticket .memory-card__metadata,
+.memory-card--ticket .memory-card__metadata div {
+  border-color: rgb(50 50 50 / 22%);
+}
+
+.memory-card--ticket .memory-card__ticket-memory h1,
+.memory-card--ticket .memory-card__answer h2 {
+  color: #2d2d2d;
+}
+
+/* RECEIPT 카드만 사용자가 제공한 영수증 템플릿을 앞면·뒷면에 공통 적용한다. */
+.memory-card--receipt {
+  min-height: 36rem;
+  border: 0;
+  border-radius: 0;
+  background-color: #f8f7f4;
+  background-image: url('../../assets/receipt-template.png');
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: 100% 100%;
+  box-shadow: 0 0.8rem 1.5rem rgb(45 45 45 / 15%);
+}
+
+.memory-card--receipt .memory-card__date,
+.memory-card--receipt .memory-card__metadata dt {
+  color: #5e5a55;
+}
+
+.memory-card--receipt .memory-card__metadata,
+.memory-card--receipt .memory-card__metadata div {
+  border-color: rgb(55 52 48 / 25%);
+}
+
+.memory-card--receipt .memory-card__diary {
+  color: #2c2925;
+  font-family: "NanumGoDing", "Noto Sans KR", sans-serif;
+}
+
 .memory-card__date {
   margin: 0 0 1.25rem;
   color: #82654d;
@@ -62,7 +151,7 @@
 .memory-card--front h1,
 .memory-card__ticket-memory h1 {
   margin: 0;
-  font-family: Georgia, 'Times New Roman', serif;
+  font-family: "NanumGoDing", "Noto Sans KR", sans-serif;
   font-size: 1.55rem;
   line-height: 1.35;
 }

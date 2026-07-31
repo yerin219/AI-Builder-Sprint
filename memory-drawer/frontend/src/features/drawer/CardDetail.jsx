@@ -92,7 +92,7 @@ function CardFront({ card }) {
   const isReceipt = card.documentType === 'RECEIPT'
 
   return (
-    <article className="memory-card memory-card--front">
+    <article className={`memory-card memory-card--front${card.documentType === 'LETTER' ? ' memory-card--letter' : ''}${card.documentType === 'TICKET' ? ' memory-card--ticket' : ''}${card.documentType === 'RECEIPT' ? ' memory-card--receipt' : ''}`}>
       <p className="memory-card__date">{formatMemoryDate(card.memoryDate)}</p>
       {imageUrl && <AuthorizedImage className="memory-card__front-image" imageUrl={imageUrl} alt="저장한 원본 종이 기록" />}
       {isReceipt && <h1>{card.front.storeName}</h1>}
@@ -110,6 +110,9 @@ function CardFront({ card }) {
 
 function CardBack({ card }) {
   const { back } = card
+  const isLetter = card.documentType === 'LETTER'
+  const isTicket = card.documentType === 'TICKET'
+  const isReceipt = card.documentType === 'RECEIPT'
   const isRecall = card.documentType === 'TICKET' && back.writingMode === 'AI_RECALL'
   const photoUrls = Array.isArray(back.backPhotoUrls) ? back.backPhotoUrls : []
   const answeredQuestions = Array.isArray(back.answers)
@@ -117,7 +120,7 @@ function CardBack({ card }) {
     : []
 
   return (
-    <article className="memory-card memory-card--back">
+    <article className={`memory-card memory-card--back${isLetter ? ' memory-card--letter' : ''}${isTicket ? ' memory-card--ticket' : ''}${isReceipt ? ' memory-card--receipt' : ''}`}>
       <dl className="memory-card__metadata">
         <div><dt>함께한 사람</dt><dd>{back.companions?.length ? back.companions.join(', ') : '혼자'}</dd></div>
         <div><dt>날씨</dt><dd>{back.weather}</dd></div>

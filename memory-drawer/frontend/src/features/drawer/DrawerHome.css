@@ -23,7 +23,7 @@
 .drawer-home__header h1 {
   margin: 0;
   color: #362313;
-  font-family: Georgia, 'Times New Roman', serif;
+  font-family: "NanumGoDing", "Noto Sans KR", sans-serif;
   font-size: clamp(2rem, 9vw, 3rem);
   line-height: 1.2;
 }
