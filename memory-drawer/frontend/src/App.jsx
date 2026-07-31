@@ -80,6 +80,7 @@ function CardSaveRoute() {
       documentType={frontConfirmed.documentType}
       ticketRecall={ticketRecall}
       onStartRecall={() => navigate(`/memories/${draftId}/back`, { state: { frontConfirmed } })}
+      onOpenDrawer={(year) => navigate(`/drawers/${year}`)}
     />
   );
 }

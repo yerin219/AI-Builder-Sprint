@@ -23,7 +23,7 @@ function splitCompanions(value) {
   return value.split(',').map((companion) => companion.trim()).filter(Boolean)
 }
 
-function CardSavePage({ draftId, documentType, ticketRecall, onSaved, onStartRecall }) {
+function CardSavePage({ draftId, documentType, ticketRecall, onSaved, onStartRecall, onOpenDrawer }) {
   const [companionInput, setCompanionInput] = useState('')
   const [companions, setCompanions] = useState([])
   const [weather, setWeather] = useState('')
@@ -182,6 +182,9 @@ function CardSavePage({ draftId, documentType, ticketRecall, onSaved, onStartRec
             <div><dt>기록 유형</dt><dd>{DOCUMENT_LABELS[savedCard.documentType] || savedCard.documentType}</dd></div>
             <div><dt>추억 날짜</dt><dd>{savedCard.memoryDate}</dd></div>
           </dl>
+          <button className="primary-button" type="button" onClick={() => onOpenDrawer?.(savedCard.year)}>
+            {savedCard.year}년 서랍에서 확인하기
+          </button>
         </section>
       </main>
     )
