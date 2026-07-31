@@ -5,6 +5,19 @@ import {
 
 const API_BASE_URL = import.meta.env?.VITE_API_BASE_URL || "/api";
 
+export function resolveApiUrl(path) {
+    if (/^https?:\/\//i.test(path)) {
+        return path;
+    }
+
+    const baseUrl = API_BASE_URL.replace(/\/$/, "");
+    const normalizedPath = path.startsWith("/") ? path : `/${path}`;
+    if (normalizedPath === baseUrl || normalizedPath.startsWith(`${baseUrl}/`)) {
+        return normalizedPath;
+    }
+    return `${baseUrl}${normalizedPath}`;
+}
+
 export class ApiError extends Error {
     constructor(status, code, message) {
         super(message);
@@ -39,7 +52,7 @@ export async function request(path, options = {}) {
     }
 
     try {
-        const response = await fetch(`${API_BASE_URL}${path}`, {
+        const response = await fetch(resolveApiUrl(path), {
             method,
             headers,
             signal,
@@ -68,6 +81,10 @@ export async function request(path, options = {}) {
         return result?.data;
     } catch (error) {
         if (error instanceof ApiError) {
+            throw error;
+        }
+
+        if (error?.name === "AbortError") {
             throw error;
         }
 

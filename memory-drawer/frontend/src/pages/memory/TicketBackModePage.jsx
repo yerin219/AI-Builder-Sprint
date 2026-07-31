@@ -2,6 +2,11 @@ import { useState } from "react";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
 import { suggestTicketSubtype } from "../../api/ticketRecall";
 import { getFrontConfirmed } from "../../utils/draftStorage";
+import {
+    removeTicketRecall,
+    removeTicketRecallFlow,
+    saveTicketRecallFlow,
+} from "../../utils/ticketRecallStorage.js";
 import "./TicketRecall.css";
 
 export default function TicketBackModePage() {
@@ -37,6 +42,9 @@ export default function TicketBackModePage() {
         try {
             const subtypeSuggestion = await suggestTicketSubtype(draftId);
 
+            removeTicketRecall(draftId);
+            saveTicketRecallFlow(draftId, { frontConfirmed, subtypeSuggestion });
+
             navigate(`/memories/${draftId}/ticket-recall/subtype`, {
                 state: { frontConfirmed, subtypeSuggestion },
             });
@@ -53,6 +61,12 @@ export default function TicketBackModePage() {
         }
     };
 
+    const handleDirectStart = () => {
+        removeTicketRecall(draftId);
+        removeTicketRecallFlow(draftId);
+        navigate(`/memories/${draftId}/save`, { state: { frontConfirmed } });
+    };
+
     return (
         <main className="mobile-page ticket-recall-page">
             <button className="text-back-button" onClick={() => navigate(-1)}>← 돌아가기</button>
@@ -63,7 +77,7 @@ export default function TicketBackModePage() {
             </p>
 
             <section className="ticket-mode-list" aria-label="티켓 기록 방식">
-                <button type="button" className="ticket-mode-card" onClick={() => navigate(`/memories/${draftId}/save`, { state: { frontConfirmed } })}>
+                <button type="button" className="ticket-mode-card" onClick={handleDirectStart}>
                     <span aria-hidden="true">✎</span>
                     <strong>직접 기록하기</strong>
                     <small>제목과 추억을 자유롭게 작성해요.</small>
@@ -76,8 +90,6 @@ export default function TicketBackModePage() {
             </section>
 
             {error && <p className="form-error">{error}</p>}
-
-            {/* TODO(API 5 복구 흐름): 현재 앞면 확정 응답은 location.state로 전달된다. 새로고침 복구용 임시기록 조회 API가 정해지면 이 화면도 복구 처리한다. */}
         </main>
     );
 }

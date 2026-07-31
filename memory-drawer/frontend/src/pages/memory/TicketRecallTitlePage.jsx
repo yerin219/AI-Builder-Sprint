@@ -1,13 +1,20 @@
 import { useState } from "react";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
-import { saveTicketRecall } from "../../utils/ticketRecallStorage";
+import {
+    getTicketRecallFlow,
+    removeTicketRecallFlow,
+    saveTicketRecall,
+    saveTicketRecallFlow,
+} from "../../utils/ticketRecallStorage.js";
 import "./TicketRecall.css";
 
 export default function TicketRecallTitlePage() {
     const { draftId } = useParams();
     const location = useLocation();
     const navigate = useNavigate();
-    const recallState = location.state;
+    const recallState = location.state?.answers
+        ? location.state
+        : getTicketRecallFlow(draftId);
     const [title, setTitle] = useState(recallState?.titleCandidate || "");
     const [error, setError] = useState("");
 
@@ -34,6 +41,7 @@ export default function TicketRecallTitlePage() {
             title: finalTitle,
             answers: recallState.answers,
         });
+        removeTicketRecallFlow(draftId);
         setError("");
         navigate(`/memories/${draftId}/save`, {
             state: {
@@ -44,6 +52,14 @@ export default function TicketRecallTitlePage() {
                     answers: recallState.answers,
                 },
             },
+        });
+    };
+
+    const handleTitleChange = (value) => {
+        setTitle(value);
+        saveTicketRecallFlow(draftId, {
+            ...recallState,
+            titleCandidate: value,
         });
     };
 
@@ -60,13 +76,11 @@ export default function TicketRecallTitlePage() {
 
             <label className="title-editor">
                 제목
-                <input value={title} onChange={(event) => setTitle(event.target.value)} placeholder="제목을 입력해주세요" />
+                <input value={title} onChange={(event) => handleTitleChange(event.target.value)} placeholder="제목을 입력해주세요" />
             </label>
 
             {error && <p className="form-error">{error}</p>}
             <button className="ticket-primary-button" onClick={handleConfirm}>제목 확정하기</button>
-
-            {/* TODO(API 5 복구 흐름): 새로고침 복구용 임시기록 조회 API가 확정되면 title·answers 상태도 함께 복구한다. */}
         </main>
     );
 }

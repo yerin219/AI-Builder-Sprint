@@ -1,6 +1,10 @@
 import { useState } from "react";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
 import { confirmTicketSubtypeAndGetQuestions } from "../../api/ticketRecall";
+import {
+    getTicketRecallFlow,
+    saveTicketRecallFlow,
+} from "../../utils/ticketRecallStorage.js";
 import "./TicketRecall.css";
 
 const SUBTYPES = [
@@ -13,8 +17,9 @@ export default function TicketRecallSubtypePage() {
     const { draftId } = useParams();
     const location = useLocation();
     const navigate = useNavigate();
-    const subtypeSuggestion = location.state?.subtypeSuggestion;
-    const frontConfirmed = location.state?.frontConfirmed;
+    const savedFlow = getTicketRecallFlow(draftId);
+    const subtypeSuggestion = location.state?.subtypeSuggestion || savedFlow?.subtypeSuggestion;
+    const frontConfirmed = location.state?.frontConfirmed || savedFlow?.frontConfirmed;
     const [isManualSelection, setIsManualSelection] = useState(
         subtypeSuggestion?.requiresManualSelection ?? true,
     );
@@ -41,6 +46,12 @@ export default function TicketRecallSubtypePage() {
 
         try {
             const questionData = await confirmTicketSubtypeAndGetQuestions(draftId, ticketSubtype);
+
+            saveTicketRecallFlow(draftId, {
+                frontConfirmed,
+                subtypeSuggestion,
+                questionData,
+            });
 
             navigate(`/memories/${draftId}/ticket-recall/questions`, {
                 state: { frontConfirmed, questionData },

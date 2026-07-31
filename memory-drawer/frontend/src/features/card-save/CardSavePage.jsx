@@ -1,5 +1,7 @@
 import { useState } from 'react'
-import { CardSaveError, saveCard } from './cardSaveApi'
+import { removeFrontConfirmed } from '../../utils/draftStorage.js'
+import { removeTicketRecall, removeTicketRecallFlow } from '../../utils/ticketRecallStorage.js'
+import { CardSaveError, saveCard } from './cardSaveApi.js'
 import './CardSavePage.css'
 
 const SUPPORTED_DOCUMENT_TYPES = new Set(['RECEIPT', 'LETTER', 'TICKET'])
@@ -21,14 +23,14 @@ function splitCompanions(value) {
   return value.split(',').map((companion) => companion.trim()).filter(Boolean)
 }
 
-function CardSavePage({ draftId, documentType, ticketRecall, onSaved }) {
+function CardSavePage({ draftId, documentType, ticketRecall, onSaved, onStartRecall }) {
   const [companionInput, setCompanionInput] = useState('')
   const [companions, setCompanions] = useState([])
   const [weather, setWeather] = useState('')
   const [mood, setMood] = useState('')
   const [diaryText, setDiaryText] = useState('')
   const [backPhotos, setBackPhotos] = useState([])
-  const [writingMode, setWritingMode] = useState(ticketRecall ? 'AI_RECALL' : 'DIRECT')
+  const writingMode = ticketRecall ? 'AI_RECALL' : 'DIRECT'
   const [title, setTitle] = useState(ticketRecall?.title || ticketRecall?.titleCandidate || '')
   const [memoryText, setMemoryText] = useState('')
   const [formError, setFormError] = useState('')
@@ -157,6 +159,9 @@ function CardSavePage({ draftId, documentType, ticketRecall, onSaved }) {
         back: buildBack(),
         backPhotos: isTicket ? [] : backPhotos,
       })
+      removeFrontConfirmed(draftId)
+      removeTicketRecall(draftId)
+      removeTicketRecallFlow(draftId)
       setSavedCard(saved)
       onSaved?.(saved)
     } catch (error) {
@@ -217,8 +222,8 @@ function CardSavePage({ draftId, documentType, ticketRecall, onSaved }) {
               <section className="form-section">
                 <span className="form-label">기록 방식</span>
                 <div className="writing-mode" role="group" aria-label="티켓 기록 방식">
-                  <button className={writingMode === 'DIRECT' ? 'writing-mode__button writing-mode__button--selected' : 'writing-mode__button'} type="button" onClick={() => setWritingMode('DIRECT')}>직접 기록하기</button>
-                  <button className={writingMode === 'AI_RECALL' ? 'writing-mode__button writing-mode__button--selected' : 'writing-mode__button'} type="button" onClick={() => setWritingMode('AI_RECALL')}>AI 질문으로 떠올리기</button>
+                  <button className="writing-mode__button writing-mode__button--selected" type="button">직접 기록하기</button>
+                  <button className="writing-mode__button" type="button" disabled={!onStartRecall} onClick={() => onStartRecall?.()}>AI 질문으로 떠올리기</button>
                 </div>
               </section>
             )}

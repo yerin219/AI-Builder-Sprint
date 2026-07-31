@@ -1,4 +1,4 @@
-import { request } from "./http";
+import { request } from "./http.js";
 
 export const suggestTicketSubtype = (draftId) =>
     request(`/memory-drafts/${draftId}/ticket-recall/subtype-suggestion`, {

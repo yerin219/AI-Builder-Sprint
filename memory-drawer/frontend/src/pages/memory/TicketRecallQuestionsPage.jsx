@@ -1,21 +1,36 @@
 import { useMemo, useState } from "react";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
 import { generateTicketRecallTitle } from "../../api/ticketRecall";
+import {
+    getTicketRecallFlow,
+    saveTicketRecallFlow,
+} from "../../utils/ticketRecallStorage.js";
 import "./TicketRecall.css";
 
 export default function TicketRecallQuestionsPage() {
     const { draftId } = useParams();
     const location = useLocation();
     const navigate = useNavigate();
-    const questionData = location.state?.questionData;
-    const frontConfirmed = location.state?.frontConfirmed;
+    const savedFlow = getTicketRecallFlow(draftId);
+    const questionData = location.state?.questionData || savedFlow?.questionData;
+    const frontConfirmed = location.state?.frontConfirmed || savedFlow?.frontConfirmed;
     const questions = useMemo(
         () => [...(questionData?.questions || [])].sort((first, second) => first.order - second.order),
         [questionData],
     );
-    const [answers, setAnswers] = useState(() =>
-        questions.map((question) => ({ questionId: question.questionId, answer: "" })),
-    );
+    const [answers, setAnswers] = useState(() => {
+        const savedAnswers = savedFlow?.answers;
+        if (Array.isArray(savedAnswers)
+            && savedAnswers.length === questions.length
+            && savedAnswers.every((answer, index) =>
+                answer.questionId === questions[index]?.questionId)) {
+            return savedAnswers.map((answer) => ({
+                questionId: answer.questionId,
+                answer: answer.answer || "",
+            }));
+        }
+        return questions.map((question) => ({ questionId: question.questionId, answer: "" }));
+    });
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState("");
 
@@ -30,9 +45,17 @@ export default function TicketRecallQuestionsPage() {
     }
 
     const handleAnswerChange = (questionId, value) => {
-        setAnswers((previous) => previous.map((answer) => (
-            answer.questionId === questionId ? { ...answer, answer: value } : answer
-        )));
+        setAnswers((previous) => {
+            const nextAnswers = previous.map((answer) => (
+                answer.questionId === questionId ? { ...answer, answer: value } : answer
+            ));
+            saveTicketRecallFlow(draftId, {
+                frontConfirmed,
+                questionData,
+                answers: nextAnswers,
+            });
+            return nextAnswers;
+        });
     };
 
     const handleTitleGeneration = async (event) => {
@@ -54,25 +77,31 @@ export default function TicketRecallQuestionsPage() {
         try {
             const titleData = await generateTicketRecallTitle(draftId, normalizedAnswers);
 
+            const nextFlow = {
+                frontConfirmed,
+                ticketSubtype: questionData.ticketSubtype,
+                questions,
+                answers: normalizedAnswers,
+                titleCandidate: titleData.titleCandidate,
+            };
+            saveTicketRecallFlow(draftId, nextFlow);
+
             navigate(`/memories/${draftId}/ticket-recall/title`, {
-                state: {
+                state: nextFlow,
+            });
+        } catch (err) {
+            if (err.code === "AI_002") {
+                const nextFlow = {
                     frontConfirmed,
                     ticketSubtype: questionData.ticketSubtype,
                     questions,
                     answers: normalizedAnswers,
-                    titleCandidate: titleData.titleCandidate,
-                },
-            });
-        } catch (err) {
-            if (err.code === "AI_002") {
+                    titleCandidate: "",
+                    titleGenerationFailed: true,
+                };
+                saveTicketRecallFlow(draftId, nextFlow);
                 navigate(`/memories/${draftId}/ticket-recall/title`, {
-                    state: {
-                        frontConfirmed,
-                        questions,
-                        answers: normalizedAnswers,
-                        titleCandidate: "",
-                        titleGenerationFailed: true,
-                    },
+                    state: nextFlow,
                 });
                 return;
             }
@@ -108,8 +137,6 @@ export default function TicketRecallQuestionsPage() {
                     {loading ? "제목을 만드는 중..." : "제목 한 줄 만들기"}
                 </button>
             </form>
-
-            {/* TODO(API 6 백엔드 연동 확인): questions는 서버 질문 은행의 세 문항을 order 순서로 내려줘야 하며, 프론트는 질문 문구를 요청에 다시 보내지 않는다. */}
         </main>
     );
 }

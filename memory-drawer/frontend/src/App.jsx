@@ -66,6 +66,7 @@ function CardDetailRoute() {
 function CardSaveRoute() {
   const { draftId } = useParams();
   const location = useLocation();
+  const navigate = useNavigate();
   const frontConfirmed = location.state?.frontConfirmed || getFrontConfirmed(draftId);
   const ticketRecall = location.state?.ticketRecall || getTicketRecall(draftId);
 
@@ -73,7 +74,14 @@ function CardSaveRoute() {
     return <main className="mobile-page ticket-recall-page"><h1>저장할 카드 정보가 없습니다.</h1><p>앞면 확정 단계부터 다시 진행해주세요.</p></main>;
   }
 
-  return <CardSavePage draftId={draftId} documentType={frontConfirmed.documentType} ticketRecall={ticketRecall} />;
+  return (
+    <CardSavePage
+      draftId={draftId}
+      documentType={frontConfirmed.documentType}
+      ticketRecall={ticketRecall}
+      onStartRecall={() => navigate(`/memories/${draftId}/back`, { state: { frontConfirmed } })}
+    />
+  );
 }
 
 export default App;

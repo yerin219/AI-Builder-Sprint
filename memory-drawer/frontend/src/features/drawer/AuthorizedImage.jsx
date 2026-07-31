@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { resolveApiUrl } from "../../api/http.js";
 import { getAccessToken } from "../../utils/tokenStorage";
 
 export default function AuthorizedImage({ imageUrl, alt, ...props }) {
@@ -9,7 +10,7 @@ export default function AuthorizedImage({ imageUrl, alt, ...props }) {
     const controller = new AbortController();
     const token = getAccessToken();
 
-    fetch(imageUrl, { headers: token ? { Authorization: `Bearer ${token}` } : {}, signal: controller.signal })
+    fetch(resolveApiUrl(imageUrl), { headers: token ? { Authorization: `Bearer ${token}` } : {}, signal: controller.signal })
       .then((response) => {
         if (!response.ok) throw new Error("이미지를 불러오지 못했습니다.");
         return response.blob();
