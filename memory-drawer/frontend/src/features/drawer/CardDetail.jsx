@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import { fetchCardDetail } from './drawerApi'
+import AuthorizedImage from './AuthorizedImage'
 import { DOCUMENT_LABELS, formatMemoryDate, getImageUrl } from './drawerViewUtils'
 import './CardDetail.css'
 
@@ -93,7 +94,7 @@ function CardFront({ card }) {
   return (
     <article className="memory-card memory-card--front">
       <p className="memory-card__date">{formatMemoryDate(card.memoryDate)}</p>
-      {imageUrl && <img className="memory-card__front-image" src={imageUrl} alt="저장한 원본 종이 기록" />}
+      {imageUrl && <AuthorizedImage className="memory-card__front-image" imageUrl={imageUrl} alt="저장한 원본 종이 기록" />}
       {isReceipt && <h1>{card.front.storeName}</h1>}
       {isTicket && (
         <div className="memory-card__front-fields">
@@ -140,7 +141,7 @@ function CardBack({ card }) {
       {photoUrls.length > 0 && (
         <div className="memory-card__photos" aria-label="추가 사진">
           {photoUrls.map((photoUrl, index) => (
-            <img key={`${photoUrl}-${index}`} src={getImageUrl(photoUrl)} alt={`추가 사진 ${index + 1}`} loading="lazy" />
+            <AuthorizedImage key={`${photoUrl}-${index}`} imageUrl={getImageUrl(photoUrl)} alt={`추가 사진 ${index + 1}`} loading="lazy" />
           ))}
         </div>
       )}

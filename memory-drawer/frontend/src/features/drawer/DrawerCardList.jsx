@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { fetchCardsByYear } from './drawerApi'
+import AuthorizedImage from './AuthorizedImage'
 import { DOCUMENT_LABELS, formatMemoryDate, getCardTitle, getImageUrl } from './drawerViewUtils'
 import './DrawerCardList.css'
 
@@ -69,7 +70,7 @@ function DrawerCardList({ year, onBack, onCardsLoaded, onSelectCard }) {
               <li key={card.cardId}>
                 <button className="memory-card-list__item" type="button" onClick={() => onSelectCard?.(card.cardId)}>
                   <span className="memory-card-list__image" aria-hidden={!imageUrl}>
-                    {imageUrl ? <img src={imageUrl} alt="" /> : <span>{DOCUMENT_LABELS[card.documentType]}</span>}
+                    {imageUrl ? <AuthorizedImage imageUrl={imageUrl} alt="" /> : <span>{DOCUMENT_LABELS[card.documentType]}</span>}
                   </span>
                   <span className="memory-card-list__body">
                     <span className="memory-card-list__type">{DOCUMENT_LABELS[card.documentType] || '기록'}</span>
@@ -85,7 +86,6 @@ function DrawerCardList({ year, onBack, onCardsLoaded, onSelectCard }) {
       )}
 
       {/* TODO(정렬 정책 확정): API 명세의 날짜 정렬 방향이 확정되면 백엔드 응답 순서를 그대로 사용한다. */}
-      {/* TODO(이미지 인증 방식 확정): frontImageUrl이 인증을 요구하면 백엔드와 합의한 접근 방식으로 이미지 요청을 연결한다. */}
     </main>
   )
 }
