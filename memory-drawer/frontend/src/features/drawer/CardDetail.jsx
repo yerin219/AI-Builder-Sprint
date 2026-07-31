@@ -80,8 +80,6 @@ function CardDetail({ cardId, cardsInYear, onBack, onSelectCard }) {
           </nav>
         </>
       )}
-
-      {/* TODO(카드 전환 방식 확정): 현재는 버튼으로 앞·뒷면을 전환하며, 최종 디자인에서 제스처가 필요하면 접근 가능한 버튼은 유지한다. */}
     </main>
   )
 }

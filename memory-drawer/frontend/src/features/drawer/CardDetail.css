@@ -44,7 +44,6 @@
   color: #35271e;
 }
 
-/* LETTER 카드만 사용자가 제공한 쪽지 종이 템플릿을 앞면·뒷면에 공통 적용한다. */
 .memory-card--letter {
   min-height: 31rem;
   border: 0;
@@ -76,7 +75,6 @@
   border-color: rgb(123 111 96 / 28%);
 }
 
-/* TICKET 카드만 사용자가 제공한 티켓 템플릿을 앞면·뒷면에 공통 적용한다. */
 .memory-card--ticket {
   min-height: 31rem;
   border: 0;
@@ -105,7 +103,6 @@
   color: #2d2d2d;
 }
 
-/* RECEIPT 카드만 사용자가 제공한 영수증 템플릿을 앞면·뒷면에 공통 적용한다. */
 .memory-card--receipt {
   min-height: 36rem;
   border: 0;
