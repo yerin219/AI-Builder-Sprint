@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
 import { confirmFront } from "../../api/drafts";
+import { saveFrontConfirmed } from "../../utils/draftStorage";
 
 export default function FrontConfirmPage() {
     const { draftId } = useParams();
@@ -88,10 +89,14 @@ export default function FrontConfirmPage() {
             // API 5: 수정한 앞면 정보 최종 확정
             const frontConfirmed = await confirmFront(draftId, makePayload());
 
+            // 새로고침해도 API 6에서 앞면 확정 결과를 사용할 수 있게 저장
+            saveFrontConfirmed(draftId, frontConfirmed);
+
             // 다음 작업: 카드 뒷면 작성 화면
             navigate(`/memories/${draftId}/back`, {
                 state: { frontConfirmed },
             });
+
         } catch (err) {
             const messages = {
                 VALIDATION_001: "필수 정보를 모두 입력하고 날짜를 확인해주세요.",
