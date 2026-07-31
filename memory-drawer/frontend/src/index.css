@@ -15,7 +15,7 @@ body {
   margin: 0;
   background: var(--background);
   color: var(--text);
-  font-family: Arial, "Noto Sans KR", sans-serif;
+  font-family: "Pretendard", sans-serif;
 }
 
 button {
