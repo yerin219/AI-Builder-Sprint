@@ -1,4 +1,3 @@
-const TOKEN_KEY = "memory-drawer-access-token";
 const DRAFT_ID_KEY = "memory-drawer-draft-id";
 
 export const saveDraftId = (draftId) => {

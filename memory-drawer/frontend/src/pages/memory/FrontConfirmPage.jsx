@@ -2,6 +2,12 @@ import { useState } from "react";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
 import { confirmFront } from "../../api/drafts";
 import { saveFrontConfirmed } from "../../utils/draftStorage";
+import {
+    buildFrontPayload,
+    createFrontForm,
+    getNextPathAfterFrontConfirmation,
+    validateFrontForm,
+} from "../../utils/frontConfirmation";
 
 export default function FrontConfirmPage() {
     const { draftId } = useParams();
@@ -13,14 +19,7 @@ export default function FrontConfirmPage() {
     const documentType = extraction?.documentType;
     const candidate = extraction?.frontCandidate;
 
-    const [form, setForm] = useState({
-        memoryDate: candidate?.memoryDate ?? "",
-        storeName: candidate?.storeName ?? "",
-        eventName: candidate?.eventName ?? "",
-        venue: candidate?.venue ?? "",
-        seat: candidate?.seat ?? "",
-        ocrText: candidate?.ocrText ?? "",
-    });
+    const [form, setForm] = useState(() => createFrontForm(candidate));
 
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState("");
@@ -46,54 +45,31 @@ export default function FrontConfirmPage() {
         }));
     };
 
-    const makePayload = () => {
-        // 영수증
-        if (documentType === "RECEIPT") {
-            return {
-                memoryDate: form.memoryDate,
-                front: {
-                    storeName: form.storeName,
-                },
-            };
-        }
-
-        // 티켓
-        if (documentType === "TICKET") {
-            return {
-                memoryDate: form.memoryDate,
-                front: {
-                    eventName: form.eventName,
-                    venue: form.venue,
-                    // 좌석은 선택값: 빈 문자열이 아니라 null 전송
-                    seat: form.seat.trim() || null,
-                },
-            };
-        }
-
-        // 손편지
-        return {
-            memoryDate: form.memoryDate,
-            front: {
-                ocrText: form.ocrText,
-            },
-        };
-    };
-
     const handleSubmit = async (event) => {
         event.preventDefault();
         setError("");
+
+        const validationError = validateFrontForm(documentType, form);
+
+        if (validationError) {
+            setError(validationError);
+            return;
+        }
 
         try {
             setLoading(true);
 
             // API 5: 수정한 앞면 정보 최종 확정
-            const frontConfirmed = await confirmFront(draftId, makePayload());
+            const frontConfirmed = await confirmFront(
+                draftId,
+                buildFrontPayload(documentType, form),
+            );
 
             // 새로고침해도 API 6에서 앞면 확정 결과를 사용할 수 있게 저장
             saveFrontConfirmed(draftId, frontConfirmed);
 
-            // 다음 작업: 카드 뒷면 작성 화면
-            navigate(`/memories/${draftId}/back`, {
+            // 티켓은 뒷면 작성 방식을 선택하고, 나머지는 카드 저장 화면으로 이동
+            navigate(getNextPathAfterFrontConfirmation(documentType, draftId), {
                 state: { frontConfirmed },
             });
 
@@ -102,6 +78,7 @@ export default function FrontConfirmPage() {
                 VALIDATION_001: "필수 정보를 모두 입력하고 날짜를 확인해주세요.",
                 DRAFT_001: "임시 기록을 찾을 수 없습니다.",
                 DRAFT_002: "문서 유형을 먼저 확정해야 합니다.",
+                DRAFT_004: "다른 사용자의 임시 기록에는 접근할 수 없습니다.",
             };
 
             setError(messages[err.code] || err.message);

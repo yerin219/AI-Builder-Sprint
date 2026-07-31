@@ -22,5 +22,6 @@ export function getCardTitle(card) {
 export function getImageUrl(imageUrl) {
   if (typeof imageUrl !== 'string' || !imageUrl.trim()) return null
 
-  return imageUrl
+  const normalizedUrl = imageUrl.trim()
+  return normalizedUrl.startsWith('/files/cards/') ? normalizedUrl : null
 }

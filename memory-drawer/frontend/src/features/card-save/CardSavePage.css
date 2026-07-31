@@ -6,6 +6,7 @@
 }
 
 .card-save-form,
+.card-preview,
 .save-result {
   box-sizing: border-box;
   width: min(100%, 34rem);
@@ -294,6 +295,101 @@
 
 .save-result__details dt {
   color: #755e48;
+}
+
+.card-preview__header {
+  margin-bottom: 1.25rem;
+}
+
+.card-preview__header h1,
+.card-preview__side h2 {
+  margin: 0;
+  color: #362313;
+}
+
+.card-preview__header > p:last-child {
+  color: #755e48;
+}
+
+.card-preview__grid {
+  display: grid;
+  gap: 1rem;
+}
+
+.card-preview__side {
+  min-height: 15rem;
+  padding: 1.25rem;
+  border: 1px solid #eadfce;
+  border-radius: 1rem;
+  background: #fff;
+  box-shadow: 0 0.35rem 1rem rgb(78 50 25 / 7%);
+}
+
+.card-preview__side > span {
+  display: inline-block;
+  margin-bottom: 0.5rem;
+  color: #94622e;
+  font-size: 0.75rem;
+  font-weight: 700;
+}
+
+.card-preview__fields {
+  display: grid;
+  gap: 0.625rem;
+  margin: 1rem 0 0;
+}
+
+.card-preview__fields div {
+  display: grid;
+  grid-template-columns: 5rem 1fr;
+  gap: 0.75rem;
+}
+
+.card-preview__fields dt,
+.card-preview__fields dd {
+  margin: 0;
+}
+
+.card-preview__fields dt {
+  color: #806b57;
+}
+
+.card-preview__fields dd {
+  color: #362313;
+  font-weight: 600;
+  white-space: pre-wrap;
+}
+
+.card-preview__answers {
+  display: grid;
+  gap: 0.75rem;
+  padding: 0;
+  margin: 1rem 0 0;
+  list-style: none;
+}
+
+.card-preview__answers li {
+  padding: 0.75rem;
+  border-radius: 0.75rem;
+  background: #f7efe5;
+}
+
+.card-preview__answers p {
+  margin: 0.35rem 0 0;
+  white-space: pre-wrap;
+}
+
+.card-preview__actions {
+  display: grid;
+  grid-template-columns: 1fr 2fr;
+  gap: 0.75rem;
+  margin-top: 1.5rem;
+}
+
+.card-preview__actions .secondary-button,
+.card-preview__actions .primary-button {
+  min-height: 3.25rem;
+  margin-top: 0;
 }
 
 .save-result__details dd {

@@ -8,7 +8,7 @@ export default function LoginPage() {
     const location = useLocation();
 
     const [form, setForm] = useState({
-        loginId: location.state?.loginId || "",
+        email: location.state?.email || "",
         password: "",
     });
     const [loading, setLoading] = useState(false);
@@ -28,8 +28,8 @@ export default function LoginPage() {
         event.preventDefault();
         setError("");
 
-        if (form.loginId.trim().length === 0) {
-            setError("아이디를 입력해주세요.");
+        if (form.email.trim().length === 0) {
+            setError("이메일을 입력해주세요.");
             return;
         }
 
@@ -50,11 +50,11 @@ export default function LoginPage() {
 
             setAccessToken(data.accessToken);
 
-            navigate("/home", { replace: true });
+            navigate(location.state?.from?.pathname || "/home", { replace: true });
         } catch (err) {
             const messages = {
-                AUTH_002: "아이디 또는 비밀번호가 일치하지 않습니다.",
-                VALIDATION_001: "아이디와 비밀번호를 확인해주세요.",
+                AUTH_002: "이메일 또는 비밀번호가 일치하지 않습니다.",
+                VALIDATION_001: "이메일 형식과 비밀번호를 확인해주세요.",
                 NETWORK_ERROR: "백엔드 서버가 실행 중인지 확인해주세요.",
             };
 
@@ -83,12 +83,13 @@ export default function LoginPage() {
                     <label className="auth-field">
                         <span className="field-icon" aria-hidden="true">✉</span>
                         <input
-                            type="text"
-                            name="loginId"
-                            placeholder="아이디"
-                            value={form.loginId}
+                            type="email"
+                            name="email"
+                            placeholder="이메일"
+                            value={form.email}
                             onChange={handleChange}
-                            autoComplete="username"
+                            autoComplete="email"
+                            maxLength={320}
                             required
                         />
                     </label>

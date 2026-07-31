@@ -85,7 +85,6 @@ function DrawerCardList({ year, onBack, onCardsLoaded, onSelectCard }) {
         </ul>
       )}
 
-      {/* TODO(정렬 정책 확정): API 명세의 날짜 정렬 방향이 확정되면 백엔드 응답 순서를 그대로 사용한다. */}
     </main>
   )
 }

@@ -6,7 +6,7 @@ export default function SignupPage() {
     const navigate = useNavigate();
 
     const [form, setForm] = useState({
-        loginId: "",
+        email: "",
         password: "",
     });
     const [loading, setLoading] = useState(false);
@@ -25,8 +25,8 @@ export default function SignupPage() {
         event.preventDefault();
         setError("");
 
-        if (form.loginId.trim().length === 0) {
-            setError("아이디를 입력해주세요.");
+        if (form.email.trim().length === 0) {
+            setError("이메일을 입력해주세요.");
             return;
         }
 
@@ -48,14 +48,14 @@ export default function SignupPage() {
             navigate("/login", {
                 replace: true,
                 state: {
-                    loginId: form.loginId,
+                    email: form.email.trim(),
                     message: "회원가입이 완료되었습니다. 로그인해주세요.",
                 },
             });
         } catch (err) {
             const messages = {
-                AUTH_003: "이미 사용 중인 아이디입니다.",
-                VALIDATION_001: "아이디와 비밀번호를 확인해주세요.",
+                AUTH_003: "이미 사용 중인 이메일입니다.",
+                VALIDATION_001: "이메일 형식과 비밀번호를 확인해주세요.",
                 NETWORK_ERROR: "백엔드 서버가 실행 중인지 확인해주세요.",
             };
 
@@ -84,12 +84,13 @@ export default function SignupPage() {
                     <label className="auth-field">
                         <span className="field-icon" aria-hidden="true">✉</span>
                         <input
-                            type="text"
-                            name="loginId"
-                            placeholder="아이디"
-                            value={form.loginId}
+                            type="email"
+                            name="email"
+                            placeholder="이메일"
+                            value={form.email}
                             onChange={handleChange}
-                            autoComplete="username"
+                            autoComplete="email"
+                            maxLength={320}
                             required
                         />
                     </label>

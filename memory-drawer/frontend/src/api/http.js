@@ -1,9 +1,22 @@
 import {
     getAccessToken,
     removeAccessToken,
-} from "../utils/tokenStorage";
+} from "../utils/tokenStorage.js";
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "/api";
+const API_BASE_URL = import.meta.env?.VITE_API_BASE_URL || "/api";
+
+export function resolveApiUrl(path) {
+    if (/^https?:\/\//i.test(path)) {
+        throw new TypeError("외부 API URL은 허용되지 않습니다.");
+    }
+
+    const baseUrl = API_BASE_URL.replace(/\/$/, "");
+    const normalizedPath = path.startsWith("/") ? path : `/${path}`;
+    if (normalizedPath === baseUrl || normalizedPath.startsWith(`${baseUrl}/`)) {
+        return normalizedPath;
+    }
+    return `${baseUrl}${normalizedPath}`;
+}
 
 export class ApiError extends Error {
     constructor(status, code, message) {
@@ -39,7 +52,7 @@ export async function request(path, options = {}) {
     }
 
     try {
-        const response = await fetch(`${API_BASE_URL}${path}`, {
+        const response = await fetch(resolveApiUrl(path), {
             method,
             headers,
             signal,
@@ -51,23 +64,27 @@ export async function request(path, options = {}) {
                         : undefined,
         });
 
-        const result = await response.json();
+        const result = await response.json().catch(() => null);
 
-        if (!response.ok || !result.success) {
+        if (!response.ok || result?.success !== true) {
             if (response.status === 401) {
                 removeAccessToken();
             }
 
             throw new ApiError(
                 response.status,
-                result.code,
-                result.message || "요청 처리 중 오류가 발생했습니다.",
+                result?.code,
+                result?.message || "요청 처리 중 오류가 발생했습니다.",
             );
         }
 
-        return result.data;
+        return result?.data;
     } catch (error) {
         if (error instanceof ApiError) {
+            throw error;
+        }
+
+        if (error?.name === "AbortError") {
             throw error;
         }
 

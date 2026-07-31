@@ -1,4 +1,4 @@
-import { request } from "../../api/http";
+import { request } from "../../api/http.js";
 
 export async function fetchDrawers(options = {}) {
   const data = await request("/drawers", options)

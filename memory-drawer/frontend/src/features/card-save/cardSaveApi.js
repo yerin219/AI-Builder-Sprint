@@ -1,4 +1,4 @@
-import { request } from '../../api/http'
+import { request } from '../../api/http.js'
 
 export class CardSaveError extends Error {
   constructor(message, code) {

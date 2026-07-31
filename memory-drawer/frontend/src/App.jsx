@@ -14,6 +14,8 @@ import TicketBackModePage from "./pages/memory/TicketBackModePage";
 import TicketRecallSubtypePage from "./pages/memory/TicketRecallSubtypePage";
 import TicketRecallQuestionsPage from "./pages/memory/TicketRecallQuestionsPage";
 import TicketRecallTitlePage from "./pages/memory/TicketRecallTitlePage";
+import RequireAuth from "./routes/RequireAuth";
+import { getFrontConfirmed } from "./utils/draftStorage";
 import { getTicketRecall } from "./utils/ticketRecallStorage";
 
 function App() {
@@ -22,18 +24,20 @@ function App() {
       <Route path="/" element={<Navigate to="/login" replace />} />
       <Route path="/login" element={<LoginPage />} />
       <Route path="/signup" element={<SignupPage />} />
-      <Route path="/home" element={<DrawerHomeRoute />} />
-      <Route path="/drawers/:year" element={<DrawerCardListRoute />} />
-      <Route path="/cards/:cardId" element={<CardDetailRoute />} />
-      <Route path="/memories/new" element={<ImageSelectPage />} />
-      <Route path="/memories/preview" element={<ImagePreviewPage />} />
-      <Route path="/memories/:draftId/type" element={<DocumentTypePage />} />
-      <Route path="/memories/:draftId/front" element={<FrontConfirmPage />} />
-      <Route path="/memories/:draftId/back" element={<TicketBackModePage />} />
-      <Route path="/memories/:draftId/ticket-recall/subtype" element={<TicketRecallSubtypePage />} />
-      <Route path="/memories/:draftId/ticket-recall/questions" element={<TicketRecallQuestionsPage />} />
-      <Route path="/memories/:draftId/ticket-recall/title" element={<TicketRecallTitlePage />} />
-      <Route path="/memories/:draftId/save" element={<CardSaveRoute />} />
+      <Route element={<RequireAuth />}>
+        <Route path="/home" element={<DrawerHomeRoute />} />
+        <Route path="/drawers/:year" element={<DrawerCardListRoute />} />
+        <Route path="/cards/:cardId" element={<CardDetailRoute />} />
+        <Route path="/memories/new" element={<ImageSelectPage />} />
+        <Route path="/memories/preview" element={<ImagePreviewPage />} />
+        <Route path="/memories/:draftId/type" element={<DocumentTypePage />} />
+        <Route path="/memories/:draftId/front" element={<FrontConfirmPage />} />
+        <Route path="/memories/:draftId/back" element={<TicketBackModePage />} />
+        <Route path="/memories/:draftId/ticket-recall/subtype" element={<TicketRecallSubtypePage />} />
+        <Route path="/memories/:draftId/ticket-recall/questions" element={<TicketRecallQuestionsPage />} />
+        <Route path="/memories/:draftId/ticket-recall/title" element={<TicketRecallTitlePage />} />
+        <Route path="/memories/:draftId/save" element={<CardSaveRoute />} />
+      </Route>
       <Route path="*" element={<Navigate to="/login" replace />} />
     </Routes>
   );
@@ -48,7 +52,8 @@ function DrawerCardListRoute() {
   const { year } = useParams();
   const navigate = useNavigate();
   const [cards, setCards] = useState([]);
-  return <DrawerCardList year={Number(year)} onBack={() => navigate("/home")} onCardsLoaded={setCards} onSelectCard={(cardId) => navigate(`/cards/${cardId}`, { state: { cardsInYear: cards } })} />;
+  const numericYear = Number(year);
+  return <DrawerCardList year={numericYear} onBack={() => navigate("/home")} onCardsLoaded={setCards} onSelectCard={(cardId) => navigate(`/cards/${cardId}`, { state: { cardsInYear: cards, year: numericYear } })} />;
 }
 
 function CardDetailRoute() {
@@ -56,20 +61,30 @@ function CardDetailRoute() {
   const location = useLocation();
   const navigate = useNavigate();
   const cardsInYear = location.state?.cardsInYear || [];
-  return <CardDetail cardId={cardId} cardsInYear={cardsInYear} onBack={() => navigate(-1)} onSelectCard={(nextCardId) => navigate(`/cards/${nextCardId}`, { state: { cardsInYear } })} />;
+  const year = location.state?.year;
+  return <CardDetail cardId={cardId} cardsInYear={cardsInYear} onBack={() => navigate(year ? `/drawers/${year}` : "/home", { replace: true })} onSelectCard={(nextCardId) => navigate(`/cards/${nextCardId}`, { replace: true, state: { cardsInYear, year } })} />;
 }
 
 function CardSaveRoute() {
   const { draftId } = useParams();
   const location = useLocation();
-  const frontConfirmed = location.state?.frontConfirmed;
+  const navigate = useNavigate();
+  const frontConfirmed = location.state?.frontConfirmed || getFrontConfirmed(draftId);
   const ticketRecall = location.state?.ticketRecall || getTicketRecall(draftId);
 
   if (!frontConfirmed?.documentType) {
     return <main className="mobile-page ticket-recall-page"><h1>저장할 카드 정보가 없습니다.</h1><p>앞면 확정 단계부터 다시 진행해주세요.</p></main>;
   }
 
-  return <CardSavePage draftId={draftId} documentType={frontConfirmed.documentType} ticketRecall={ticketRecall} />;
+  return (
+    <CardSavePage
+      draftId={draftId}
+      documentType={frontConfirmed.documentType}
+      frontConfirmed={frontConfirmed}
+      ticketRecall={ticketRecall}
+      onOpenDrawer={(year) => navigate(`/drawers/${year}`, { replace: true })}
+    />
+  );
 }
 
 export default App;
