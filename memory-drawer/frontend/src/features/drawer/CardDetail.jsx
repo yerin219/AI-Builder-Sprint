@@ -122,6 +122,59 @@ function CardFront({ card }) {
   )
 }
 
+function splitTicketAnswer(answer) {
+  const characters = Array.from((answer || '답변을 남기지 않았어요.').trim())
+  const pages = []
+
+  while (characters.length > 0) {
+    pages.push(characters.splice(0, 36).join(''))
+  }
+
+  return pages.length > 0 ? pages : ['답변을 남기지 않았어요.']
+}
+
+function TicketBackContent({ back }) {
+  const answers = Array.isArray(back.answers) && back.answers.length > 0
+    ? back.answers
+    : [{ question: '추억 기록', answer: back.memoryText }]
+  const pages = answers.flatMap(({ question, answer }, questionIndex) => (
+    splitTicketAnswer(answer).map((answerPart, answerPageIndex) => ({
+      question,
+      answer: answerPart,
+      questionIndex,
+      isContinuation: answerPageIndex > 0,
+    }))
+  ))
+  const [selectedPage, setSelectedPage] = useState(0)
+  const currentPage = Math.min(selectedPage, pages.length - 1)
+  const page = pages[currentPage]
+  const companions = back.companions?.length ? back.companions.join(', ') : '혼자'
+
+  return (
+    <section className="memory-card__ticket-back-content" aria-label="티켓 뒷면 회상 기록">
+      <h1 title={back.title}>{back.title || '나의 추억'}</h1>
+      <p className="memory-card__ticket-summary">
+        <span>동행 {companions}</span>
+        <span>날씨 {back.weather || '-'}</span>
+        <span>기분 {back.mood || '-'}</span>
+      </p>
+
+      <section className="memory-card__ticket-page" aria-live="polite">
+        <h2>질문 {page.questionIndex + 1}{page.isContinuation ? ' (계속)' : ''}. {page.question || '추억을 떠올려보세요.'}</h2>
+        <p>{page.answer}</p>
+      </section>
+
+      {pages.length > 1 && (
+        <nav className="memory-card__ticket-page-navigation" aria-label="회상 질문 페이지 이동">
+          <button type="button" onClick={() => setSelectedPage((index) => Math.max(0, index - 1))} disabled={currentPage === 0} aria-label="이전 질문">‹</button>
+          <span>{currentPage + 1} / {pages.length}</span>
+          <button type="button" onClick={() => setSelectedPage((index) => Math.min(pages.length - 1, index + 1))} disabled={currentPage === pages.length - 1} aria-label="다음 질문">›</button>
+        </nav>
+      )}
+    </section>
+  )
+}
+
 function CardBack({ card }) {
   const { back } = card
   const isLetter = card.documentType === 'LETTER'
@@ -140,6 +193,8 @@ function CardBack({ card }) {
         <div><dt>날씨</dt><dd>{back.weather}</dd></div>
         <div><dt>기분</dt><dd>{back.mood}</dd></div>
       </dl>
+
+      {isTicket && <TicketBackContent back={back} />}
 
       {isReceipt && (back.diaryText || photoUrls.length > 0) && (
         <section className="memory-card__receipt-content" aria-label="영수증 뒷면 기록">
