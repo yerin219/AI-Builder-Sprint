@@ -54,8 +54,8 @@
   padding: clamp(1rem, 5vw, 1.8rem) clamp(1rem, 6vw, 2rem);
   border: 0;
   border-radius: 0;
-  background-color: #f5f3ed;
-  background-image: url('../../assets/letter-note-template.jpg');
+  background-color: transparent;
+  background-image: url('../../assets/letter-note-template-transparent.png');
   background-position: center;
   background-repeat: no-repeat;
   background-size: 100% 100%;
@@ -95,8 +95,8 @@
   padding: clamp(0.8rem, 4vw, 1.25rem) clamp(1rem, 5vw, 1.75rem);
   border: 0;
   border-radius: 0;
-  background-color: #fff;
-  background-image: url('../../assets/ticket-template.png');
+  background-color: transparent;
+  background-image: url('../../assets/ticket-template-transparent.png');
   background-position: center;
   background-repeat: no-repeat;
   background-size: 100% 100%;
@@ -137,8 +137,8 @@
   padding: clamp(1.25rem, 6vw, 2.2rem) clamp(1rem, 5vw, 1.8rem);
   border: 0;
   border-radius: 0;
-  background-color: #f8f7f4;
-  background-image: url('../../assets/receipt-template.jpg');
+  background-color: transparent;
+  background-image: url('../../assets/receipt-template-transparent.png');
   background-position: center;
   background-repeat: no-repeat;
   background-size: 100% 100%;
