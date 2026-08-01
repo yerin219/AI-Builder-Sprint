@@ -43,9 +43,7 @@ public record YearCardListResponse(int year, List<CardItem> cards) {
 	}
 
 	public record LetterFront(
-		String ocrText,
-		String frontImageMode,
-		String frontImageUrl
+		String ocrText
 	) implements CardFront {
 	}
 }
