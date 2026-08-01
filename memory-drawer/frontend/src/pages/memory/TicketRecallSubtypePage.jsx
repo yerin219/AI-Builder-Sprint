@@ -80,7 +80,7 @@ export default function TicketRecallSubtypePage() {
                     <span>{suggestedSubtype.description}</span>
                 </section>
                 {error && <p className="form-error">{error}</p>}
-                <button className="ticket-primary-button" disabled={loading} onClick={() => handleSubtypeConfirm(suggestedSubtype.value)}>
+                <button className="ticket-primary-button ticket-choice-button" disabled={loading} onClick={() => handleSubtypeConfirm(suggestedSubtype.value)}>
                     {loading ? "질문을 불러오는 중..." : "맞아요"}
                 </button>
                 <button className="ticket-secondary-button" disabled={loading} onClick={() => setIsManualSelection(true)}>다른 유형 선택</button>

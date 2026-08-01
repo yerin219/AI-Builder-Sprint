@@ -67,7 +67,7 @@ export default function ImagePreviewPage() {
 
     return (
         <main className="mobile-page">
-            <button onClick={() => navigate(-1)}>←</button>
+            <button className="page-back-button" onClick={() => navigate(-1)}>←</button>
             <h1>사진 확인</h1>
 
             <img className="document-preview" src={previewUrl} alt="선택한 문서" />
