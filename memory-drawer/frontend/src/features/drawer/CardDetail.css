@@ -169,10 +169,22 @@
 
 .memory-card--receipt.memory-card--front > h1 {
   position: absolute;
-  top: 65%;
+  top: 25%;
   right: 1.5rem;
   left: 1.5rem;
   transform: translateY(-50%);
+  font-size: 1.65rem;
+}
+
+.memory-card--receipt.memory-card--front > .memory-card__date {
+  position: absolute;
+  top: calc(25% + 1.55rem);
+  right: 1.5rem;
+  left: 1.5rem;
+  margin: 0;
+  color: #5e5a55;
+  font-size: 1rem;
+  text-align: center;
 }
 
 .memory-card__date {
