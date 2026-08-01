@@ -156,10 +156,29 @@ Authorization: Bearer {accessToken}
 ### 2.8 카드 배경 규칙
 
 - 영수증·티켓·손편지 카드의 배경은 모두 흰색으로 통일합니다.
-- 원본 종이 이미지의 형태와 내용은 흰색 카드 안에서 표시하되, 원본 이미지의 색상을 카드 배경색으로 추출하거나 반영하지 않습니다.
+- 영수증과 티켓 앞면에는 사용자가 확인한 Upstage 추출값만 표시하고, 분석에 사용한 원본 이미지는 표시하지 않습니다.
+- 손편지는 `frontImageMode`에 따라 글씨 분리 결과 또는 원본 이미지를 표시할 수 있습니다.
 - 카드 배경색 선택·변경 기능을 제공하지 않습니다.
 - 카드 배경색과 관련된 필드를 요청·응답에 포함하지 않습니다.
 - 흰색 배경은 프론트엔드 표시 규칙이며 백엔드가 별도 값으로 저장하거나 반환하지 않습니다.
+
+### 2.9 보호된 카드 이미지 URL
+
+손편지 카드의 `frontImageUrl`과 영수증·손편지 카드의 `backPhotoUrls`는 Base URL 아래에서 조회하는 상대 API 경로입니다. 영수증·티켓의 앞면 응답에는 `frontImageUrl`이 포함되지 않습니다.
+
+```http
+GET /files/cards/{cardId}/front
+GET /files/cards/{cardId}/back/{index}
+Authorization: Bearer {accessToken}
+```
+
+- 프론트엔드는 손편지 앞면에 한해 `/files/cards/{cardId}/front`를 `{Base URL}/files/cards/{cardId}/front`로 요청합니다.
+- 영수증·티켓 카드의 앞면 이미지 경로를 직접 요청하면 `404 CARD_002`를 반환합니다.
+- `index`는 `1`부터 시작하며 상세 응답의 `backPhotoUrls` 순서를 따릅니다.
+- 성공 응답은 공통 JSON envelope가 아닌 저장된 이미지 binary이며 `Content-Type`은 `image/jpeg`, `image/png`, `image/webp` 중 하나입니다.
+- 성공 응답은 `Cache-Control: no-store`를 사용합니다.
+- 오류 응답은 공통 실패 envelope를 사용합니다. 토큰 누락·만료는 `401 AUTH_001`, 다른 사용자의 카드는 `403 CARD_001`, 카드 또는 해당 사진이 없으면 `404 CARD_002`입니다.
+- 이미지 URL의 장기 만료·갱신 방식은 12절 TODO에 남깁니다.
 
 ---
 
@@ -638,6 +657,7 @@ AI의 판단이 맞으면 제안된 유형을, 틀리면 사용자가 직접 선
 
 | HTTP | 코드 | 상황 |
 |---:|---|---|
+| 403 | `DRAFT_004` | 다른 사용자의 임시 기록 접근 |
 | 404 | `DRAFT_001` | 임시 기록을 찾을 수 없음 |
 | 409 | `TICKET_002` | 티켓이 아니거나 앞면이 확정되지 않음 |
 | 503 | `AI_002` | Solar 티켓 세부 유형 판단 실패 |
@@ -697,6 +717,8 @@ AI의 판단이 맞으면 제안된 유형을, 틀리면 사용자가 직접 선
 | `MOVIE` | 어떤 계기로 이 영화를 봤나요?<br>가장 마음에 남은 장면이나 대사가 있나요?<br>영화가 끝난 뒤 어떤 이야기를 나눴나요? |
 | `EXHIBITION` | 어떤 계기로 이 전시를 보게 되었나요?<br>가장 마음에 남은 작품은 무엇인가요?<br>관람이 끝난 뒤 어떤 이야기를 나눴나요? |
 
+질문 ID는 각 표의 질문 순서대로 `CONCERT_PERFORMANCE_1`~`CONCERT_PERFORMANCE_3`, `MOVIE_1`~`MOVIE_3`, `EXHIBITION_1`~`EXHIBITION_3`을 사용합니다.
+
 질문은 고정 질문 은행에서 가져오므로 이 API에서는 Solar를 호출하지 않습니다.
 
 #### 주요 오류
@@ -704,6 +726,7 @@ AI의 판단이 맞으면 제안된 유형을, 틀리면 사용자가 직접 선
 | HTTP | 코드 | 상황 |
 |---:|---|---|
 | 400 | `TICKET_001` | 지원하지 않는 티켓 세부 유형 |
+| 403 | `DRAFT_004` | 다른 사용자의 임시 기록 접근 |
 | 404 | `DRAFT_001` | 임시 기록을 찾을 수 없음 |
 | 409 | `TICKET_002` | 티켓이 아니거나 앞면이 확정되지 않음 |
 
@@ -774,6 +797,7 @@ Solar 호출이 실패하면 사용자의 답변을 그대로 유지하고 제�
 | HTTP | 코드 | 상황 |
 |---:|---|---|
 | 400 | `TICKET_003` | 답변이 모두 비어 있거나 질문 ID가 유형과 맞지 않음 |
+| 403 | `DRAFT_004` | 다른 사용자의 임시 기록 접근 |
 | 404 | `DRAFT_001` | 임시 기록을 찾을 수 없음 |
 | 409 | `TICKET_002` | 티켓이 아니거나 앞면이 확정되지 않음 |
 | 503 | `AI_002` | Solar 제목 생성 실패 |
@@ -939,6 +963,7 @@ Solar 호출이 실패하면 사용자의 답변을 그대로 유지하고 제�
 | HTTP | 코드 | 상황 |
 |---:|---|---|
 | 400 | `VALIDATION_001` | 유형별 필수 뒷면 값 누락 |
+| 403 | `DRAFT_004` | 다른 사용자의 임시 기록 접근 |
 | 404 | `DRAFT_001` | 임시 기록을 찾을 수 없음 |
 | 409 | `DRAFT_003` | 앞면 미확정 또는 이미 저장된 임시 기록 |
 | 413 | `IMAGE_002` | 추가 사진 용량 제한 초과 |
@@ -994,7 +1019,7 @@ Solar 호출이 실패하면 사용자의 답변을 그대로 유지하고 제�
 
 `GET /drawers/{year}/cards`
 
-선택한 연도의 카드를 실제 추억 날짜 기준으로 반환합니다. 프론트엔드는 이 응답 순서를 이용해 같은 연도의 다른 기록을 넘겨봅니다.
+선택한 연도의 카드를 실제 추억 날짜가 오래된 것부터 최신인 것 순서로 반환합니다. 프론트엔드는 이 응답 순서를 이용해 같은 연도의 다른 기록을 넘겨봅니다.
 
 #### Path Parameter
 
@@ -1014,23 +1039,21 @@ Solar 호출이 실패하면 사용자의 답변을 그대로 유지하고 제�
     "year": 2026,
     "cards": [
       {
+        "cardId": "e10e31cb-9ea1-4aaa-9822-e13358defb03",
+        "documentType": "RECEIPT",
+        "memoryDate": "2026-04-02",
+        "front": {
+          "storeName": "서면카페"
+        }
+      },
+      {
         "cardId": "e89ed42d-1a89-4eea-8ddc-dca90a5c78c4",
         "documentType": "TICKET",
         "memoryDate": "2026-07-25",
         "front": {
           "eventName": "흠뻑쇼",
           "venue": "부산아시아드주경기장",
-          "seat": null,
-          "frontImageUrl": "/files/cards/e89ed42d/front"
-        }
-      },
-      {
-        "cardId": "e10e31cb-9ea1-4aaa-9822-e13358defb03",
-        "documentType": "RECEIPT",
-        "memoryDate": "2026-04-02",
-        "front": {
-          "storeName": "서면카페",
-          "frontImageUrl": "/files/cards/e10e31cb/front"
+          "seat": null
         }
       }
     ]
@@ -1040,7 +1063,7 @@ Solar 호출이 실패하면 사용자의 답변을 그대로 유지하고 제�
 
 - 해당 연도에 카드가 없으면 `cards: []`을 반환합니다.
 - `seat`가 `null`이면 프론트엔드는 좌석 항목명까지 숨깁니다.
-- 날짜 오름차순과 내림차순 중 어느 방향으로 반환할지는 공통 TODO에서 확정합니다.
+- 같은 연도의 카드는 `memoryDate` 오름차순, 즉 오래된 날짜부터 최신 날짜 순서로 반환합니다.
 
 ### 8.3 카드 상세 조회
 
@@ -1063,8 +1086,7 @@ Solar 호출이 실패하면 사용자의 답변을 그대로 유지하고 제�
     "front": {
       "eventName": "흠뻑쇼",
       "venue": "부산아시아드주경기장",
-      "seat": null,
-      "frontImageUrl": "/files/cards/e89ed42d/front"
+      "seat": null
     },
     "back": {
       "companions": [
@@ -1101,8 +1123,8 @@ Solar 호출이 실패하면 사용자의 답변을 그대로 유지하고 제�
 
 | 기록 유형 | 앞면 | 뒷면 |
 |---|---|---|
-| 영수증 | `storeName`, `frontImageUrl` | `companions`, `weather`, `mood`, `diaryText`, `backPhotoUrls` |
-| 티켓 직접 기록 | `eventName`, `venue`, `seat`, `frontImageUrl` | 공통 정보, `writingMode`, `title`, `memoryText` |
+| 영수증 | `storeName` | `companions`, `weather`, `mood`, `diaryText`, `backPhotoUrls` |
+| 티켓 직접 기록 | `eventName`, `venue`, `seat` | 공통 정보, `writingMode`, `title`, `memoryText` |
 | 티켓 AI 질문 | 티켓 직접 기록과 동일 | 공통 정보, `writingMode`, `ticketSubtype`, `title`, `answers` |
 | 손편지 | `ocrText`, `frontImageMode`, `frontImageUrl` | `companions`, `weather`, `mood`, `diaryText`, `backPhotoUrls` |
 
@@ -1347,7 +1369,7 @@ memory-drawer:
 - 동행인 이름 길이와 최대 인원
 - 날씨·기분 선택지와 실제 enum 코드
 - 제목, 추억, 일기, 질문 답변의 최대 글자 수
-- 같은 연도 카드의 날짜 정렬 방향
+- 이미지 URL의 만료·갱신 방식
 - 카드 앞면을 합성 이미지로 저장할지 데이터와 원본으로 매번 렌더링할지
 
 API 3 관련 이미지 형식·용량·HEIC 처리·임시 보관·이미지 접근·Solar 모델·외부 요청 설정은 5.1절과 9.5~9.6절의 확정값을 사용합니다.

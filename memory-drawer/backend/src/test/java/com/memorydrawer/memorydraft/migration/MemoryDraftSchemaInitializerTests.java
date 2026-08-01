@@ -11,7 +11,7 @@ import org.springframework.jdbc.datasource.DriverManagerDataSource;
 class MemoryDraftSchemaInitializerTests {
 
 	@Test
-	void addsApi4ColumnsToExistingApi3TableOnlyOnce() throws Exception {
+	void addsIntegrationColumnsToExistingDraftTableOnlyOnce() throws Exception {
 		String databaseName = "schema_" + UUID.randomUUID().toString().replace("-", "");
 		DriverManagerDataSource dataSource = new DriverManagerDataSource(
 			"jdbc:h2:mem:" + databaseName + ";MODE=MySQL;DB_CLOSE_DELAY=-1",
@@ -49,8 +49,18 @@ class MemoryDraftSchemaInitializerTests {
 				""",
 			Integer.class
 		);
+		Integer ticketSubtypeCount = jdbcTemplate.queryForObject(
+			"""
+				SELECT COUNT(*)
+				FROM INFORMATION_SCHEMA.COLUMNS
+				WHERE TABLE_NAME = 'MEMORY_DRAFTS'
+				  AND COLUMN_NAME = 'TICKET_SUBTYPE'
+				""",
+			Integer.class
+		);
 
 		assertThat(documentTypeCount).isEqualTo(1);
 		assertThat(frontCandidateCount).isEqualTo(1);
+		assertThat(ticketSubtypeCount).isEqualTo(1);
 	}
 }

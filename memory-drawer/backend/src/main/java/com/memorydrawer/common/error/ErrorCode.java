@@ -15,9 +15,16 @@ public enum ErrorCode {
 	DOCUMENT_002(HttpStatus.BAD_REQUEST, "DOCUMENT_002", "지원하지 않는 문서 유형입니다."),
 	DRAFT_001(HttpStatus.NOT_FOUND, "DRAFT_001", "임시 기록을 찾을 수 없습니다."),
 	DRAFT_002(HttpStatus.CONFLICT, "DRAFT_002", "현재 단계에서는 요청을 처리할 수 없습니다."),
+	DRAFT_003(HttpStatus.CONFLICT, "DRAFT_003", "앞면이 확정되지 않았거나 이미 저장된 임시 기록입니다."),
 	DRAFT_004(HttpStatus.FORBIDDEN, "DRAFT_004", "다른 사용자의 임시 기록에는 접근할 수 없습니다."),
+	TICKET_001(HttpStatus.BAD_REQUEST, "TICKET_001", "지원하지 않는 티켓 세부 유형입니다."),
+	TICKET_002(HttpStatus.CONFLICT, "TICKET_002", "티켓 AI 회상을 진행할 수 없는 상태입니다."),
+	TICKET_003(HttpStatus.BAD_REQUEST, "TICKET_003", "회상 질문과 답변을 확인해주세요."),
 	AI_001(HttpStatus.SERVICE_UNAVAILABLE, "AI_001", "문서 분석 서비스에 일시적인 오류가 발생했습니다."),
-	AI_002(HttpStatus.SERVICE_UNAVAILABLE, "AI_002", "문서 유형 판단 서비스에 일시적인 오류가 발생했습니다.");
+	AI_002(HttpStatus.SERVICE_UNAVAILABLE, "AI_002", "AI 서비스에 일시적인 오류가 발생했습니다."),
+	CARD_001(HttpStatus.FORBIDDEN, "CARD_001", "다른 사용자의 카드에는 접근할 수 없습니다."),
+	CARD_002(HttpStatus.NOT_FOUND, "CARD_002", "카드를 찾을 수 없습니다."),
+	CARD_003(HttpStatus.INTERNAL_SERVER_ERROR, "CARD_003", "카드를 저장할 수 없습니다.");
 
 	private final HttpStatus httpStatus;
 	private final String code;

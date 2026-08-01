@@ -43,6 +43,9 @@ public class MemoryDraftSchemaInitializer implements ApplicationRunner {
 			if (!columns.contains("front_candidate")) {
 				addColumn(connection, "front_candidate LONGTEXT");
 			}
+			if (!columns.contains("ticket_subtype")) {
+				addColumn(connection, "ticket_subtype VARCHAR(32)");
+			}
 		}
 	}
 
