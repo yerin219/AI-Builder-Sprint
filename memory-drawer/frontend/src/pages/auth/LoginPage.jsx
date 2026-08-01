@@ -68,13 +68,6 @@ export default function LoginPage() {
         <main className="mobile-page auth-page">
             <section className="auth-card">
                 <div className="auth-intro">
-                    <div className="drawer-logo" aria-hidden="true">
-                        <div className="drawer-logo-top" />
-                        <div className="drawer-logo-body">
-                            <span />
-                        </div>
-                    </div>
-
                     <h1>기억서랍</h1>
                     <p>기억서랍에서 추억을 보관하세요.</p>
                 </div>

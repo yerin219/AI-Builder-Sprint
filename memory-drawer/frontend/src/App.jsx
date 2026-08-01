@@ -1,5 +1,7 @@
 import { useState } from "react";
 import { Navigate, Route, Routes, useLocation, useNavigate, useParams } from "react-router-dom";
+import memoryDrawerLogo from "./assets/branding/memory-drawer-logo.png";
+import "./App.css";
 import CardSavePage from "./features/card-save/CardSavePage";
 import CardDetail from "./features/drawer/CardDetail";
 import DrawerCardList from "./features/drawer/DrawerCardList";
@@ -20,26 +22,36 @@ import { getTicketRecall } from "./utils/ticketRecallStorage";
 
 function App() {
   return (
-    <Routes>
-      <Route path="/" element={<Navigate to="/login" replace />} />
-      <Route path="/login" element={<LoginPage />} />
-      <Route path="/signup" element={<SignupPage />} />
-      <Route element={<RequireAuth />}>
-        <Route path="/home" element={<DrawerHomeRoute />} />
-        <Route path="/drawers/:year" element={<DrawerCardListRoute />} />
-        <Route path="/cards/:cardId" element={<CardDetailRoute />} />
-        <Route path="/memories/new" element={<ImageSelectPage />} />
-        <Route path="/memories/preview" element={<ImagePreviewPage />} />
-        <Route path="/memories/:draftId/type" element={<DocumentTypePage />} />
-        <Route path="/memories/:draftId/front" element={<FrontConfirmPage />} />
-        <Route path="/memories/:draftId/back" element={<TicketBackModePage />} />
-        <Route path="/memories/:draftId/ticket-recall/subtype" element={<TicketRecallSubtypePage />} />
-        <Route path="/memories/:draftId/ticket-recall/questions" element={<TicketRecallQuestionsPage />} />
-        <Route path="/memories/:draftId/ticket-recall/title" element={<TicketRecallTitlePage />} />
-        <Route path="/memories/:draftId/save" element={<CardSaveRoute />} />
-      </Route>
-      <Route path="*" element={<Navigate to="/login" replace />} />
-    </Routes>
+    <div className="app-shell">
+      <header className="app-brand-header">
+        <img
+          className="app-brand-header__logo"
+          src={memoryDrawerLogo}
+          alt="Memory Drawer"
+        />
+      </header>
+
+      <Routes>
+        <Route path="/" element={<Navigate to="/login" replace />} />
+        <Route path="/login" element={<LoginPage />} />
+        <Route path="/signup" element={<SignupPage />} />
+        <Route element={<RequireAuth />}>
+          <Route path="/home" element={<DrawerHomeRoute />} />
+          <Route path="/drawers/:year" element={<DrawerCardListRoute />} />
+          <Route path="/cards/:cardId" element={<CardDetailRoute />} />
+          <Route path="/memories/new" element={<ImageSelectPage />} />
+          <Route path="/memories/preview" element={<ImagePreviewPage />} />
+          <Route path="/memories/:draftId/type" element={<DocumentTypePage />} />
+          <Route path="/memories/:draftId/front" element={<FrontConfirmPage />} />
+          <Route path="/memories/:draftId/back" element={<TicketBackModePage />} />
+          <Route path="/memories/:draftId/ticket-recall/subtype" element={<TicketRecallSubtypePage />} />
+          <Route path="/memories/:draftId/ticket-recall/questions" element={<TicketRecallQuestionsPage />} />
+          <Route path="/memories/:draftId/ticket-recall/title" element={<TicketRecallTitlePage />} />
+          <Route path="/memories/:draftId/save" element={<CardSaveRoute />} />
+        </Route>
+        <Route path="*" element={<Navigate to="/login" replace />} />
+      </Routes>
+    </div>
   );
 }
 

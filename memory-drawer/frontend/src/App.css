@@ -1,0 +1,30 @@
+.app-shell {
+  min-height: 100dvh;
+  background: var(--background);
+}
+
+.app-brand-header {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: min(100%, var(--app-max-width));
+  height: 5.75rem;
+  margin: 0 auto;
+  padding-top: env(safe-area-inset-top);
+  background: var(--background);
+}
+
+.app-brand-header__logo {
+  display: block;
+  width: min(19rem, 82vw);
+  height: 5rem;
+  object-fit: contain;
+  mix-blend-mode: darken;
+}
+
+.app-shell > .mobile-page,
+.app-shell > .drawer-home,
+.app-shell > .drawer-view,
+.app-shell > .card-detail-page {
+  min-height: calc(100dvh - 5.75rem);
+}
