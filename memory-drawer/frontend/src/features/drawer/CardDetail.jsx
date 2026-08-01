@@ -154,9 +154,11 @@ function TicketBackContent({ back }) {
     <section className="memory-card__ticket-back-content" aria-label="티켓 뒷면 회상 기록">
       <h1 title={back.title}>{back.title || '나의 추억'}</h1>
       <p className="memory-card__ticket-summary">
-        <span>동행 {companions}</span>
-        <span>날씨 {back.weather || '-'}</span>
-        <span>기분 {back.mood || '-'}</span>
+        <span>동행: {companions}</span>
+        <span aria-hidden="true">|</span>
+        <span>날씨: {back.weather || '-'}</span>
+        <span aria-hidden="true">|</span>
+        <span>기분: {back.mood || '-'}</span>
       </p>
 
       <section className="memory-card__ticket-page" aria-live="polite">
