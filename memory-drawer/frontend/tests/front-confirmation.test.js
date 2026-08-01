@@ -14,6 +14,8 @@ const baseForm = {
     venue: "공연장",
     seat: "",
     ocrText: "편지 내용",
+    sender: " 엄마 ",
+    recipient: " 지은 ",
     purchaseItems: [
         { name: " 아이스 아메리카노 ", quantity: "2", selected: true },
         { name: "치즈케이크", quantity: 1, selected: false },
@@ -49,7 +51,11 @@ describe("API 5 type-specific payloads", () => {
 
         assert.deepEqual(payload, {
             memoryDate: "2026-07-12",
-            front: { ocrText: "편지 내용" },
+            front: {
+                ocrText: "편지 내용",
+                sender: "엄마",
+                recipient: "지은",
+            },
         });
         assert.equal("frontImageMode" in payload.front, false);
     });
@@ -71,6 +77,8 @@ describe("API 4 candidate normalization", () => {
                 venue: "",
                 seat: "",
                 ocrText: "",
+                sender: "",
+                recipient: "",
                 purchaseItems: [],
             },
         );

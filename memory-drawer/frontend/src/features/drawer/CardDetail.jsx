@@ -190,6 +190,8 @@ function getInitialForm(card) {
       ? card.front.purchaseItems.map(({ name, quantity }) => ({ name, quantity }))
       : [],
     ocrText: card.front?.ocrText || '',
+    sender: card.front?.sender || '',
+    recipient: card.front?.recipient || '',
     eventName: card.front?.eventName || '',
     venue: card.front?.venue || '',
     seat: card.front?.seat || '',
@@ -206,6 +208,7 @@ function CardEditForm({ card, isSubmitting, onCancel, onSubmit }) {
   const [form, setForm] = useState(() => getInitialForm(card))
   const [validationMessage, setValidationMessage] = useState('')
   const isTicket = card.documentType === 'TICKET'
+  const isLetter = card.documentType === 'LETTER'
   const isRecall = isTicket && card.back?.writingMode === 'AI_RECALL'
 
   function changeField(name, value) {
@@ -245,7 +248,7 @@ function CardEditForm({ card, isSubmitting, onCancel, onSubmit }) {
   }
 
   function buildPayload() {
-    const companions = form.companions
+    const companions = isLetter ? [] : form.companions
       .split(',')
       .map((name) => name.trim())
       .filter(Boolean)
@@ -266,7 +269,11 @@ function CardEditForm({ card, isSubmitting, onCancel, onSubmit }) {
       }
       back.diaryText = form.diaryText.trim() || null
     } else if (card.documentType === 'LETTER') {
-      front = { ocrText: form.ocrText.trim() }
+      front = {
+        ocrText: form.ocrText.trim(),
+        sender: form.sender.trim() || null,
+        recipient: form.recipient.trim() || null,
+      }
       back.diaryText = form.diaryText.trim() || null
     } else {
       front = {
@@ -336,7 +343,7 @@ function CardEditForm({ card, isSubmitting, onCancel, onSubmit }) {
       <form onSubmit={handleSubmit}>
         <div className="card-edit-form__grid">
           <label>추억 날짜<input type="date" value={form.memoryDate} onChange={(event) => changeField('memoryDate', event.target.value)} required /></label>
-          <label>함께한 사람<input value={form.companions} onChange={(event) => changeField('companions', event.target.value)} placeholder="쉼표로 구분, 혼자면 비워두세요" /></label>
+          {!isLetter && <label>함께한 사람<input value={form.companions} onChange={(event) => changeField('companions', event.target.value)} placeholder="쉼표로 구분, 혼자면 비워두세요" /></label>}
           <label>날씨<input value={form.weather} onChange={(event) => changeField('weather', event.target.value)} required /></label>
           <label>기분<input value={form.mood} onChange={(event) => changeField('mood', event.target.value)} required /></label>
         </div>
@@ -391,6 +398,8 @@ function CardEditForm({ card, isSubmitting, onCancel, onSubmit }) {
 
         {card.documentType === 'LETTER' && (
           <>
+            <label>쓴 사람<input value={form.sender} onChange={(event) => changeField('sender', event.target.value)} placeholder="확인되지 않으면 비워두세요" /></label>
+            <label>받는 사람<input value={form.recipient} onChange={(event) => changeField('recipient', event.target.value)} placeholder="확인되지 않으면 비워두세요" /></label>
             <label>손쪽지 내용<textarea value={form.ocrText} onChange={(event) => changeField('ocrText', event.target.value)} rows="6" required /></label>
             <label>자유 기록<textarea value={form.diaryText} onChange={(event) => changeField('diaryText', event.target.value)} rows="5" /></label>
           </>
@@ -445,7 +454,16 @@ function CardFront({ card }) {
           {card.front.seat && <p>좌석 · {card.front.seat}</p>}
         </div>
       )}
-      {card.documentType === 'LETTER' && <p className="memory-card__letter-text">{card.front.ocrText}</p>}
+      {card.documentType === 'LETTER' && (
+        <>
+          {(card.front.sender || card.front.recipient) && (
+            <p className="memory-card__letter-correspondents">
+              {card.front.sender || '쓴 사람 미확인'} → {card.front.recipient || '받는 사람 미확인'}
+            </p>
+          )}
+          <p className="memory-card__letter-text">{card.front.ocrText}</p>
+        </>
+      )}
     </article>
   )
 }
@@ -529,7 +547,12 @@ function CardBack({ card }) {
   return (
     <article className={`memory-card memory-card--back${isLetter ? ' memory-card--letter' : ''}${isTicket ? ' memory-card--ticket' : ''}${isReceipt ? ' memory-card--receipt' : ''}`}>
       <dl className="memory-card__metadata">
-        <div><dt>함께한 사람</dt><dd>{back.companions?.length ? back.companions.join(', ') : '혼자'}</dd></div>
+        {isLetter ? (
+          <>
+            <div><dt>쓴 사람</dt><dd>{card.front.sender || '확인되지 않음'}</dd></div>
+            <div><dt>받는 사람</dt><dd>{card.front.recipient || '확인되지 않음'}</dd></div>
+          </>
+        ) : <div><dt>함께한 사람</dt><dd>{back.companions?.length ? back.companions.join(', ') : '혼자'}</dd></div>}
         <div><dt>날씨</dt><dd>{back.weather}</dd></div>
         <div><dt>기분</dt><dd>{back.mood}</dd></div>
       </dl>

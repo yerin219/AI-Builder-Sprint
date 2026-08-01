@@ -39,7 +39,7 @@ public class MemoryDraftFrontService {
 		"venue",
 		"seat"
 	);
-	private static final Set<String> LETTER_FIELDS = Set.of("ocrText");
+	private static final Set<String> LETTER_FIELDS = Set.of("ocrText", "sender", "recipient");
 
 	private final MemoryDraftRepository memoryDraftRepository;
 	private final ObjectMapper objectMapper;
@@ -160,6 +160,8 @@ public class MemoryDraftFrontService {
 		validateAllowedFields(front, LETTER_FIELDS);
 		return new LetterConfirmedFront(
 			requiredText(front, "ocrText"),
+			optionalText(front, "sender"),
+			optionalText(front, "recipient"),
 			FrontImageMode.ORIGINAL
 		);
 	}

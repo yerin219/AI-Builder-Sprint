@@ -39,8 +39,13 @@ public record CardDetailResponse(
 	}
 
 	public record LetterFront(
-		String ocrText
+		String ocrText,
+		String sender,
+		String recipient
 	) implements CardFront {
+		public LetterFront(String ocrText) {
+			this(ocrText, null, null);
+		}
 	}
 
 	public sealed interface CardBack permits DiaryBack, DirectTicketBack, AiRecallTicketBack {

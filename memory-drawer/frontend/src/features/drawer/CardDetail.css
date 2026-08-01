@@ -89,6 +89,16 @@
   font-family: "NanumGoDing", "Noto Sans KR", sans-serif;
 }
 
+.memory-card--letter.memory-card--front .memory-card__letter-text {
+  margin-left: clamp(3.5rem, 10vw, 5.25rem);
+}
+
+.memory-card--letter .memory-card__letter-correspondents {
+  margin: 0 0 0.5rem clamp(3.5rem, 10vw, 5.25rem);
+  color: #766c61;
+  font-size: 0.85rem;
+}
+
 .memory-card--letter .memory-card__metadata {
   border-color: rgb(123 111 96 / 35%);
 }
@@ -560,6 +570,23 @@
   aspect-ratio: 1;
   border-radius: 0.5rem;
   object-fit: cover;
+}
+
+.memory-card--letter.memory-card--back .memory-card__photos {
+  grid-template-columns: 1fr;
+  flex: 1 1 auto;
+  min-height: 0;
+  margin-top: 0.75rem;
+  padding-right: 0.25rem;
+  overflow-y: auto;
+}
+
+.memory-card--letter.memory-card--back .memory-card__photos img {
+  width: 100%;
+  height: auto;
+  max-height: none;
+  aspect-ratio: auto;
+  object-fit: contain;
 }
 
 .card-navigation {

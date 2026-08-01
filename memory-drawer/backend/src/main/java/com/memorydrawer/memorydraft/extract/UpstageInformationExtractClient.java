@@ -43,8 +43,10 @@ public class UpstageInformationExtractClient implements InformationExtractClient
 		byte[] imageBytes,
 		String contentType
 	) {
-		if (documentType != DocumentType.RECEIPT && documentType != DocumentType.TICKET) {
-			throw new IllegalArgumentException("Information Extract는 영수증과 티켓에만 사용할 수 있습니다.");
+		if (documentType != DocumentType.RECEIPT
+			&& documentType != DocumentType.TICKET
+			&& documentType != DocumentType.LETTER) {
+			throw new IllegalArgumentException("지원하지 않는 문서 유형입니다.");
 		}
 
 		JsonNode response = callInformationExtract(
@@ -92,17 +94,22 @@ public class UpstageInformationExtractClient implements InformationExtractClient
 	}
 
 	private ObjectNode responseFormat(DocumentType documentType) {
-		List<FieldDefinition> fields = documentType == DocumentType.RECEIPT
-			? List.of(
+		List<FieldDefinition> fields = switch (documentType) {
+			case RECEIPT -> List.of(
 				new FieldDefinition("memoryDate", "문서에 명확히 표시된 날짜. YYYY-MM-DD 형식"),
 				new FieldDefinition("storeName", "영수증의 가게 또는 상호명")
-			)
-			: List.of(
+			);
+			case TICKET -> List.of(
 				new FieldDefinition("memoryDate", "문서에 명확히 표시된 행사 날짜. YYYY-MM-DD 형식"),
 				new FieldDefinition("eventName", "티켓의 행사, 공연, 영화 또는 전시 이름"),
 				new FieldDefinition("venue", "행사가 열린 장소"),
 				new FieldDefinition("seat", "티켓에 표시된 좌석")
 			);
+			case LETTER -> List.of(
+				new FieldDefinition("sender", "손편지 본문이나 서명에 명확히 드러난 쓴 사람. 추측하지 않음"),
+				new FieldDefinition("recipient", "손편지의 호칭이나 본문에 명확히 드러난 받는 사람. 추측하지 않음")
+			);
+		};
 
 		ObjectNode schema = objectMapper.createObjectNode();
 		schema.put("type", "object");
@@ -124,12 +131,11 @@ public class UpstageInformationExtractClient implements InformationExtractClient
 		schema.put("additionalProperties", false);
 
 		ObjectNode jsonSchema = objectMapper.createObjectNode();
-		jsonSchema.put(
-			"name",
-			documentType == DocumentType.RECEIPT
-				? "memory_drawer_receipt_front"
-				: "memory_drawer_ticket_front"
-		);
+		jsonSchema.put("name", switch (documentType) {
+			case RECEIPT -> "memory_drawer_receipt_front";
+			case TICKET -> "memory_drawer_ticket_front";
+			case LETTER -> "memory_drawer_letter_front";
+		});
 		jsonSchema.put("strict", true);
 		jsonSchema.set("schema", schema);
 
@@ -178,23 +184,38 @@ public class UpstageInformationExtractClient implements InformationExtractClient
 
 		try {
 			JsonNode result = objectMapper.readTree(content);
-			return documentType == DocumentType.RECEIPT
-				? new ExtractedFrontFields(
+			return switch (documentType) {
+				case RECEIPT -> new ExtractedFrontFields(
 					textOrNull(result, "memoryDate"),
 					textOrNull(result, "storeName"),
 					purchaseItemsOrEmpty(result),
 					null,
 					null,
+					null,
+					null,
 					null
-				)
-				: new ExtractedFrontFields(
+				);
+				case TICKET -> new ExtractedFrontFields(
 					textOrNull(result, "memoryDate"),
 					null,
 					List.of(),
 					textOrNull(result, "eventName"),
 					textOrNull(result, "venue"),
-					textOrNull(result, "seat")
+					textOrNull(result, "seat"),
+					null,
+					null
 				);
+				case LETTER -> new ExtractedFrontFields(
+					null,
+					null,
+					List.of(),
+					null,
+					null,
+					null,
+					textOrNull(result, "sender"),
+					textOrNull(result, "recipient")
+				);
+			};
 		} catch (JsonProcessingException exception) {
 			throw new ApiException(ErrorCode.AI_001, exception);
 		}
