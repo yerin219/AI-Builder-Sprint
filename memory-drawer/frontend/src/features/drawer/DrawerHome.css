@@ -200,7 +200,7 @@
 .memory-create-button {
   position: fixed;
   right: max(1rem, calc((100vw - var(--app-max-width)) / 2 + 1rem));
-  top: calc(1rem + env(safe-area-inset-top));
+  top: calc(6.75rem + env(safe-area-inset-top));
   bottom: auto;
   padding: 1rem 1.25rem;
   border: 0;
