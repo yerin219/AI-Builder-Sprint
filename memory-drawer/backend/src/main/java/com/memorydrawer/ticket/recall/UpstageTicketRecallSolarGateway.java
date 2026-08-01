@@ -30,17 +30,29 @@ public final class UpstageTicketRecallSolarGateway implements TicketRecallSolarG
 
 	private static final String TITLE_PROMPT = """
 		당신은 사용자가 작성한 하나 이상, 최대 세 개의 회상 답변을 바탕으로 기억 카드의 한국어 제목 한 줄을 제안합니다.
-		답변을 그대로 나열하거나 이어 붙이지 말고, 답변들이 함께 나타내는 핵심 장면이나 의미를 하나의 제목으로 압축하세요.
+		비어 있지 않은 모든 답변의 사실과 의미를 빠뜨리지 말고 하나의 기억 장면으로 종합하세요.
+		답변을 그대로 나열하거나 이어 붙이는 요약문이 아니라, 답변 사이의 관계를 자연스럽게 연결한 하나의 제목을 만드세요.
 
 		제목 작성 규칙:
 		- 공백을 포함해 8~24자를 권장합니다.
-		- 쉼표로 여러 답변을 나열하지 마세요.
+		- 모든 비어 있지 않은 답변이 제목의 전체 의미에 기여해야 하며, 특정 답변을 임의로 버리지 마세요.
+		- 각 답변의 핵심어를 차례대로 소개하지 말고 하나의 주어·행동·느낌 구조로 재구성하세요.
+		- 쉼표, 가운뎃점, 세미콜론, 슬래시나 막대 기호로 여러 답변을 나열하지 마세요.
 		- 서로 다른 답변의 문구 두 개 이상을 그대로 이어 붙이지 마세요.
 		- 질문 문장을 제목으로 반복하지 마세요.
 		- 명사구 또는 짧은 문장 한 줄로 작성하세요.
 		- 감성적으로 표현하되 답변에 없는 구체적인 사실, 인물, 장소나 감정을 만들거나 과장하지 마세요.
+		- 나쁜 예: 첫 등장, 함께한 떼창, 마지막 곡의 감동
+		- 좋은 예: 첫 무대를 함께 노래해 더 벅찼던 순간
 		- JSON의 titleCandidate만 반환하세요.
 		""";
+	private static final String TITLE_RETRY_PROMPT = TITLE_PROMPT + """
+
+		이전 후보가 답변별 핵심어를 구분자로 나열해 거부되었습니다.
+		이번에는 이전 후보를 고치는 데 그치지 말고, 원본 답변 전체의 관계를 다시 해석해 하나의 장면으로 재작성하세요.
+		구분자를 제거한 단순 연결문도 허용하지 않습니다.
+		""";
+	private static final String LIST_SEPARATORS = ",，、;；|/·";
 	private static final double CLASSIFICATION_TEMPERATURE = 0;
 	private static final double TITLE_TEMPERATURE = 0.3;
 
@@ -91,8 +103,27 @@ public final class UpstageTicketRecallSolarGateway implements TicketRecallSolarG
 		ObjectNode userInput = objectMapper.createObjectNode();
 		userInput.set("answers", answers);
 
+		String candidate = requestTitle(TITLE_PROMPT, userInput);
+		if (!isListLikeTitle(candidate)) {
+			return candidate;
+		}
+
+		ObjectNode retryInput = userInput.deepCopy();
+		retryInput.put("rejectedTitle", candidate);
+		retryInput.put(
+			"retryReason",
+			"답변별 핵심어를 나열하지 말고 모든 답변의 의미를 하나의 장면으로 종합해야 합니다."
+		);
+		String retryCandidate = requestTitle(TITLE_RETRY_PROMPT, retryInput);
+		if (isListLikeTitle(retryCandidate)) {
+			throw new ApiException(ErrorCode.AI_002);
+		}
+		return retryCandidate;
+	}
+
+	private String requestTitle(String prompt, ObjectNode userInput) {
 		JsonNode response = callSolar(
-			TITLE_PROMPT,
+			prompt,
 			userInput.toString(),
 			TITLE_TEMPERATURE,
 			responseFormat(
@@ -102,6 +133,10 @@ public final class UpstageTicketRecallSolarGateway implements TicketRecallSolarG
 			)
 		);
 		return responseContent(response, "titleCandidate");
+	}
+
+	private boolean isListLikeTitle(String title) {
+		return title.chars().anyMatch(character -> LIST_SEPARATORS.indexOf(character) >= 0);
 	}
 
 	private JsonNode callSolar(
