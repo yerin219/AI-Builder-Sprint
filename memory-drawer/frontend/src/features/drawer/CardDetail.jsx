@@ -495,15 +495,6 @@ function createTicketPages(answers) {
   })
 }
 
-function getTicketAnswerDensity(...parts) {
-  const length = parts.join('').replace(/\s/g, '').length
-
-  if (length <= 42) return 'spacious'
-  if (length <= 76) return 'standard'
-  if (length <= 120) return 'compact'
-  return 'dense'
-}
-
 function TicketBackContent({ back }) {
   const answers = Array.isArray(back.answers) && back.answers.length > 0
     ? back.answers
@@ -513,17 +504,9 @@ function TicketBackContent({ back }) {
   const currentPage = Math.min(selectedPage, pages.length - 1)
   const page = pages[currentPage]
   const companions = back.companions?.length ? back.companions.join(', ') : '혼자'
-  const answerDensity = getTicketAnswerDensity(
-    back.title,
-    companions,
-    back.weather,
-    back.mood,
-    page.heading,
-    page.answer,
-  )
 
   return (
-    <section className={`memory-card__ticket-back-content memory-card__ticket-back-content--${answerDensity}`} aria-label="티켓 뒷면 회상 기록">
+    <section className="memory-card__ticket-back-content memory-card__ticket-back-content--spacious" aria-label="티켓 뒷면 회상 기록">
       <h1 title={back.title}>{back.title || '나의 추억'}</h1>
       <p className="memory-card__ticket-summary">
         <span>동행: {companions}</span>
