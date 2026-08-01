@@ -104,6 +104,15 @@
     color: #fff7ea;
 }
 
+.ticket-choice-button {
+    width: fit-content;
+    min-width: 7.5rem;
+    margin-right: auto;
+    margin-left: auto;
+    padding-right: 1.5rem;
+    padding-left: 1.5rem;
+}
+
 .ticket-primary-button:disabled,
 .ticket-secondary-button:disabled,
 .ticket-mode-card:disabled,

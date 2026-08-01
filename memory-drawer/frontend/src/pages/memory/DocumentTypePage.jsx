@@ -71,7 +71,7 @@ export default function DocumentTypePage() {
     if (!showManualSelection && suggestedType) {
         return (
             <main className="mobile-page">
-                <button onClick={() => navigate(-1)}>←</button>
+                <button className="page-back-button" onClick={() => navigate(-1)}>←</button>
                 <h1>문서 인식 결과</h1>
 
                 <p>{suggestedType.label}으로 인식했어요. 맞나요?</p>
@@ -84,6 +84,7 @@ export default function DocumentTypePage() {
                 {error && <p className="form-error">{error}</p>}
 
                 <button
+                    className="choice-action-button"
                     disabled={loading}
                     onClick={() => handleConfirm(suggestedType.value)}
                 >
@@ -91,6 +92,7 @@ export default function DocumentTypePage() {
                 </button>
 
                 <button
+                    className="choice-action-button"
                     disabled={loading}
                     onClick={() => setShowManualSelection(true)}
                 >
@@ -103,7 +105,7 @@ export default function DocumentTypePage() {
     // AI가 판단하지 못했거나 “아니에요”를 누른 경우
     return (
         <main className="mobile-page">
-            <button onClick={() => navigate(-1)}>←</button>
+            <button className="page-back-button" onClick={() => navigate(-1)}>←</button>
             <h1>문서 유형 선택</h1>
             <p>문서 유형을 선택해주세요.</p>
 

@@ -89,7 +89,7 @@ export default function FrontConfirmPage() {
 
     return (
         <main className="mobile-page">
-            <button onClick={() => navigate(-1)}>←</button>
+            <button className="page-back-button" onClick={() => navigate(-1)}>←</button>
             <h1>정보 확인 및 수정</h1>
 
             <form onSubmit={handleSubmit}>
@@ -169,7 +169,7 @@ export default function FrontConfirmPage() {
 
                 {error && <p className="form-error">{error}</p>}
 
-                <button disabled={loading}>
+                <button className="choice-action-button" disabled={loading}>
                     {loading ? "저장 중..." : "맞아요"}
                 </button>
             </form>

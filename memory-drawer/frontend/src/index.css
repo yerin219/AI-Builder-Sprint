@@ -90,6 +90,23 @@ button {
   opacity: 0.6;
 }
 
+.mobile-page:not(.drawer-home):not(.auth-page) > .page-back-button {
+  width: 33.333%;
+  min-width: 5.5rem;
+  max-width: 7.5rem;
+  margin-right: auto;
+}
+
+.mobile-page:not(.drawer-home):not(.auth-page) > .choice-action-button,
+.mobile-page:not(.drawer-home):not(.auth-page) > form > .choice-action-button {
+  width: fit-content;
+  min-width: 7.5rem;
+  margin-right: auto;
+  margin-left: auto;
+  padding-right: 1.5rem;
+  padding-left: 1.5rem;
+}
+
 .mobile-page:not(.drawer-home):not(.auth-page) > form {
   display: grid;
   gap: 1rem;
