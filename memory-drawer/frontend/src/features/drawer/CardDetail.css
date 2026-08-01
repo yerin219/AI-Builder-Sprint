@@ -103,6 +103,18 @@
   color: #2d2d2d;
 }
 
+.memory-card--ticket.memory-card--front {
+  position: relative;
+}
+
+.memory-card--ticket.memory-card--front .memory-card__front-fields {
+  position: absolute;
+  top: 50%;
+  right: 1.5rem;
+  left: 1.5rem;
+  transform: translateY(-50%);
+}
+
 .memory-card--receipt {
   min-height: 36rem;
   border: 0;
@@ -128,6 +140,18 @@
 .memory-card--receipt .memory-card__diary {
   color: #2c2925;
   font-family: "NanumGoDing", "Noto Sans KR", sans-serif;
+}
+
+.memory-card--receipt.memory-card--front {
+  position: relative;
+}
+
+.memory-card--receipt.memory-card--front > h1 {
+  position: absolute;
+  top: 65%;
+  right: 1.5rem;
+  left: 1.5rem;
+  transform: translateY(-50%);
 }
 
 .memory-card__date {

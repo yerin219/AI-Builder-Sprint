@@ -64,7 +64,9 @@ function DrawerCardList({ year, onBack, onCardsLoaded, onSelectCard }) {
       {!isLoading && !errorMessage && cards.length > 0 && (
         <ul className="memory-card-list" aria-label={`${year}년 카드 목록`}>
           {cards.map((card) => {
-            const imageUrl = getImageUrl(card.front?.frontImageUrl)
+            const imageUrl = card.documentType === 'LETTER'
+              ? getImageUrl(card.front?.frontImageUrl)
+              : ''
 
             return (
               <li key={card.cardId}>
