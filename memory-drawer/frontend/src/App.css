@@ -1,0 +1,159 @@
+.app-shell {
+  min-height: 100dvh;
+  background: var(--background);
+}
+
+.app-brand-header {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: min(100%, var(--app-max-width));
+  height: 5.75rem;
+  margin: 0 auto;
+  padding-top: env(safe-area-inset-top);
+  background: var(--background);
+}
+
+.app-brand-header__logo-link {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 0.75rem;
+}
+
+.app-brand-header__logo-link:focus-visible {
+  outline: 2px solid #a9713c;
+  outline-offset: 2px;
+}
+
+.app-brand-header__logo {
+  display: block;
+  width: min(16rem, 66vw);
+  height: 5rem;
+  object-fit: contain;
+  mix-blend-mode: darken;
+}
+
+.app-brand-header__help,
+.app-brand-header__logout {
+  position: absolute;
+  top: 50%;
+  z-index: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transform: translateY(-50%);
+  border: 1px solid #4e2d14;
+  background: #5e3521;
+  color: #fff7ea;
+  font-weight: 700;
+  line-height: 1;
+  box-shadow: 0 0.2rem 0.5rem rgb(68 39 23 / 20%);
+}
+
+.app-brand-header__help {
+  left: max(0.75rem, env(safe-area-inset-left));
+  width: 2.35rem;
+  height: 2.35rem;
+  padding: 0;
+  border-radius: 50%;
+  font-size: 1.1rem;
+}
+
+.app-brand-header__logout {
+  right: max(0.75rem, env(safe-area-inset-right));
+  padding: 0.45rem 0.65rem;
+  border-radius: 999px;
+  font-size: 0.75rem;
+}
+
+.app-brand-header__help:hover,
+.app-brand-header__logout:hover {
+  background: #75462c;
+}
+
+.app-brand-header__help:focus-visible,
+.app-brand-header__logout:focus-visible {
+  outline: 2px solid #a9713c;
+  outline-offset: 2px;
+}
+
+.app-help-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  display: grid;
+  padding: 1.25rem;
+  background: rgb(54 35 19 / 42%);
+  place-items: center;
+}
+
+.app-help-dialog {
+  position: relative;
+  box-sizing: border-box;
+  width: min(100%, 22rem);
+  padding: 2rem 1.5rem 1.5rem;
+  border: 1px solid #d8bc96;
+  border-radius: 1.25rem;
+  background: #fff8eb;
+  box-shadow: 0 1rem 2.5rem rgb(54 35 19 / 25%);
+  color: #4d2e1c;
+  text-align: center;
+}
+
+.app-help-dialog__close {
+  position: absolute;
+  top: 0.75rem;
+  right: 0.9rem;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: #795e48;
+  font-size: 1.5rem;
+  line-height: 1;
+}
+
+.app-help-dialog__mark {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.75rem;
+  height: 2.75rem;
+  border-radius: 50%;
+  background: #5e3521;
+  color: #fff7ea;
+  font-size: 1.3rem;
+  font-weight: 800;
+}
+
+.app-help-dialog h2 {
+  margin: 0.9rem 0 0;
+  color: #362313;
+  font-size: 1.25rem;
+}
+
+.app-help-dialog p {
+  margin: 0.75rem 0 0;
+  color: #795e48;
+  font-size: 0.95rem;
+  line-height: 1.65;
+}
+
+.app-help-dialog__confirm {
+  width: 100%;
+  min-height: 2.9rem;
+  margin-top: 1.4rem;
+  border: 1px solid #4e2d14;
+  border-radius: 999px;
+  background: #5e3521;
+  color: #fff7ea;
+  font-weight: 800;
+}
+
+.app-shell > .mobile-page,
+.app-shell > .drawer-home,
+.app-shell > .drawer-view,
+.app-shell > .card-detail-page {
+  min-height: calc(100dvh - 5.75rem);
+}
