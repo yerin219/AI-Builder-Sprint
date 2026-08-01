@@ -1,7 +1,9 @@
 .card-save-page {
   box-sizing: border-box;
-  min-height: 100vh;
-  padding: 1.5rem 1rem 2rem;
+  width: min(100%, var(--app-max-width));
+  min-height: 100dvh;
+  margin: 0 auto;
+  padding: calc(1.25rem + env(safe-area-inset-top)) max(1rem, env(safe-area-inset-right)) calc(2rem + env(safe-area-inset-bottom)) max(1rem, env(safe-area-inset-left));
   background: #fbf5ea;
 }
 
@@ -9,7 +11,7 @@
 .card-preview,
 .save-result {
   box-sizing: border-box;
-  width: min(100%, 34rem);
+  width: 100%;
   margin: 0 auto;
   padding: 1.5rem;
   border: 1px solid #e6d7c2;
@@ -114,10 +116,13 @@
 }
 
 .secondary-button {
-  padding: 0 0.875rem;
-  border-radius: 0.75rem;
-  background: #f0e4d3;
-  color: #573918;
+  min-height: 3.25rem;
+  padding: 0.75rem 1rem;
+  border: 1px solid #4e2d14;
+  border-radius: 999px;
+  background: #6b4020;
+  box-shadow: inset 0 1px 1px #c99a6a66, 0 5px 10px #6b402055;
+  color: #fff7ea;
   font-weight: 700;
 }
 
@@ -211,7 +216,7 @@
   width: 100%;
   min-height: 3.25rem;
   margin-top: 1.75rem;
-  border-radius: 0.875rem;
+  border-radius: 999px;
   background: #815119;
   color: #fffdf8;
   font-weight: 700;
@@ -381,7 +386,7 @@
 
 .card-preview__actions {
   display: grid;
-  grid-template-columns: 1fr 2fr;
+  grid-template-columns: 1fr;
   gap: 0.75rem;
   margin-top: 1.5rem;
 }

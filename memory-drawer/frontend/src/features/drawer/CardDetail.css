@@ -35,7 +35,11 @@
 
 .memory-card {
   box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  width: 100%;
   min-height: 31rem;
+  overflow: hidden;
   padding: 2rem 1.5rem;
   border: 1px solid #e7ded2;
   border-radius: 0.9rem;
@@ -45,11 +49,13 @@
 }
 
 .memory-card--letter {
-  min-height: 31rem;
+  aspect-ratio: 1944 / 1468;
+  min-height: 0;
+  padding: clamp(1rem, 5vw, 1.8rem) clamp(1rem, 6vw, 2rem);
   border: 0;
   border-radius: 0;
   background-color: #f5f3ed;
-  background-image: url('../../assets/letter-note-template.png');
+  background-image: url('../../assets/letter-note-template.jpg');
   background-position: center;
   background-repeat: no-repeat;
   background-size: 100% 100%;
@@ -62,7 +68,10 @@
 
 .memory-card--letter .memory-card__letter-text,
 .memory-card--letter .memory-card__diary {
+  flex: 1;
+  min-height: 0;
   margin-right: 0.5rem;
+  overflow-y: auto;
   color: #443d35;
   font-family: "NanumGoDing", "Noto Sans KR", sans-serif;
 }
@@ -76,11 +85,13 @@
 }
 
 .memory-card--ticket {
-  min-height: 31rem;
+  aspect-ratio: 1061 / 425;
+  min-height: 0;
+  padding: clamp(0.8rem, 4vw, 1.25rem) clamp(1rem, 5vw, 1.75rem);
   border: 0;
   border-radius: 0;
   background-color: #fff;
-  background-image: url('../../assets/ticket-template.jpg');
+  background-image: url('../../assets/ticket-template.png');
   background-position: center;
   background-repeat: no-repeat;
   background-size: 100% 100%;
@@ -116,11 +127,13 @@
 }
 
 .memory-card--receipt {
-  min-height: 36rem;
+  aspect-ratio: 1080 / 1780;
+  min-height: 0;
+  padding: clamp(1.25rem, 6vw, 2.2rem) clamp(1rem, 5vw, 1.8rem);
   border: 0;
   border-radius: 0;
   background-color: #f8f7f4;
-  background-image: url('../../assets/receipt-template.png');
+  background-image: url('../../assets/receipt-template.jpg');
   background-position: center;
   background-repeat: no-repeat;
   background-size: 100% 100%;
@@ -138,6 +151,9 @@
 }
 
 .memory-card--receipt .memory-card__diary {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
   color: #2c2925;
   font-family: "NanumGoDing", "Noto Sans KR", sans-serif;
 }
@@ -155,6 +171,7 @@
 }
 
 .memory-card__date {
+  flex: 0 0 auto;
   margin: 0 0 1.25rem;
   color: #82654d;
   font-size: 0.85rem;
@@ -182,6 +199,8 @@
 }
 
 .memory-card__front-fields {
+  min-height: 0;
+  overflow-y: auto;
   text-align: center;
 }
 
@@ -226,7 +245,10 @@
 }
 
 .memory-card__ticket-memory {
+  flex: 1;
+  min-height: 0;
   margin-top: 1.75rem;
+  overflow-y: auto;
 }
 
 .memory-card__ticket-memory > p,

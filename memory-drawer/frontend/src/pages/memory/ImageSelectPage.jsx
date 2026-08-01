@@ -25,7 +25,7 @@ export default function ImageSelectPage() {
     };
 
     return (
-        <main className="mobile-page">
+        <main className="mobile-page memory-select-page">
             <button onClick={() => navigate(-1)}>←</button>
             <h1>사진 추가</h1>
 
