@@ -72,6 +72,21 @@ class TicketRecallServiceTest {
 			.isThrownBy(() -> service.generateTitle(TicketSubtype.MOVIE, answers));
 	}
 
+	@Test
+	void rejectsSolarTitleThatListsAnswersWithSeparators() {
+		var service = new TicketRecallService(
+			new StubSolarGateway(Optional.of(TicketSubtype.CONCERT_PERFORMANCE), "첫 등장, 떼창, 감동")
+		);
+		var answers = List.of(
+			new TicketRecallAnswer("CONCERT_PERFORMANCE_1", "첫 등장"),
+			new TicketRecallAnswer("CONCERT_PERFORMANCE_2", "떼창"),
+			new TicketRecallAnswer("CONCERT_PERFORMANCE_3", "감동")
+		);
+
+		assertThatIllegalStateException()
+			.isThrownBy(() -> service.generateTitle(TicketSubtype.CONCERT_PERFORMANCE, answers));
+	}
+
 	private record StubSolarGateway(
 		Optional<TicketSubtype> subtypeSuggestion,
 		String titleCandidate
