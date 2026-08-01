@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Navigate, Route, Routes, useLocation, useNavigate, useParams } from "react-router-dom";
+import { Link, Navigate, Route, Routes, useLocation, useNavigate, useParams } from "react-router-dom";
 import memoryDrawerLogo from "./assets/branding/memory-drawer-logo.png";
 import "./App.css";
 import CardSavePage from "./features/card-save/CardSavePage";
@@ -50,11 +50,13 @@ function App() {
         >
           ?
         </button>
-        <img
-          className="app-brand-header__logo"
-          src={memoryDrawerLogo}
-          alt="Memory Drawer"
-        />
+        <Link className="app-brand-header__logo-link" to="/home" aria-label="기억서랍 홈으로 이동">
+          <img
+            className="app-brand-header__logo"
+            src={memoryDrawerLogo}
+            alt="Memory Drawer"
+          />
+        </Link>
         {showLogout && (
           <button className="app-brand-header__logout" type="button" onClick={handleLogout}>
             로그아웃
