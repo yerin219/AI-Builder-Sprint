@@ -70,34 +70,37 @@ export default function DocumentTypePage() {
     // AI가 유형을 제안했고, 사용자가 아직 “아니에요”를 누르지 않은 경우
     if (!showManualSelection && suggestedType) {
         return (
-            <main className="mobile-page">
+            <main className="mobile-page document-type-result-page">
                 <button className="page-back-button" onClick={() => navigate(-1)}>←</button>
                 <h1>문서 인식 결과</h1>
 
-                <p>{suggestedType.label}으로 인식했어요. 맞나요?</p>
-
-                <section className="document-type-card">
-                    <span className="document-type-icon">{suggestedType.icon}</span>
-                    <strong>{suggestedType.label}</strong>
+                <section className="document-type-result-page__content">
+                    <p className="document-type-result-page__question">{suggestedType.label}으로 인식했어요.<br />맞나요?</p>
+                    <section className="document-type-card">
+                        <span className="document-type-icon">{suggestedType.icon}</span>
+                        <strong>{suggestedType.label}</strong>
+                    </section>
                 </section>
 
                 {error && <p className="form-error">{error}</p>}
 
-                <button
-                    className="choice-action-button"
-                    disabled={loading}
-                    onClick={() => handleConfirm(suggestedType.value)}
-                >
-                    {loading ? "확인 중..." : "맞아요"}
-                </button>
+                <div className="document-type-result-page__actions">
+                    <button
+                        className="choice-action-button"
+                        disabled={loading}
+                        onClick={() => handleConfirm(suggestedType.value)}
+                    >
+                        {loading ? "확인 중..." : "맞아요"}
+                    </button>
 
-                <button
-                    className="choice-action-button"
-                    disabled={loading}
-                    onClick={() => setShowManualSelection(true)}
-                >
-                    아니에요
-                </button>
+                    <button
+                        className="choice-action-button"
+                        disabled={loading}
+                        onClick={() => setShowManualSelection(true)}
+                    >
+                        아니에요
+                    </button>
+                </div>
             </main>
         );
     }

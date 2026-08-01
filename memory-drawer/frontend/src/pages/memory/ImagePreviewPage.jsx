@@ -58,9 +58,7 @@ export default function ImagePreviewPage() {
     if (loading) {
         return (
             <main className="mobile-page loading-page">
-                <div className="spinner" />
-                <h1>문서를 분석하고 있어요</h1>
-                <p>잠시만 기다려주세요.</p>
+                <p className="loading-page__message">잠시만 기다려주세요:)</p>
             </main>
         );
     }
