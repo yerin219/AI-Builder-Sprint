@@ -1,0 +1,9 @@
+server:
+  address: 127.0.0.1
+
+spring:
+  security:
+    user:
+      name: ${LOCAL_TEST_USER_ID}
+      password: ${LOCAL_TEST_PASSWORD}
+      roles: LOCAL_TEST

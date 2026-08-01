@@ -4,14 +4,38 @@ server:
     context-path: /api
 
 spring:
+  servlet:
+    multipart:
+      max-file-size: 10MB
+      max-request-size: 10MB
   datasource:
     url: ${DB_URL}
     username: ${DB_USERNAME}
     password: ${DB_PASSWORD}
     driver-class-name: com.mysql.cj.jdbc.Driver
+  sql:
+    init:
+      mode: always
   jpa:
     hibernate:
       ddl-auto: none
 
 upstage:
   api-key: ${UPSTAGE_API_KEY}
+  base-url: https://api.upstage.ai
+  document-parse-model: document-parse
+  information-extract-model: information-extract
+  solar-model: solar-pro3
+  connect-timeout: 5s
+  request-timeout: 30s
+
+memory-drawer:
+  auth:
+    jwt-secret: ${JWT_SECRET}
+    access-token-expiration-seconds: ${JWT_ACCESS_TOKEN_EXPIRATION_SECONDS}
+    issuer: memory-drawer
+  storage:
+    root: ${MEMORY_DRAWER_STORAGE_ROOT:./data/memory-drawer}
+  draft:
+    retention: 7d
+    cleanup-interval-ms: 3600000

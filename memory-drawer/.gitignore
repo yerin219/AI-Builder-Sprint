@@ -11,6 +11,8 @@ frontend/dist/
 # Backend
 backend/.gradle/
 backend/build/
+backend/bin/
+backend/data/
 
 # IDE
 .idea/
