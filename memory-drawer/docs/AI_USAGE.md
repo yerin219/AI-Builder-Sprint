@@ -224,4 +224,4 @@ Document Parse는 한 이미지에 한 번만 호출해야 하므로 서버에�
 - 팀원이 직접 결정·수정한 내용: 달력상 기념일 계산이 아니라 기존 총 경과일을 기준으로 365일을 1년으로 계산하기로 결정함.
 - 실행한 테스트와 결과: `npm.cmd test` 33개 통과, `npm.cmd run lint` 통과, `npm.cmd run build` 성공, `git diff --check` 통과.
 - 발생한 문제와 해결: 최신 develop의 손편지 OCR 표시 작업과 테스트 import 구간이 충돌해 두 기능의 import와 테스트를 모두 보존함.
-- 관련 PR 또는 커밋: `8b28a28`, PR 생성 후 갱신 예정.
+- 관련 PR 또는 커밋: `8b28a28`, PR #43.
