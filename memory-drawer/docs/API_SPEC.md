@@ -1247,7 +1247,17 @@ API 11 목록과 API 12 상세의 영수증 `front.purchaseItems`는 모두 사�
 {
   "memoryDate": "2026-07-25",
   "front": {
-    "storeName": "서면카페"
+    "storeName": "서면카페",
+    "purchaseItems": [
+      {
+        "name": "아이스 아메리카노",
+        "quantity": 2
+      },
+      {
+        "name": "치즈케이크",
+        "quantity": 1
+      }
+    ]
   },
   "back": {
     "companions": [
@@ -1287,6 +1297,8 @@ API 11 목록과 API 12 상세의 영수증 `front.purchaseItems`는 모두 사�
 
 - `memoryDate`, `front`, `back`은 모두 보내야 하는 전체 수정 요청입니다.
 - 문서 유형은 기존 카드의 유형을 사용하며 요청으로 변경하지 않습니다.
+- 영수증 `front.purchaseItems`는 `{ "name", "quantity" }` 배열이며 빈 배열로 모든 품목을 지울 수 있습니다. 각 이름은 비어 있지 않고 수량은 1 이상의 정수여야 합니다.
+- 신규 프론트엔드는 영수증 수정 시 `purchaseItems`를 항상 전송합니다. 기존 클라이언트가 이 필드를 생략한 경우에는 저장된 품목을 유지합니다.
 - 손편지는 `front.ocrText`만 수정할 수 있고 `frontImageMode`와 원본 이미지는 그대로 유지합니다.
 - 티켓은 저장 당시의 `writingMode`를 유지해야 합니다. `AI_RECALL` 카드의 질문 ID는 저장된 `ticketSubtype`의 고정 질문과 다시 검증합니다.
 - 영수증·손편지의 기존 뒷면 사진은 유지합니다. 이 API에서는 사진을 추가·교체·삭제하지 않습니다.

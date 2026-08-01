@@ -30,12 +30,14 @@ import com.memorydrawer.memorydraft.api.FrontImageMode;
 import com.memorydrawer.memorydraft.api.LetterConfirmedFront;
 import com.memorydrawer.memorydraft.api.ReceiptConfirmedFront;
 import com.memorydrawer.memorydraft.api.TicketConfirmedFront;
+import com.memorydrawer.receipt.PurchaseItem;
 import com.memorydrawer.ticket.recall.TicketSubtype;
 
 @Service
 public class CardUpdateService {
 
-	private static final Set<String> RECEIPT_FIELDS = Set.of("storeName");
+	private static final Set<String> RECEIPT_FIELDS = Set.of("storeName", "purchaseItems");
+	private static final Set<String> PURCHASE_ITEM_FIELDS = Set.of("name", "quantity");
 	private static final Set<String> TICKET_FIELDS = Set.of("eventName", "venue", "seat");
 	private static final Set<String> LETTER_FIELDS = Set.of("ocrText");
 
@@ -125,7 +127,12 @@ public class CardUpdateService {
 		return switch (documentType) {
 			case RECEIPT -> {
 				validateAllowedFields(requestedFront, RECEIPT_FIELDS);
-				yield new ReceiptConfirmedFront(requiredText(requestedFront, "storeName"));
+				yield new ReceiptConfirmedFront(
+					requiredText(requestedFront, "storeName"),
+					purchaseItemsOrEmpty(
+						requestedFront.has("purchaseItems") ? requestedFront : existingFront
+					)
+				);
 			}
 			case TICKET -> {
 				validateAllowedFields(requestedFront, TICKET_FIELDS);
@@ -143,6 +150,32 @@ public class CardUpdateService {
 				);
 			}
 		};
+	}
+
+	private List<PurchaseItem> purchaseItemsOrEmpty(JsonNode front) {
+		JsonNode value = front.get("purchaseItems");
+		if (value == null) {
+			return List.of();
+		}
+		if (!value.isArray()) {
+			throw new ApiException(ErrorCode.VALIDATION_001);
+		}
+
+		List<PurchaseItem> items = new ArrayList<>();
+		for (JsonNode item : value) {
+			if (!item.isObject()) {
+				throw new ApiException(ErrorCode.VALIDATION_001);
+			}
+			validateAllowedFields(item, PURCHASE_ITEM_FIELDS);
+			String name = requiredText(item, "name");
+			JsonNode quantity = item.get("quantity");
+			if (quantity == null || !quantity.isIntegralNumber()
+				|| !quantity.canConvertToInt() || quantity.intValue() < 1) {
+				throw new ApiException(ErrorCode.VALIDATION_001);
+			}
+			items.add(new PurchaseItem(name, quantity.intValue()));
+		}
+		return List.copyOf(items);
 	}
 
 	private TicketSubtype validateWritingModeAndSubtype(

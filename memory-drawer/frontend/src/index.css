@@ -228,7 +228,8 @@ button {
   gap: 0.75rem;
 }
 
-.purchase-items-editor__header h2 {
+.purchase-items-editor__header h2,
+.purchase-items-editor__header h3 {
   margin: 0;
   color: #5e3521;
   font-size: 1rem;

@@ -44,7 +44,14 @@ class CardUpdateServiceTest {
 
 		CardUpdateRequest request = new CardUpdateRequest(
 			LocalDate.of(2025, 12, 24),
-			json("{\"storeName\":\" 새 가게 \"}"),
+			json("""
+				{
+				  "storeName": " 새 가게 ",
+				  "purchaseItems": [
+				    {"name": " 아메리카노 ", "quantity": 2}
+				  ]
+				}
+				"""),
 			new CardBackRequest(
 				List.of("민지"), "맑음", "행복", null,
 				null, null, null, null
@@ -57,6 +64,10 @@ class CardUpdateServiceTest {
 		assertThat(response.memoryDate()).isEqualTo(LocalDate.of(2025, 12, 24));
 		assertThat(response.year()).isEqualTo(2025);
 		assertThat(json(card.getFrontData()).path("storeName").asText()).isEqualTo("새 가게");
+		assertThat(json(card.getFrontData()).path("purchaseItems").get(0).path("name").asText())
+			.isEqualTo("아메리카노");
+		assertThat(json(card.getFrontData()).path("purchaseItems").get(0).path("quantity").asInt())
+			.isEqualTo(2);
 		assertThat(json(card.getBackData()).path("companions").get(0).asText()).isEqualTo("민지");
 		assertThat(json(card.getBackData()).path("backPhotoCount").asInt()).isEqualTo(1);
 		verify(repository).saveAndFlush(card);
@@ -85,13 +96,36 @@ class CardUpdateServiceTest {
 	}
 
 	@Test
+	void keepsReceiptItemsWhenLegacyUpdateOmitsPurchaseItems() throws Exception {
+		MemoryCardRepository repository = mock(MemoryCardRepository.class);
+		MemoryCard card = receiptCard();
+		when(repository.findById(CARD_ID)).thenReturn(Optional.of(card));
+		CardUpdateService service = new CardUpdateService(repository, objectMapper);
+
+		CardUpdateRequest request = new CardUpdateRequest(
+			LocalDate.of(2026, 1, 2),
+			json("{\"storeName\":\"기존 가게\"}"),
+			new CardBackRequest(
+				List.of(), "흐림", "보통", null,
+				null, null, null, null
+			)
+		);
+
+		service.update(OWNER_ID, CARD_ID, request);
+
+		JsonNode purchaseItem = json(card.getFrontData()).path("purchaseItems").get(0);
+		assertThat(purchaseItem.path("name").asText()).isEqualTo("라떼");
+		assertThat(purchaseItem.path("quantity").asInt()).isEqualTo(1);
+	}
+
+	@Test
 	void rejectsUpdatingAnotherUsersCard() throws Exception {
 		MemoryCardRepository repository = mock(MemoryCardRepository.class);
 		when(repository.findById(CARD_ID)).thenReturn(Optional.of(receiptCard()));
 		CardUpdateService service = new CardUpdateService(repository, objectMapper);
 		CardUpdateRequest request = new CardUpdateRequest(
 			LocalDate.of(2026, 1, 1),
-			json("{\"storeName\":\"가게\"}"),
+			json("{\"storeName\":\"가게\",\"purchaseItems\":[]}"),
 			new CardBackRequest(List.of(), "맑음", "행복", "기억", null, null, null, null)
 		);
 
@@ -106,7 +140,7 @@ class CardUpdateServiceTest {
 			DRAFT_ID,
 			DocumentType.RECEIPT,
 			LocalDate.of(2026, 1, 1),
-			"{\"storeName\":\"기존 가게\"}",
+			"{\"storeName\":\"기존 가게\",\"purchaseItems\":[{\"name\":\"라떼\",\"quantity\":1}]}",
 			"{\"companions\":[],\"weather\":\"흐림\",\"mood\":\"보통\",\"diaryText\":null,\"writingMode\":null,\"ticketSubtype\":null,\"title\":null,\"memoryText\":null,\"answers\":null,\"backPhotoCount\":1}",
 			"drafts/owner/draft/original.jpg",
 			"[\"cards/owner/card/back/1.jpg\"]",
