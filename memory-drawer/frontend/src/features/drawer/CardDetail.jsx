@@ -85,7 +85,9 @@ function CardDetail({ cardId, cardsInYear, onBack, onSelectCard }) {
 }
 
 function CardFront({ card }) {
-  const imageUrl = getImageUrl(card.front?.frontImageUrl)
+  const imageUrl = card.documentType === 'LETTER'
+    ? getImageUrl(card.front?.frontImageUrl)
+    : ''
   const isTicket = card.documentType === 'TICKET'
   const isReceipt = card.documentType === 'RECEIPT'
 
