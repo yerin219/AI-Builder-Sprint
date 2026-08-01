@@ -19,6 +19,7 @@ public record YearCardListResponse(int year, List<CardItem> cards) {
 		DocumentType documentType,
 		@JsonFormat(pattern = "yyyy-MM-dd")
 		LocalDate memoryDate,
+		int layoutSeed,
 		CardFront front
 	) {
 	}

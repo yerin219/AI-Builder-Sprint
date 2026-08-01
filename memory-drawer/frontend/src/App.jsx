@@ -126,7 +126,7 @@ function getPageHelp(pathname) {
     return { title: "기억서랍", description: "연도 서랍을 누르면 저장한 카드를 볼 수 있어요. 새 기록은 ‘기억 담기’로 시작하세요." };
   }
   if (/^\/drawers\/\d+$/.test(pathname)) {
-    return { title: "연도별 카드", description: "보고 싶은 카드를 누르면 앞면과 뒷면의 추억을 자세히 볼 수 있어요." };
+    return { title: "열린 기억서랍", description: "서랍 안의 종이를 누르면 앞면이 크게 올라와요. 한 번 더 누르면 앞면과 뒷면을 자세히 볼 수 있어요." };
   }
   if (/^\/cards\/[^/]+$/.test(pathname)) {
     return { title: "카드 상세", description: "앞면·뒷면을 바꿔 보고, 아래 버튼으로 내용을 수정하거나 카드를 삭제할 수 있어요." };

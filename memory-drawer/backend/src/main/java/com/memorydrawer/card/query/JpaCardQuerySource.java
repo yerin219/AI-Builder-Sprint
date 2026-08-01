@@ -72,6 +72,7 @@ public class JpaCardQuerySource implements CardQuerySource {
 			card.getId(),
 			card.getDocumentType(),
 			card.getMemoryDate(),
+			card.getId().hashCode() & Integer.MAX_VALUE,
 			switch (card.getDocumentType()) {
 				case RECEIPT -> new YearCardListResponse.ReceiptFront(
 					requiredText(front, "storeName"),

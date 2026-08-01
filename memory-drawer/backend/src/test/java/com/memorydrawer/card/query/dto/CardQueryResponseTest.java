@@ -35,6 +35,7 @@ class CardQueryResponseTest {
 				cardId,
 				DocumentType.TICKET,
 				LocalDate.of(2026, 7, 25),
+				12345,
 				new YearCardListResponse.TicketFront("흠뻑쇼", "부산아시아드주경기장", null)
 			)
 		));
@@ -43,6 +44,7 @@ class CardQueryResponseTest {
 
 		assertThat(json.at("/cards/0/documentType").asText()).isEqualTo("TICKET");
 		assertThat(json.at("/cards/0/memoryDate").asText()).isEqualTo("2026-07-25");
+		assertThat(json.at("/cards/0/layoutSeed").asInt()).isEqualTo(12345);
 		assertThat(json.at("/cards/0/front/seat").isNull()).isTrue();
 		assertThat(json.at("/cards/0/front/frontImageUrl").isMissingNode()).isTrue();
 	}
@@ -54,6 +56,7 @@ class CardQueryResponseTest {
 				UUID.fromString("e89ed42d-1a89-4eea-8ddc-dca90a5c78c4"),
 				DocumentType.RECEIPT,
 				LocalDate.of(2026, 7, 25),
+				12345,
 				new YearCardListResponse.ReceiptFront(
 					"서면카페",
 					List.of(new PurchaseItem("아이스 아메리카노", 2))

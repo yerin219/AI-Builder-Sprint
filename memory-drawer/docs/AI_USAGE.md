@@ -225,3 +225,15 @@ Document Parse는 한 이미지에 한 번만 호출해야 하므로 서버에�
 - 실행한 검증: `UpstageTicketRecallSolarGatewayTests`, `TicketRecallServiceTest`, `git diff --check`.
 - 검증 결과: 관련 테스트 9개와 diff 검사 통과.
 - 발생한 문제와 해결: 첫 실행에서 기존 프롬프트 문구를 정확히 비교하던 테스트 1개가 실패해 새 프롬프트의 동일한 의미 문구로 기대값을 갱신한 뒤 재실행해 통과함.
+
+## 2026-08-01 열린 연도 서랍과 종이 앞면 배치
+
+- 사용 모델·도구: Codex, React, CSS, Spring Boot 조회 DTO, Gradle Wrapper, Node.js 내장 테스트, oxlint, Vite. Upstage API는 호출하지 않음.
+- 작업 목적: 연도 서랍의 세로 목록을 실제 열린 나무 서랍 안에 영수증·티켓·손편지 앞면이 펼쳐진 화면으로 바꾸고, 같은 카드가 다시 열어도 안정적인 위치를 유지하게 함.
+- 사용한 프롬프트 요약: 사용자가 제공한 열린 서랍 이미지를 배경으로 사용하고 기록 앞면은 서랍 내부에만 배치하며, 업로드 원본 이미지가 아닌 API의 사용자 확정 텍스트로 문서별 앞면을 재구성하도록 요청함. 심각한 오류가 아니면 검증 범위를 최소화하도록 요청함.
+- AI가 제안·수정한 내용: API 11 카드 UUID에서 0 이상의 `layoutSeed`를 만들어 반환하고, 프론트는 이를 미리 정한 서랍 슬롯과 기울기에 연결함. 구버전 응답에는 `cardId` 해시 fallback을 사용함. 최근 10장의 영수증·티켓·손편지 앞면을 나무 프레임과 앞판을 제외한 내부 영역에만 표시하고, 첫 클릭은 중앙 확대, 두 번째 클릭은 기존 상세 화면 이동으로 구현함. 영수증은 가게명·구매 품목, 티켓은 행사명·날짜·장소·좌석, 손편지는 날짜·OCR 본문 일부를 표시하며 원본 사진은 렌더링하지 않음.
+- 팀원이 직접 결정·수정한 내용: 사용자가 제공한 다섯 번째 이미지를 서랍 배경으로 사용하고, 카드 위치는 무작위처럼 보이되 재접속 시 유지하며, 한 화면에는 최근 10장까지만 펼치기로 결정함.
+- 실행한 검증: 프론트 `npm.cmd test`, `npm.cmd run lint`, `npm.cmd run build`; 백엔드 `CardQueryResponseTest`, `JpaCardQuerySourceTest`, `CardQueryServiceTest`; `git diff --check`.
+- 검증 결과: 프론트 테스트 35개, lint, Vite production build와 변경된 백엔드 조회 테스트가 통과함.
+- 발생한 문제와 해결: 로컬 프로세스와 OneDrive가 기존 `backend/build` 출력 폴더를 잡고 있어 첫 Gradle 실행이 실패함. 기존 폴더를 삭제하지 않고 임시 빌드·프로젝트 캐시 경로로 대상 테스트를 재실행해 통과함.
+- 관련 브랜치: `feature/open-drawer-memories`.

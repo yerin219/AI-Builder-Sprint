@@ -41,6 +41,7 @@ class JpaCardQuerySourceTest {
 
 		YearCardListResponse.ReceiptFront listFront = (YearCardListResponse.ReceiptFront)
 			source.findCards(OWNER_ID, 2026).getFirst().front();
+		int layoutSeed = source.findCards(OWNER_ID, 2026).getFirst().layoutSeed();
 		CardLookupResult.Found found = (CardLookupResult.Found) source.lookupCard(OWNER_ID, CARD_ID);
 		CardDetailResponse.ReceiptFront detailFront = (CardDetailResponse.ReceiptFront)
 			found.card().front();
@@ -48,6 +49,7 @@ class JpaCardQuerySourceTest {
 		assertThat(listFront.purchaseItems())
 			.containsExactly(new PurchaseItem("아이스 아메리카노", 2));
 		assertThat(detailFront.purchaseItems()).isEqualTo(listFront.purchaseItems());
+		assertThat(layoutSeed).isEqualTo(CARD_ID.hashCode() & Integer.MAX_VALUE);
 	}
 
 	@Test
