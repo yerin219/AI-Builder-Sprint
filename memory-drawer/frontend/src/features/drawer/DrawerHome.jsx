@@ -64,6 +64,7 @@ function DrawerHome({ onCreateMemory, onSelectYear }) {
             {drawers.map(({ year, cardCount }) => (
               <li key={year}>
                 <button type="button" className="drawer-item" onClick={() => onSelectYear?.(year)} aria-label={`${year}년 서랍, 카드 ${cardCount}장`}>
+                  <span className="drawer-item__handle" aria-hidden="true" />
                   <span className="drawer-item__tape">{year}</span>
                   <span className="drawer-item__count">카드 {cardCount}장</span>
                 </button>
