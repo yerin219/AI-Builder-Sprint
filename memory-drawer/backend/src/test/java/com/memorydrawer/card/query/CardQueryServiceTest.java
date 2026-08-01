@@ -89,7 +89,7 @@ class CardQueryServiceTest {
 			cardId,
 			DocumentType.TICKET,
 			memoryDate,
-			new YearCardListResponse.TicketFront("행사", "장소", null, "/files/cards/front")
+			new YearCardListResponse.TicketFront("행사", "장소", null)
 		);
 	}
 
@@ -98,7 +98,7 @@ class CardQueryServiceTest {
 			CARD_ID,
 			DocumentType.TICKET,
 			LocalDate.of(2026, 7, 25),
-			new CardDetailResponse.TicketFront("행사", "장소", null, "/files/cards/front"),
+			new CardDetailResponse.TicketFront("행사", "장소", null),
 			new CardDetailResponse.DirectTicketBack(
 				List.of(), "맑음", "행복", WritingMode.DIRECT, "제목", "추억"
 			)

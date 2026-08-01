@@ -13,6 +13,7 @@ import org.springframework.transaction.annotation.Transactional;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.memorydrawer.card.DocumentType;
 import com.memorydrawer.card.domain.MemoryCard;
 import com.memorydrawer.card.query.CardAccessDeniedException;
 import com.memorydrawer.card.query.CardNotFoundException;
@@ -44,6 +45,9 @@ public class CardImageService {
 	@Transactional(readOnly = true)
 	public CardImageResource front(UUID ownerId, UUID cardId) {
 		MemoryCard card = ownedCard(ownerId, cardId);
+		if (card.getDocumentType() != DocumentType.LETTER) {
+			throw new CardNotFoundException();
+		}
 		return load(card.getOriginalImageKey(), originalImageStorage::load);
 	}
 

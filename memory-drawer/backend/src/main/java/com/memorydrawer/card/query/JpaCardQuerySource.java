@@ -74,14 +74,12 @@ public class JpaCardQuerySource implements CardQuerySource {
 			card.getMemoryDate(),
 			switch (card.getDocumentType()) {
 				case RECEIPT -> new YearCardListResponse.ReceiptFront(
-					requiredText(front, "storeName"),
-					frontImageUrl(card)
+					requiredText(front, "storeName")
 				);
 				case TICKET -> new YearCardListResponse.TicketFront(
 					requiredText(front, "eventName"),
 					requiredText(front, "venue"),
-					optionalText(front, "seat"),
-					frontImageUrl(card)
+					optionalText(front, "seat")
 				);
 				case LETTER -> new YearCardListResponse.LetterFront(
 					requiredText(front, "ocrText"),
@@ -107,14 +105,12 @@ public class JpaCardQuerySource implements CardQuerySource {
 	private CardDetailResponse.CardFront detailFront(MemoryCard card, JsonNode front) {
 		return switch (card.getDocumentType()) {
 			case RECEIPT -> new CardDetailResponse.ReceiptFront(
-				requiredText(front, "storeName"),
-				frontImageUrl(card)
+				requiredText(front, "storeName")
 			);
 			case TICKET -> new CardDetailResponse.TicketFront(
 				requiredText(front, "eventName"),
 				requiredText(front, "venue"),
-				optionalText(front, "seat"),
-				frontImageUrl(card)
+				optionalText(front, "seat")
 			);
 			case LETTER -> new CardDetailResponse.LetterFront(
 				requiredText(front, "ocrText"),

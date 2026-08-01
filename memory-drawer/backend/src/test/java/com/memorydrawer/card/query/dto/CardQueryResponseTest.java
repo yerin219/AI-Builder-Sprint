@@ -34,7 +34,7 @@ class CardQueryResponseTest {
 				cardId,
 				DocumentType.TICKET,
 				LocalDate.of(2026, 7, 25),
-				new YearCardListResponse.TicketFront("흠뻑쇼", "부산아시아드주경기장", null, "/files/cards/front")
+				new YearCardListResponse.TicketFront("흠뻑쇼", "부산아시아드주경기장", null)
 			)
 		));
 
@@ -43,6 +43,7 @@ class CardQueryResponseTest {
 		assertThat(json.at("/cards/0/documentType").asText()).isEqualTo("TICKET");
 		assertThat(json.at("/cards/0/memoryDate").asText()).isEqualTo("2026-07-25");
 		assertThat(json.at("/cards/0/front/seat").isNull()).isTrue();
+		assertThat(json.at("/cards/0/front/frontImageUrl").isMissingNode()).isTrue();
 	}
 
 	@Test
@@ -51,7 +52,7 @@ class CardQueryResponseTest {
 			UUID.fromString("e89ed42d-1a89-4eea-8ddc-dca90a5c78c4"),
 			DocumentType.TICKET,
 			LocalDate.of(2026, 7, 25),
-			new CardDetailResponse.TicketFront("흠뻑쇼", "부산아시아드주경기장", null, "/files/cards/front"),
+			new CardDetailResponse.TicketFront("흠뻑쇼", "부산아시아드주경기장", null),
 			new CardDetailResponse.AiRecallTicketBack(
 				List.of("현수"),
 				"맑음",
@@ -71,6 +72,7 @@ class CardQueryResponseTest {
 
 		assertThat(json.at("/back/writingMode").asText()).isEqualTo("AI_RECALL");
 		assertThat(json.at("/back/ticketSubtype").asText()).isEqualTo("CONCERT_PERFORMANCE");
+		assertThat(json.at("/front/frontImageUrl").isMissingNode()).isTrue();
 		assertThat(json.at("/back/memoryText").isMissingNode()).isTrue();
 		assertThat(json.at("/back/answers/0/question").asText()).isEqualTo("가장 벅찼던 순간은 언제였나요?");
 		assertThat(json.at("/back/answers/0/answer").isNull()).isTrue();
