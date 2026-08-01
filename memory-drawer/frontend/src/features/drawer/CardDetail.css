@@ -348,8 +348,8 @@
 }
 
 .memory-card--receipt.memory-card--back {
-  /* 영수증의 점선 위까지만 기록과 사진이 표시되도록 하단 영역을 비워둔다. */
-  padding-bottom: 54%;
+  /* 기록·사진은 바코드 바로 위까지만 표시하고, 하단 바코드 영역은 비워둔다. */
+  padding-bottom: 42%;
 }
 
 .memory-card--receipt.memory-card--back .memory-card__metadata {
