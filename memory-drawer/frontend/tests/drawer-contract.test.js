@@ -33,7 +33,7 @@ const {
 } = await import("../src/features/drawer/drawerApi.js");
 const { setAccessToken } = await import("../src/utils/tokenStorage.js");
 const { resolveApiUrl } = await import("../src/api/http.js");
-const { getCardTitle, getDaysAgo, getImageUrl } = await import("../src/features/drawer/drawerViewUtils.js");
+const { createDrawerLayout, getCardTitle, getDaysAgo, getImageUrl } = await import("../src/features/drawer/drawerViewUtils.js");
 
 const successResponse = (data) => ({
     ok: true,
@@ -78,7 +78,8 @@ describe("API 8 drawer read contracts", () => {
                     cardId: "card-1",
                     documentType: "TICKET",
                     memoryDate: "2026-07-25",
-                    front: { eventName: "공연", frontImageUrl: "/files/cards/card-1/front" },
+                    layoutSeed: 12345,
+                    front: { eventName: "공연", venue: "공연장", seat: null },
                 },
             ],
         };
@@ -164,5 +165,34 @@ describe("letter drawer text previews", () => {
             }),
             "사랑하는 어머니께 오늘도 감사합니다.",
         );
+    });
+});
+
+describe("open drawer paper layout", () => {
+    it("uses the backend seed for a stable collision-free placement", () => {
+        const cards = [
+            { cardId: "card-1", layoutSeed: 4 },
+            { cardId: "card-2", layoutSeed: 4 },
+            { cardId: "card-3", layoutSeed: 9 },
+        ];
+
+        const firstLayout = createDrawerLayout(cards);
+        const secondLayout = createDrawerLayout(cards);
+
+        assert.deepEqual(firstLayout, secondLayout);
+        assert.equal(new Set(firstLayout.map(({ placement }) => `${placement.x}-${placement.y}`)).size, 3);
+    });
+
+    it("shows only the most recent ten cards while preserving their API order", () => {
+        const cards = Array.from({ length: 12 }, (_, index) => ({
+            cardId: `card-${index + 1}`,
+            layoutSeed: index,
+        }));
+
+        const layout = createDrawerLayout(cards);
+
+        assert.equal(layout.length, 10);
+        assert.equal(layout[0].card.cardId, "card-3");
+        assert.equal(layout.at(-1).card.cardId, "card-12");
     });
 });

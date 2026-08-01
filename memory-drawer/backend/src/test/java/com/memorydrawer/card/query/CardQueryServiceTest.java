@@ -89,6 +89,7 @@ class CardQueryServiceTest {
 			cardId,
 			DocumentType.TICKET,
 			memoryDate,
+			cardId.hashCode() & Integer.MAX_VALUE,
 			new YearCardListResponse.TicketFront("행사", "장소", null)
 		);
 	}
