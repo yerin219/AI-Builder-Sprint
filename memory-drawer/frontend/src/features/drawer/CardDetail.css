@@ -140,7 +140,7 @@
 
 .memory-card--ticket.memory-card--front .memory-card__front-fields h1 {
   flex: 0 1 auto;
-  font-size: 1.3rem;
+  font-size: 1.55rem;
   line-height: 1.28;
   overflow-wrap: anywhere;
 }
@@ -148,38 +148,38 @@
 .memory-card--ticket.memory-card--front .memory-card__front-fields p {
   flex: 0 1 auto;
   margin: 0.2rem 0 0;
-  font-size: 0.8rem;
+  font-size: 0.98rem;
   line-height: 1.25;
   overflow-wrap: anywhere;
 }
 
 .memory-card--ticket.memory-card--front .memory-card__ticket-date {
   margin-top: 0.3rem;
-  font-size: 0.76rem;
+  font-size: 0.92rem;
 }
 
 .memory-card--ticket.memory-card--front .memory-card__front-fields--compact h1 {
-  font-size: 1.08rem;
+  font-size: 1.3rem;
 }
 
 .memory-card--ticket.memory-card--front .memory-card__front-fields--compact p {
-  font-size: 0.72rem;
+  font-size: 0.84rem;
 }
 
 .memory-card--ticket.memory-card--front .memory-card__front-fields--dense h1 {
-  font-size: 0.9rem;
+  font-size: 1.08rem;
 }
 
 .memory-card--ticket.memory-card--front .memory-card__front-fields--dense p {
-  font-size: 0.66rem;
+  font-size: 0.72rem;
 }
 
 .memory-card--ticket.memory-card--front .memory-card__front-fields--tiny h1 {
-  font-size: 0.74rem;
+  font-size: 0.88rem;
 }
 
 .memory-card--ticket.memory-card--front .memory-card__front-fields--tiny p {
-  font-size: 0.58rem;
+  font-size: 0.62rem;
 }
 
 .memory-card--ticket.memory-card--back {
