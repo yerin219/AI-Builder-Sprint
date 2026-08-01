@@ -53,7 +53,7 @@ class CardImageServiceTest {
 
 	@Test
 	void loadsOwnedFrontImageWithStoredMediaType() {
-		MemoryCard card = card("drafts/owner/card/original.jpg", "[]");
+		MemoryCard card = card(DocumentType.LETTER, "drafts/owner/card/original.jpg", "[]");
 		byte[] bytes = {1, 2, 3};
 		when(memoryCardRepository.findById(CARD_ID)).thenReturn(Optional.of(card));
 		when(originalImageStorage.load(card.getOriginalImageKey())).thenReturn(bytes);
@@ -67,6 +67,7 @@ class CardImageServiceTest {
 	@Test
 	void loadsRequestedOneBasedBackPhoto() {
 		MemoryCard card = card(
+			DocumentType.RECEIPT,
 			"drafts/owner/card/original.jpg",
 			"[\"cards/owner/card/back/1.png\",\"cards/owner/card/back/2.webp\"]"
 		);
@@ -82,7 +83,7 @@ class CardImageServiceTest {
 
 	@Test
 	void rejectsAnotherUsersCardBeforeLoadingImage() {
-		MemoryCard card = card("drafts/owner/card/original.jpg", "[]");
+		MemoryCard card = card(DocumentType.RECEIPT, "drafts/owner/card/original.jpg", "[]");
 		when(memoryCardRepository.findById(CARD_ID)).thenReturn(Optional.of(card));
 
 		assertThatThrownBy(() -> cardImageService.front(OTHER_OWNER_ID, CARD_ID))
@@ -97,7 +98,7 @@ class CardImageServiceTest {
 		assertThatThrownBy(() -> cardImageService.front(OWNER_ID, CARD_ID))
 			.isInstanceOf(CardNotFoundException.class);
 
-		MemoryCard card = card("drafts/owner/card/original.jpg", "[]");
+		MemoryCard card = card(DocumentType.RECEIPT, "drafts/owner/card/original.jpg", "[]");
 		when(memoryCardRepository.findById(CARD_ID)).thenReturn(Optional.of(card));
 		assertThatThrownBy(() -> cardImageService.back(OWNER_ID, CARD_ID, 1))
 			.isInstanceOf(CardNotFoundException.class);
@@ -105,7 +106,7 @@ class CardImageServiceTest {
 
 	@Test
 	void mapsCorruptPhotoMetadataToCardError() {
-		MemoryCard card = card("drafts/owner/card/original.jpg", "{not-json}");
+		MemoryCard card = card(DocumentType.RECEIPT, "drafts/owner/card/original.jpg", "{not-json}");
 		when(memoryCardRepository.findById(CARD_ID)).thenReturn(Optional.of(card));
 
 		assertThatThrownBy(() -> cardImageService.back(OWNER_ID, CARD_ID, 1))
@@ -116,7 +117,7 @@ class CardImageServiceTest {
 
 	@Test
 	void mapsMissingStoredImageToCardNotFound() {
-		MemoryCard card = card("drafts/owner/card/original.jpg", "[]");
+		MemoryCard card = card(DocumentType.LETTER, "drafts/owner/card/original.jpg", "[]");
 		when(memoryCardRepository.findById(CARD_ID)).thenReturn(Optional.of(card));
 		when(originalImageStorage.load(card.getOriginalImageKey())).thenThrow(
 			new IllegalStateException("image is missing", new NoSuchFileException(card.getOriginalImageKey()))
@@ -126,12 +127,32 @@ class CardImageServiceTest {
 			.isInstanceOf(CardNotFoundException.class);
 	}
 
-	private MemoryCard card(String originalImageKey, String backPhotoKeys) {
+	@Test
+	void rejectsReceiptFrontImageBeforeLoadingStoredFile() {
+		MemoryCard card = card(DocumentType.RECEIPT, "drafts/owner/card/original.jpg", "[]");
+		when(memoryCardRepository.findById(CARD_ID)).thenReturn(Optional.of(card));
+
+		assertThatThrownBy(() -> cardImageService.front(OWNER_ID, CARD_ID))
+			.isInstanceOf(CardNotFoundException.class);
+		verify(originalImageStorage, never()).load(card.getOriginalImageKey());
+	}
+
+	@Test
+	void rejectsTicketFrontImageBeforeLoadingStoredFile() {
+		MemoryCard card = card(DocumentType.TICKET, "drafts/owner/card/original.jpg", "[]");
+		when(memoryCardRepository.findById(CARD_ID)).thenReturn(Optional.of(card));
+
+		assertThatThrownBy(() -> cardImageService.front(OWNER_ID, CARD_ID))
+			.isInstanceOf(CardNotFoundException.class);
+		verify(originalImageStorage, never()).load(card.getOriginalImageKey());
+	}
+
+	private MemoryCard card(DocumentType documentType, String originalImageKey, String backPhotoKeys) {
 		return MemoryCard.create(
 			CARD_ID,
 			OWNER_ID,
 			UUID.fromString("00000000-0000-0000-0000-000000000004"),
-			DocumentType.RECEIPT,
+			documentType,
 			LocalDate.of(2026, 7, 31),
 			"{\"storeName\":\"가게\"}",
 			"{}",

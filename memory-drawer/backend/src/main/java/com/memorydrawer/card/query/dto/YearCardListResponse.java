@@ -25,14 +25,13 @@ public record YearCardListResponse(int year, List<CardItem> cards) {
 	public sealed interface CardFront permits ReceiptFront, TicketFront, LetterFront {
 	}
 
-	public record ReceiptFront(String storeName, String frontImageUrl) implements CardFront {
+	public record ReceiptFront(String storeName) implements CardFront {
 	}
 
 	public record TicketFront(
 		String eventName,
 		String venue,
-		String seat,
-		String frontImageUrl
+		String seat
 	) implements CardFront {
 	}
 

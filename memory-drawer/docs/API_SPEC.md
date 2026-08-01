@@ -156,14 +156,15 @@ Authorization: Bearer {accessToken}
 ### 2.8 카드 배경 규칙
 
 - 영수증·티켓·손편지 카드의 배경은 모두 흰색으로 통일합니다.
-- 원본 종이 이미지의 형태와 내용은 흰색 카드 안에서 표시하되, 원본 이미지의 색상을 카드 배경색으로 추출하거나 반영하지 않습니다.
+- 영수증과 티켓 앞면에는 사용자가 확인한 Upstage 추출값만 표시하고, 분석에 사용한 원본 이미지는 표시하지 않습니다.
+- 손편지는 `frontImageMode`에 따라 글씨 분리 결과 또는 원본 이미지를 표시할 수 있습니다.
 - 카드 배경색 선택·변경 기능을 제공하지 않습니다.
 - 카드 배경색과 관련된 필드를 요청·응답에 포함하지 않습니다.
 - 흰색 배경은 프론트엔드 표시 규칙이며 백엔드가 별도 값으로 저장하거나 반환하지 않습니다.
 
 ### 2.9 보호된 카드 이미지 URL
 
-카드 목록·상세의 `frontImageUrl`, `backPhotoUrls`는 Base URL 아래에서 조회하는 상대 API 경로입니다.
+손편지 카드의 `frontImageUrl`과 영수증·손편지 카드의 `backPhotoUrls`는 Base URL 아래에서 조회하는 상대 API 경로입니다. 영수증·티켓의 앞면 응답에는 `frontImageUrl`이 포함되지 않습니다.
 
 ```http
 GET /files/cards/{cardId}/front
@@ -171,7 +172,8 @@ GET /files/cards/{cardId}/back/{index}
 Authorization: Bearer {accessToken}
 ```
 
-- 프론트엔드는 예를 들어 `/files/cards/{cardId}/front`를 `{Base URL}/files/cards/{cardId}/front`로 요청합니다.
+- 프론트엔드는 손편지 앞면에 한해 `/files/cards/{cardId}/front`를 `{Base URL}/files/cards/{cardId}/front`로 요청합니다.
+- 영수증·티켓 카드의 앞면 이미지 경로를 직접 요청하면 `404 CARD_002`를 반환합니다.
 - `index`는 `1`부터 시작하며 상세 응답의 `backPhotoUrls` 순서를 따릅니다.
 - 성공 응답은 공통 JSON envelope가 아닌 저장된 이미지 binary이며 `Content-Type`은 `image/jpeg`, `image/png`, `image/webp` 중 하나입니다.
 - 성공 응답은 `Cache-Control: no-store`를 사용합니다.
@@ -1041,8 +1043,7 @@ Solar 호출이 실패하면 사용자의 답변을 그대로 유지하고 제�
         "documentType": "RECEIPT",
         "memoryDate": "2026-04-02",
         "front": {
-          "storeName": "서면카페",
-          "frontImageUrl": "/files/cards/e10e31cb/front"
+          "storeName": "서면카페"
         }
       },
       {
@@ -1052,8 +1053,7 @@ Solar 호출이 실패하면 사용자의 답변을 그대로 유지하고 제�
         "front": {
           "eventName": "흠뻑쇼",
           "venue": "부산아시아드주경기장",
-          "seat": null,
-          "frontImageUrl": "/files/cards/e89ed42d/front"
+          "seat": null
         }
       }
     ]
@@ -1086,8 +1086,7 @@ Solar 호출이 실패하면 사용자의 답변을 그대로 유지하고 제�
     "front": {
       "eventName": "흠뻑쇼",
       "venue": "부산아시아드주경기장",
-      "seat": null,
-      "frontImageUrl": "/files/cards/e89ed42d/front"
+      "seat": null
     },
     "back": {
       "companions": [
@@ -1124,8 +1123,8 @@ Solar 호출이 실패하면 사용자의 답변을 그대로 유지하고 제�
 
 | 기록 유형 | 앞면 | 뒷면 |
 |---|---|---|
-| 영수증 | `storeName`, `frontImageUrl` | `companions`, `weather`, `mood`, `diaryText`, `backPhotoUrls` |
-| 티켓 직접 기록 | `eventName`, `venue`, `seat`, `frontImageUrl` | 공통 정보, `writingMode`, `title`, `memoryText` |
+| 영수증 | `storeName` | `companions`, `weather`, `mood`, `diaryText`, `backPhotoUrls` |
+| 티켓 직접 기록 | `eventName`, `venue`, `seat` | 공통 정보, `writingMode`, `title`, `memoryText` |
 | 티켓 AI 질문 | 티켓 직접 기록과 동일 | 공통 정보, `writingMode`, `ticketSubtype`, `title`, `answers` |
 | 손편지 | `ocrText`, `frontImageMode`, `frontImageUrl` | `companions`, `weather`, `mood`, `diaryText`, `backPhotoUrls` |
 
