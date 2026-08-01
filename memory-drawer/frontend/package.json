@@ -10,11 +10,15 @@
     "dev": "vite",
     "build": "vite build",
     "lint": "oxlint",
+    "test": "node --test",
+    "test:e2e": "node scripts/api-3-5-e2e.mjs",
+    "test:e2e:api6-8": "node scripts/api-6-8-e2e.mjs",
     "preview": "vite preview"
   },
   "dependencies": {
     "react": "^19.2.7",
-    "react-dom": "^19.2.7"
+    "react-dom": "^19.2.7",
+    "react-router-dom": "^7.18.2"
   },
   "devDependencies": {
     "@types/react": "^19.2.17",

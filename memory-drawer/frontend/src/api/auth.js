@@ -1,14 +1,23 @@
-import { apiRequest } from './http'
+import { request } from "./http.js";
 
-export function login(email, password) {
-  return apiRequest('/auth/login', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({
-      email,
-      password,
-    }),
-  })
+export function signup({ email, password }) {
+    return request("/auth/signup", {
+        method: "POST",
+        auth: false,
+        body: {
+            email: email.trim(),
+            password,
+        },
+    });
+}
+
+export function login({ email, password }) {
+    return request("/auth/login", {
+        method: "POST",
+        auth: false,
+        body: {
+            email: email.trim(),
+            password,
+        },
+    });
 }
