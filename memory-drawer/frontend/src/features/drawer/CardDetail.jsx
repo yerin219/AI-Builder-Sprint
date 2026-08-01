@@ -465,33 +465,20 @@ function createTicketPages(answers) {
   return answers.flatMap(({ question, answer }, questionIndex) => {
     const questionText = question?.trim() || '추억에 관한 질문을 확인해 보세요.'
     const answerText = answer?.trim() || '답변을 남기지 않았어요.'
-    const totalLength = Array.from(`${questionText}${answerText}`.replace(/\s/g, '')).length
+    const questionParts = splitTicketText(questionText, 24, '추억에 관한 질문을 확인해 보세요.')
+    const answerParts = splitTicketText(answerText, 28, '답변을 남기지 않았어요.')
+    const pageCount = Math.max(questionParts.length, answerParts.length)
 
-    if (totalLength <= 50) {
-      return [{
-        heading: `질문 ${questionIndex + 1}`,
-        question: questionText,
-        answer: answerText,
-      }]
-    }
-
-    return [
-      ...splitTicketText(questionText, 28, '추억에 관한 질문을 확인해 보세요.').map((questionPart, partIndex) => ({
-        heading: `질문 ${questionIndex + 1}${partIndex > 0 ? ' (계속)' : ''}`,
-        question: questionPart,
-        answer: '',
-      })),
-      ...splitTicketText(answerText, 42, '답변을 남기지 않았어요.').map((answerPart, partIndex) => ({
-        heading: `질문 ${questionIndex + 1} 답변${partIndex > 0 ? ' (계속)' : ''}`,
-        question: '',
-        answer: answerPart,
-      })),
-    ]
+    return Array.from({ length: pageCount }, (_, pageIndex) => ({
+      // 답변이 여러 페이지여도 질문은 매 페이지에서 함께 보여 준다.
+      heading: `질문 ${questionIndex + 1}${pageIndex > 0 ? ' (계속)' : ''}. ${questionParts[Math.min(pageIndex, questionParts.length - 1)]}`,
+      answer: answerParts[Math.min(pageIndex, answerParts.length - 1)],
+    }))
   })
 }
 
-function getTicketAnswerDensity(heading, question, answer) {
-  const length = `${heading || ''}${question || ''}${answer || ''}`.replace(/\s/g, '').length
+function getTicketAnswerDensity(...parts) {
+  const length = parts.join('').replace(/\s/g, '').length
 
   if (length <= 42) return 'spacious'
   if (length <= 76) return 'standard'
@@ -508,7 +495,14 @@ function TicketBackContent({ back }) {
   const currentPage = Math.min(selectedPage, pages.length - 1)
   const page = pages[currentPage]
   const companions = back.companions?.length ? back.companions.join(', ') : '혼자'
-  const answerDensity = getTicketAnswerDensity(page.heading, page.question, page.answer)
+  const answerDensity = getTicketAnswerDensity(
+    back.title,
+    companions,
+    back.weather,
+    back.mood,
+    page.heading,
+    page.answer,
+  )
 
   return (
     <section className={`memory-card__ticket-back-content memory-card__ticket-back-content--${answerDensity}`} aria-label="티켓 뒷면 회상 기록">
@@ -523,7 +517,6 @@ function TicketBackContent({ back }) {
 
       <section className="memory-card__ticket-page" aria-live="polite">
         <h2>{page.heading}</h2>
-        {page.question && <p className="memory-card__ticket-question">{page.question}</p>}
         {page.answer && <p className="memory-card__ticket-answer">{page.answer}</p>}
       </section>
 
