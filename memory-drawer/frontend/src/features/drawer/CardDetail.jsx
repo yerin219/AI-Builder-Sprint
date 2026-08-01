@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
-import { fetchCardDetail } from './drawerApi'
+import { deleteCard, fetchCardDetail, updateCard } from './drawerApi'
 import AuthorizedImage from './AuthorizedImage'
 import { DOCUMENT_LABELS, formatMemoryDate, getImageUrl } from './drawerViewUtils'
 import './CardDetail.css'
@@ -22,6 +22,9 @@ function CardDetail({ cardId, cardsInYear, onBack, onSelectCard }) {
   const [isLoading, setIsLoading] = useState(true)
   const [errorMessage, setErrorMessage] = useState('')
   const [reloadKey, setReloadKey] = useState(0)
+  const [isEditing, setIsEditing] = useState(false)
+  const [isSubmitting, setIsSubmitting] = useState(false)
+  const [actionMessage, setActionMessage] = useState('')
 
   const currentCardIndex = useMemo(
     () => cardsInYear.findIndex((item) => item.cardId === cardId),
@@ -43,6 +46,7 @@ function CardDetail({ cardId, cardsInYear, onBack, onSelectCard }) {
       try {
         const loadedCard = await fetchCardDetail(cardId, { signal: controller.signal })
         setCard(loadedCard)
+        setIsEditing(false)
       } catch (error) {
         if (error.name !== 'AbortError') {
           setErrorMessage(error.message)
@@ -57,6 +61,36 @@ function CardDetail({ cardId, cardsInYear, onBack, onSelectCard }) {
     loadCard()
     return () => controller.abort()
   }, [cardId, reloadKey])
+
+  async function handleUpdate(payload) {
+    setIsSubmitting(true)
+    setActionMessage('')
+
+    try {
+      await updateCard(card.cardId, payload)
+      setIsEditing(false)
+      setActionMessage('카드를 수정했어요.')
+      setReloadKey((key) => key + 1)
+    } catch (error) {
+      setActionMessage(error.message)
+    } finally {
+      setIsSubmitting(false)
+    }
+  }
+
+  async function handleDelete() {
+    if (!window.confirm('이 추억 카드를 삭제할까요? 삭제한 카드와 사진은 복구할 수 없어요.')) return
+
+    setIsSubmitting(true)
+    setActionMessage('')
+    try {
+      await deleteCard(card.cardId)
+      onBack?.()
+    } catch (error) {
+      setActionMessage(error.message)
+      setIsSubmitting(false)
+    }
+  }
 
   return (
     <main className="card-detail-page">
@@ -90,9 +124,189 @@ function CardDetail({ cardId, cardsInYear, onBack, onSelectCard }) {
             <span>{currentCardIndex >= 0 ? `${currentCardIndex + 1} / ${cardsInYear.length}` : ''}</span>
             <button type="button" disabled={!nextCard} onClick={() => onSelectCard?.(nextCard.cardId)}>다음 카드 ›</button>
           </nav>
+
+          <div className="card-management-actions" role="group" aria-label="카드 관리">
+            <button type="button" onClick={() => setIsEditing((current) => !current)} disabled={isSubmitting}>
+              {isEditing ? '수정 취소' : '수정하기'}
+            </button>
+            <button type="button" className="card-management-actions__delete" onClick={handleDelete} disabled={isSubmitting}>
+              삭제하기
+            </button>
+          </div>
+
+          {actionMessage && <p className="card-management-message" role="status">{actionMessage}</p>}
+
+          {isEditing && (
+            <CardEditForm
+              card={card}
+              isSubmitting={isSubmitting}
+              onCancel={() => setIsEditing(false)}
+              onSubmit={handleUpdate}
+            />
+          )}
         </>
       )}
     </main>
+  )
+}
+
+function getInitialForm(card) {
+  return {
+    memoryDate: card.memoryDate || '',
+    companions: Array.isArray(card.back?.companions) ? card.back.companions.join(', ') : '',
+    weather: card.back?.weather || '',
+    mood: card.back?.mood || '',
+    storeName: card.front?.storeName || '',
+    ocrText: card.front?.ocrText || '',
+    eventName: card.front?.eventName || '',
+    venue: card.front?.venue || '',
+    seat: card.front?.seat || '',
+    diaryText: card.back?.diaryText || '',
+    title: card.back?.title || '',
+    memoryText: card.back?.memoryText || '',
+    answers: Array.isArray(card.back?.answers)
+      ? card.back.answers.map(({ questionId, question, answer }) => ({ questionId, question, answer: answer || '' }))
+      : [],
+  }
+}
+
+function CardEditForm({ card, isSubmitting, onCancel, onSubmit }) {
+  const [form, setForm] = useState(() => getInitialForm(card))
+  const [validationMessage, setValidationMessage] = useState('')
+  const isTicket = card.documentType === 'TICKET'
+  const isRecall = isTicket && card.back?.writingMode === 'AI_RECALL'
+
+  function changeField(name, value) {
+    setForm((current) => ({ ...current, [name]: value }))
+  }
+
+  function changeAnswer(index, value) {
+    setForm((current) => ({
+      ...current,
+      answers: current.answers.map((answer, answerIndex) => (
+        answerIndex === index ? { ...answer, answer: value } : answer
+      )),
+    }))
+  }
+
+  function buildPayload() {
+    const companions = form.companions
+      .split(',')
+      .map((name) => name.trim())
+      .filter(Boolean)
+    const back = {
+      companions,
+      weather: form.weather.trim(),
+      mood: form.mood.trim(),
+    }
+    let front
+
+    if (card.documentType === 'RECEIPT') {
+      front = { storeName: form.storeName.trim() }
+      back.diaryText = form.diaryText.trim() || null
+    } else if (card.documentType === 'LETTER') {
+      front = { ocrText: form.ocrText.trim() }
+      back.diaryText = form.diaryText.trim() || null
+    } else {
+      front = {
+        eventName: form.eventName.trim(),
+        venue: form.venue.trim(),
+        seat: form.seat.trim() || null,
+      }
+      back.writingMode = card.back.writingMode
+      back.title = form.title.trim()
+
+      if (isRecall) {
+        back.answers = form.answers.map(({ questionId, answer }) => ({
+          questionId,
+          answer: answer.trim() || null,
+        }))
+      } else {
+        back.memoryText = form.memoryText.trim()
+      }
+    }
+
+    return { memoryDate: form.memoryDate, front, back }
+  }
+
+  function handleSubmit(event) {
+    event.preventDefault()
+    const payload = buildPayload()
+
+    if (!payload.memoryDate || !payload.back.weather || !payload.back.mood) {
+      setValidationMessage('추억 날짜, 날씨, 기분을 모두 입력해주세요.')
+      return
+    }
+    if (card.documentType === 'RECEIPT' && !payload.front.storeName) {
+      setValidationMessage('영수증의 장소를 입력해주세요.')
+      return
+    }
+    if (card.documentType === 'LETTER' && !payload.front.ocrText) {
+      setValidationMessage('손쪽지 내용을 입력해주세요.')
+      return
+    }
+    if (isTicket && (!payload.front.eventName || !payload.front.venue || !payload.back.title)) {
+      setValidationMessage('티켓 제목, 장소, 추억 제목을 모두 입력해주세요.')
+      return
+    }
+    if (isTicket && !isRecall && !payload.back.memoryText) {
+      setValidationMessage('추억을 입력해주세요.')
+      return
+    }
+    if (isRecall && !payload.back.answers.some(({ answer }) => answer)) {
+      setValidationMessage('AI 회상 답변을 하나 이상 입력해주세요.')
+      return
+    }
+
+    setValidationMessage('')
+    onSubmit(payload)
+  }
+
+  return (
+    <section className="card-edit-form" aria-labelledby="card-edit-title">
+      <h2 id="card-edit-title">카드 수정</h2>
+      <p>사진은 그대로 유지되고, 텍스트 정보와 날짜만 수정할 수 있어요.</p>
+      <form onSubmit={handleSubmit}>
+        <div className="card-edit-form__grid">
+          <label>추억 날짜<input type="date" value={form.memoryDate} onChange={(event) => changeField('memoryDate', event.target.value)} required /></label>
+          <label>함께한 사람<input value={form.companions} onChange={(event) => changeField('companions', event.target.value)} placeholder="쉼표로 구분, 혼자면 비워두세요" /></label>
+          <label>날씨<input value={form.weather} onChange={(event) => changeField('weather', event.target.value)} required /></label>
+          <label>기분<input value={form.mood} onChange={(event) => changeField('mood', event.target.value)} required /></label>
+        </div>
+
+        {card.documentType === 'RECEIPT' && (
+          <>
+            <label>장소<input value={form.storeName} onChange={(event) => changeField('storeName', event.target.value)} required /></label>
+            <label>자유 기록<textarea value={form.diaryText} onChange={(event) => changeField('diaryText', event.target.value)} rows="5" /></label>
+          </>
+        )}
+
+        {card.documentType === 'LETTER' && (
+          <>
+            <label>손쪽지 내용<textarea value={form.ocrText} onChange={(event) => changeField('ocrText', event.target.value)} rows="6" required /></label>
+            <label>자유 기록<textarea value={form.diaryText} onChange={(event) => changeField('diaryText', event.target.value)} rows="5" /></label>
+          </>
+        )}
+
+        {isTicket && (
+          <>
+            <label>티켓 제목<input value={form.eventName} onChange={(event) => changeField('eventName', event.target.value)} required /></label>
+            <label>장소<input value={form.venue} onChange={(event) => changeField('venue', event.target.value)} required /></label>
+            <label>좌석<input value={form.seat} onChange={(event) => changeField('seat', event.target.value)} /></label>
+            <label>추억 제목<input value={form.title} onChange={(event) => changeField('title', event.target.value)} required /></label>
+            {isRecall ? form.answers.map((answer, index) => (
+              <label key={answer.questionId}>질문 {index + 1}. {answer.question}<textarea value={answer.answer} onChange={(event) => changeAnswer(index, event.target.value)} rows="4" /></label>
+            )) : <label>추억<textarea value={form.memoryText} onChange={(event) => changeField('memoryText', event.target.value)} rows="6" required /></label>}
+          </>
+        )}
+
+        {validationMessage && <p className="card-edit-form__error" role="alert">{validationMessage}</p>}
+        <div className="card-edit-form__actions">
+          <button type="button" onClick={onCancel} disabled={isSubmitting}>취소</button>
+          <button type="submit" className="is-selected" disabled={isSubmitting}>{isSubmitting ? '저장 중...' : '수정 저장'}</button>
+        </div>
+      </form>
+    </section>
   )
 }
 

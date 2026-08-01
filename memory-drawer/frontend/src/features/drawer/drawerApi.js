@@ -17,3 +17,18 @@ export async function fetchCardDetail(cardId, options = {}) {
   if (!data?.cardId || !data?.front || !data?.back) throw new Error("카드 상세 응답 형식이 올바르지 않습니다.")
   return data
 }
+
+export async function updateCard(cardId, payload, options = {}) {
+  return request(`/cards/${encodeURIComponent(cardId)}`, {
+    ...options,
+    method: 'PUT',
+    body: payload,
+  })
+}
+
+export async function deleteCard(cardId, options = {}) {
+  return request(`/cards/${encodeURIComponent(cardId)}`, {
+    ...options,
+    method: 'DELETE',
+  })
+}
