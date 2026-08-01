@@ -93,12 +93,13 @@ function CardFront({ card }) {
 
   return (
     <article className={`memory-card memory-card--front${card.documentType === 'LETTER' ? ' memory-card--letter' : ''}${card.documentType === 'TICKET' ? ' memory-card--ticket' : ''}${card.documentType === 'RECEIPT' ? ' memory-card--receipt' : ''}`}>
-      <p className="memory-card__date">{formatMemoryDate(card.memoryDate)}</p>
+      {!isTicket && <p className="memory-card__date">{formatMemoryDate(card.memoryDate)}</p>}
       {imageUrl && <AuthorizedImage className="memory-card__front-image" imageUrl={imageUrl} alt="저장한 원본 종이 기록" />}
       {isReceipt && <h1>{card.front.storeName}</h1>}
       {isTicket && (
         <div className="memory-card__front-fields">
           <h1>{card.front.eventName}</h1>
+          <p className="memory-card__ticket-date">{formatMemoryDate(card.memoryDate)}</p>
           <p>{card.front.venue}</p>
           {card.front.seat && <p>좌석 · {card.front.seat}</p>}
         </div>
