@@ -114,7 +114,9 @@ public class JpaCardQuerySource implements CardQuerySource {
 				optionalText(front, "seat")
 			);
 			case LETTER -> new CardDetailResponse.LetterFront(
-				requiredText(front, "ocrText")
+				requiredText(front, "ocrText"),
+				optionalText(front, "sender"),
+				optionalText(front, "recipient")
 			);
 		};
 	}

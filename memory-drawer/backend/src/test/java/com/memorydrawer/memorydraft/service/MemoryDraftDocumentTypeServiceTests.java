@@ -137,19 +137,26 @@ class MemoryDraftDocumentTypeServiceTests {
 	}
 
 	@Test
-	void reusesParsedContentForLetterWithoutCallingInformationExtract() {
+	void extractsLetterCorrespondentsAndReusesParsedText() {
 		UUID ownerId = UUID.randomUUID();
 		MemoryDraft draft = draft(ownerId, "오늘 함께해 줘서 정말 고마워.");
+		byte[] imageBytes = new byte[] {7, 8, 9};
 		when(memoryDraftRepository.findById(draft.getId())).thenReturn(java.util.Optional.of(draft));
+		when(originalImageStorage.load(draft.getOriginalImageKey())).thenReturn(imageBytes);
+		when(informationExtractClient.extract(DocumentType.LETTER, imageBytes, "image/jpeg"))
+			.thenReturn(new ExtractedFrontFields(
+				null, null, List.of(), null, null, null, "엄마", "지은"
+			));
 
 		var response = service.confirm(ownerId, draft.getId(), "LETTER");
 
 		assertThat(response.frontCandidate())
-			.isEqualTo(new LetterFrontCandidate(null, "오늘 함께해 줘서 정말 고마워."));
+			.isEqualTo(new LetterFrontCandidate(
+				null, "오늘 함께해 줘서 정말 고마워.", "엄마", "지은"
+			));
 		assertThat(response.emptyFields()).containsExactly("memoryDate");
 		assertThat(draft.getDocumentType()).isEqualTo(DocumentType.LETTER);
 		assertThat(draft.getDraftStatus()).isEqualTo(DraftStatus.FRONT_PENDING);
-		verifyNoInteractions(originalImageStorage, informationExtractClient);
 	}
 
 	@Test

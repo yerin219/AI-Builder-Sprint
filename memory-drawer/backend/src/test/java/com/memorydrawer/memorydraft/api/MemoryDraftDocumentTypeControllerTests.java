@@ -1,13 +1,14 @@
 package com.memorydrawer.memorydraft.api;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Mockito.verifyNoInteractions;
+import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
+import java.util.List;
 import java.util.UUID;
 
 import org.junit.jupiter.api.Test;
@@ -28,6 +29,8 @@ import com.memorydrawer.memorydraft.domain.DraftStatus;
 import com.memorydrawer.memorydraft.domain.MemoryDraft;
 import com.memorydrawer.memorydraft.domain.ParsedContent;
 import com.memorydrawer.memorydraft.extract.InformationExtractClient;
+import com.memorydrawer.memorydraft.extract.ExtractedFrontFields;
+import com.memorydrawer.memorydraft.image.OriginalImageStorage;
 import com.memorydrawer.memorydraft.repository.MemoryDraftRepository;
 
 @ActiveProfiles("test")
@@ -47,6 +50,8 @@ class MemoryDraftDocumentTypeControllerTests {
 
 	@MockitoBean
 	private InformationExtractClient informationExtractClient;
+	@MockitoBean
+	private OriginalImageStorage originalImageStorage;
 
 	@Test
 	void confirmsLetterTypeWithAuthenticatedOwnerAndPersistsFrontCandidate() throws Exception {
@@ -65,6 +70,12 @@ class MemoryDraftDocumentTypeControllerTests {
 			now.plus(7, ChronoUnit.DAYS)
 		);
 		memoryDraftRepository.saveAndFlush(draft);
+		byte[] imageBytes = new byte[] {1, 2, 3};
+		when(originalImageStorage.load(draft.getOriginalImageKey())).thenReturn(imageBytes);
+		when(informationExtractClient.extract(DocumentType.LETTER, imageBytes, "image/jpeg"))
+			.thenReturn(new ExtractedFrontFields(
+				null, null, List.of(), null, null, null, "엄마", "지은"
+			));
 
 		mockMvc.perform(post(
 				"/memory-drafts/{draftId}/document-type/confirm",
@@ -85,6 +96,8 @@ class MemoryDraftDocumentTypeControllerTests {
 			.andExpect(jsonPath("$.data.frontCandidate.memoryDate").doesNotExist())
 			.andExpect(jsonPath("$.data.frontCandidate.ocrText")
 				.value("오늘 함께해 줘서 정말 고마워."))
+			.andExpect(jsonPath("$.data.frontCandidate.sender").value("엄마"))
+			.andExpect(jsonPath("$.data.frontCandidate.recipient").value("지은"))
 			.andExpect(jsonPath("$.data.emptyFields[0]").value("memoryDate"))
 			.andExpect(jsonPath("$.data.draftStatus").value("FRONT_PENDING"))
 			.andExpect(jsonPath("$.data.nextAction").value("CONFIRM_FRONT"));
@@ -93,7 +106,6 @@ class MemoryDraftDocumentTypeControllerTests {
 		assertThat(saved.getDocumentType()).isEqualTo(DocumentType.LETTER);
 		assertThat(saved.getFrontCandidate()).contains("오늘 함께해 줘서 정말 고마워.");
 		assertThat(saved.getDraftStatus()).isEqualTo(DraftStatus.FRONT_PENDING);
-		verifyNoInteractions(informationExtractClient);
 	}
 
 	private LoginSession signupAndLogin(String email, String password) throws Exception {

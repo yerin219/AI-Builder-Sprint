@@ -162,6 +162,7 @@ function CardSavePage({ draftId, documentType, frontConfirmed, ticketRecall, onS
   const [isCardFlipped, setIsCardFlipped] = useState(false)
 
   const isTicket = documentType === 'TICKET'
+  const isLetter = documentType === 'LETTER'
   const isRecallFlow = isTicket && Boolean(ticketRecall)
   const documentLabel = documentType === 'LETTER' ? '손편지' : isTicket ? '티켓' : '영수증'
   const isSupportedDocument = SUPPORTED_DOCUMENT_TYPES.has(documentType)
@@ -193,7 +194,7 @@ function CardSavePage({ draftId, documentType, frontConfirmed, ticketRecall, onS
   }
 
   function buildBack() {
-    const submittedCompanions = [
+    const submittedCompanions = isLetter ? [] : [
       ...companions,
       ...splitCompanions(companionInput).filter((name) => !companions.includes(name)),
     ]
@@ -402,6 +403,8 @@ function CardSavePage({ draftId, documentType, frontConfirmed, ticketRecall, onS
                 {documentType === 'TICKET' && <PreviewField label="행사명" value={front.eventName} />}
                 {documentType === 'TICKET' && <PreviewField label="장소" value={front.venue} />}
                 {documentType === 'TICKET' && <PreviewField label="좌석" value={front.seat} />}
+                {isLetter && <PreviewField label="쓴 사람" value={front.sender || '확인되지 않음'} />}
+                {isLetter && <PreviewField label="받는 사람" value={front.recipient || '확인되지 않음'} />}
                 {documentType === 'LETTER' && <PreviewField label="편지 내용" value={front.ocrText} />}
               </dl>
             </article>
@@ -410,7 +413,8 @@ function CardSavePage({ draftId, documentType, frontConfirmed, ticketRecall, onS
               <span>뒷면</span>
               <h2>그날의 기억</h2>
               <dl className="card-preview__fields">
-                <PreviewField label="함께한 사람" value={previewBack.companions.length ? previewBack.companions : '혼자'} />
+                {!isLetter && <PreviewField label="함께한 사람" value={previewBack.companions.length ? previewBack.companions : '혼자'} />}
+                {isLetter && <PreviewField label="쓴 사람 → 받는 사람" value={`${front.sender || '미확인'} → ${front.recipient || '미확인'}`} />}
                 <PreviewField label="날씨" value={previewBack.weather} />
                 <PreviewField label="기분" value={previewBack.mood} />
                 <PreviewField label="제목" value={previewBack.title} />
@@ -445,15 +449,17 @@ function CardSavePage({ draftId, documentType, frontConfirmed, ticketRecall, onS
           <p>그날의 기억은 사용자가 직접 남겨요.</p>
         </header>
 
-        <section className="form-section" aria-labelledby="companion-label">
-          <label id="companion-label" htmlFor="companion-input">동행인</label>
-          <div className="field-row">
-            <input id="companion-input" value={companionInput} onChange={(event) => setCompanionInput(event.target.value)} onKeyDown={handleCompanionKeyDown} placeholder="이름을 입력하고 추가하세요" />
-            <button className="secondary-button" type="button" onClick={addCompanions}>추가</button>
-          </div>
-          <p className="field-help">혼자였다면 비워두세요. 여러 명은 쉼표로 구분할 수 있어요.</p>
-          {companions.length > 0 && <ul className="tag-list" aria-label="입력한 동행인">{companions.map((companion) => <li key={companion}>{companion}<button type="button" onClick={() => setCompanions((current) => current.filter((name) => name !== companion))} aria-label={`${companion} 삭제`}>×</button></li>)}</ul>}
-        </section>
+        {!isLetter && (
+          <section className="form-section" aria-labelledby="companion-label">
+            <label id="companion-label" htmlFor="companion-input">동행인</label>
+            <div className="field-row">
+              <input id="companion-input" value={companionInput} onChange={(event) => setCompanionInput(event.target.value)} onKeyDown={handleCompanionKeyDown} placeholder="이름을 입력하고 추가하세요" />
+              <button className="secondary-button" type="button" onClick={addCompanions}>추가</button>
+            </div>
+            <p className="field-help">혼자였다면 비워두세요. 여러 명은 쉼표로 구분할 수 있어요.</p>
+            {companions.length > 0 && <ul className="tag-list" aria-label="입력한 동행인">{companions.map((companion) => <li key={companion}>{companion}<button type="button" onClick={() => setCompanions((current) => current.filter((name) => name !== companion))} aria-label={`${companion} 삭제`}>×</button></li>)}</ul>}
+          </section>
+        )}
 
         <section className="form-section field-grid">
           <div><label htmlFor="weather">날씨 <span aria-hidden="true">*</span></label><input id="weather" value={weather} onChange={(event) => setWeather(event.target.value)} placeholder="예: 맑음" required /></div>

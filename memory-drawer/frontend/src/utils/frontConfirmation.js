@@ -28,6 +28,8 @@ export function createFrontForm(candidate = {}) {
         venue: candidate.venue ?? "",
         seat: candidate.seat ?? "",
         ocrText: candidate.ocrText ?? "",
+        sender: candidate.sender ?? "",
+        recipient: candidate.recipient ?? "",
         purchaseItems: createPurchaseItems(candidate.purchaseItems),
     };
 }
@@ -127,6 +129,8 @@ export function buildFrontPayload(documentType, form) {
         memoryDate,
         front: {
             ocrText: form.ocrText.trim(),
+            sender: form.sender?.trim() || null,
+            recipient: form.recipient?.trim() || null,
         },
     };
 }

@@ -39,7 +39,7 @@ public class CardUpdateService {
 	private static final Set<String> RECEIPT_FIELDS = Set.of("storeName", "purchaseItems");
 	private static final Set<String> PURCHASE_ITEM_FIELDS = Set.of("name", "quantity");
 	private static final Set<String> TICKET_FIELDS = Set.of("eventName", "venue", "seat");
-	private static final Set<String> LETTER_FIELDS = Set.of("ocrText");
+	private static final Set<String> LETTER_FIELDS = Set.of("ocrText", "sender", "recipient");
 
 	private final MemoryCardRepository memoryCardRepository;
 	private final ObjectMapper objectMapper;
@@ -146,6 +146,8 @@ public class CardUpdateService {
 				validateAllowedFields(requestedFront, LETTER_FIELDS);
 				yield new LetterConfirmedFront(
 					requiredText(requestedFront, "ocrText"),
+					optionalText(requestedFront, "sender"),
+					optionalText(requestedFront, "recipient"),
 					FrontImageMode.valueOf(requiredText(existingFront, "frontImageMode"))
 				);
 			}

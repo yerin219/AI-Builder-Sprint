@@ -274,17 +274,41 @@ export default function FrontConfirmPage() {
                 )}
 
                 {documentType === "LETTER" && (
-                    <label>
-                        손편지 내용
-                        <textarea
-                            name="ocrText"
-                            placeholder="인식된 내용을 확인하고 수정해주세요"
-                            value={form.ocrText}
-                            onChange={handleChange}
-                            rows="8"
-                            required
-                        />
-                    </label>
+                    <>
+                        <section className="form-section">
+                            <h2>누가 누구에게 쓴 편지인가요?</h2>
+                            <p>AI 인식 결과가 비어 있거나 다르면 직접 수정해주세요.</p>
+                            <label>
+                                쓴 사람
+                                <input
+                                    name="sender"
+                                    placeholder="예: 엄마"
+                                    value={form.sender}
+                                    onChange={handleChange}
+                                />
+                            </label>
+                            <label>
+                                받는 사람
+                                <input
+                                    name="recipient"
+                                    placeholder="예: 지은에게"
+                                    value={form.recipient}
+                                    onChange={handleChange}
+                                />
+                            </label>
+                        </section>
+                        <label>
+                            손편지 내용
+                            <textarea
+                                name="ocrText"
+                                placeholder="인식된 내용을 확인하고 수정해주세요"
+                                value={form.ocrText}
+                                onChange={handleChange}
+                                rows="8"
+                                required
+                            />
+                        </label>
+                    </>
                 )}
 
                 {error && <p className="form-error">{error}</p>}

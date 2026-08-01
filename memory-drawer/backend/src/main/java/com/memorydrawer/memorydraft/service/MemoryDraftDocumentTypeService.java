@@ -175,17 +175,22 @@ public class MemoryDraftDocumentTypeService {
 		MemoryDraft draft,
 		DocumentType documentType
 	) {
-		if (documentType == DocumentType.LETTER) {
-			ParsedContent parsedContent = deserializeParsedContent(draft.getParsedContent());
-			return new LetterFrontCandidate(null, normalizeText(parsedContent.text()));
-		}
-
 		byte[] imageBytes = originalImageStorage.load(draft.getOriginalImageKey());
 		ExtractedFrontFields extracted = informationExtractClient.extract(
 			documentType,
 			imageBytes,
 			draft.getOriginalImageContentType()
 		);
+
+		if (documentType == DocumentType.LETTER) {
+			ParsedContent parsedContent = deserializeParsedContent(draft.getParsedContent());
+			return new LetterFrontCandidate(
+				null,
+				normalizeText(parsedContent.text()),
+				normalizeText(extracted.sender()),
+				normalizeText(extracted.recipient())
+			);
+		}
 		LocalDate memoryDate = normalizeDate(extracted.memoryDate());
 
 		return documentType == DocumentType.RECEIPT
@@ -282,6 +287,8 @@ public class MemoryDraftDocumentTypeService {
 		} else if (frontCandidate instanceof LetterFrontCandidate letter) {
 			addIfNull(fields, "memoryDate", letter.memoryDate());
 			addIfNull(fields, "ocrText", letter.ocrText());
+			addIfNull(fields, "sender", letter.sender());
+			addIfNull(fields, "recipient", letter.recipient());
 		}
 		return List.copyOf(fields);
 	}
