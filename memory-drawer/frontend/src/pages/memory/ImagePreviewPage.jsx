@@ -64,7 +64,7 @@ export default function ImagePreviewPage() {
     }
 
     return (
-        <main className="mobile-page">
+        <main className="mobile-page image-preview-page">
             <button className="page-back-button" onClick={() => navigate(-1)}>←</button>
             <h1>사진 확인</h1>
 
@@ -72,11 +72,11 @@ export default function ImagePreviewPage() {
 
             {error && <p className="form-error">{error}</p>}
 
-            <button onClick={() => navigate("/memories/new")}>
+            <button className="image-preview-page__action" onClick={() => navigate("/memories/new")}>
                 다시 선택
             </button>
 
-            <button onClick={handleAnalyze}>
+            <button className="image-preview-page__action" onClick={handleAnalyze}>
                 이 사진으로 분석하기
             </button>
         </main>

@@ -105,6 +105,23 @@ button {
   padding-left: 1.5rem;
 }
 
+.image-preview-page .document-preview {
+  display: block;
+  width: 20%;
+  height: auto;
+  margin: 0.75rem auto 0;
+  object-fit: contain;
+}
+
+.mobile-page:not(.drawer-home):not(.auth-page) > .image-preview-page__action {
+  width: fit-content;
+  min-width: 0;
+  min-height: 2.75rem;
+  margin-right: auto;
+  margin-left: auto;
+  padding: 0.65rem 1.15rem;
+}
+
 .loading-page {
   display: grid;
   min-height: 100dvh;
