@@ -26,6 +26,7 @@ class CardCreateResponseTest {
 		JsonNode json = objectMapper.valueToTree(response);
 
 		assertThat(json.get("memoryDate").asText()).isEqualTo("2026-07-25");
+		assertThat(json.get("printLayout").asText()).isEqualTo("LANDSCAPE_TICKET");
 		assertThat(json.get("year").asInt()).isEqualTo(2026);
 		assertThat(json.get("draftStatus").asText()).isEqualTo("SAVED");
 	}

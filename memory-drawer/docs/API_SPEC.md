@@ -1026,12 +1026,21 @@ Solar 호출이 실패하면 사용자의 답변을 그대로 유지하고 제�
   "data": {
     "cardId": "e89ed42d-1a89-4eea-8ddc-dca90a5c78c4",
     "documentType": "TICKET",
+    "printLayout": "LANDSCAPE_TICKET",
     "memoryDate": "2026-07-25",
     "year": 2026,
     "draftStatus": "SAVED"
   }
 }
 ```
+
+`printLayout`은 저장 성공 후 프론트엔드가 실제 종이 출력 연출의 비율을 선택하는 값입니다. DB에 별도 저장하지 않고 확정된 `documentType`에서 계산합니다.
+
+| 문서 유형 | `printLayout` | 출력 모양 |
+|---|---|---|
+| `RECEIPT` | `NARROW_RECEIPT` | 폭이 좁고 긴 영수증 |
+| `TICKET` | `LANDSCAPE_TICKET` | 가로형 티켓과 절취선 |
+| `LETTER` | `LETTER_SHEET` | 일반 편지지 비율 |
 
 #### 백엔드 저장 원칙
 
