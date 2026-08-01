@@ -4,6 +4,18 @@ import AuthorizedImage from './AuthorizedImage'
 import { DOCUMENT_LABELS, formatMemoryDate, getImageUrl } from './drawerViewUtils'
 import './CardDetail.css'
 
+function getTicketTextDensity(front) {
+  const textLength = [front?.eventName, front?.venue, front?.seat]
+    .filter(Boolean)
+    .join('')
+    .replace(/\s/g, '').length
+
+  if (textLength <= 22) return 'standard'
+  if (textLength <= 40) return 'compact'
+  if (textLength <= 64) return 'dense'
+  return 'tiny'
+}
+
 function CardDetail({ cardId, cardsInYear, onBack, onSelectCard }) {
   const [card, setCard] = useState(null)
   const [isFront, setIsFront] = useState(true)
@@ -90,6 +102,7 @@ function CardFront({ card }) {
     : ''
   const isTicket = card.documentType === 'TICKET'
   const isReceipt = card.documentType === 'RECEIPT'
+  const ticketTextDensity = isTicket ? getTicketTextDensity(card.front) : ''
 
   return (
     <article className={`memory-card memory-card--front${card.documentType === 'LETTER' ? ' memory-card--letter' : ''}${card.documentType === 'TICKET' ? ' memory-card--ticket' : ''}${card.documentType === 'RECEIPT' ? ' memory-card--receipt' : ''}`}>
@@ -97,7 +110,7 @@ function CardFront({ card }) {
       {imageUrl && <AuthorizedImage className="memory-card__front-image" imageUrl={imageUrl} alt="저장한 원본 종이 기록" />}
       {isReceipt && <h1>{card.front.storeName}</h1>}
       {isTicket && (
-        <div className="memory-card__front-fields">
+        <div className={`memory-card__front-fields memory-card__front-fields--${ticketTextDensity}`}>
           <h1>{card.front.eventName}</h1>
           <p className="memory-card__ticket-date">{formatMemoryDate(card.memoryDate)}</p>
           <p>{card.front.venue}</p>

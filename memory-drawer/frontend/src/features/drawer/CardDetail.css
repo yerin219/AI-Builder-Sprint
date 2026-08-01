@@ -130,17 +130,56 @@
   top: 50%;
   right: 29%;
   left: 12%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  height: 76%;
+  overflow: hidden;
   transform: translateY(-50%);
 }
 
 .memory-card--ticket.memory-card--front .memory-card__front-fields h1 {
-  font-size: clamp(1.35rem, 5vw, 1.7rem);
+  flex: 0 1 auto;
+  font-size: 1.3rem;
+  line-height: 1.28;
+  overflow-wrap: anywhere;
+}
+
+.memory-card--ticket.memory-card--front .memory-card__front-fields p {
+  flex: 0 1 auto;
+  margin: 0.2rem 0 0;
+  font-size: 0.8rem;
+  line-height: 1.25;
   overflow-wrap: anywhere;
 }
 
 .memory-card--ticket.memory-card--front .memory-card__ticket-date {
-  margin-top: 0.35rem;
+  margin-top: 0.3rem;
+  font-size: 0.76rem;
+}
+
+.memory-card--ticket.memory-card--front .memory-card__front-fields--compact h1 {
+  font-size: 1.08rem;
+}
+
+.memory-card--ticket.memory-card--front .memory-card__front-fields--compact p {
+  font-size: 0.72rem;
+}
+
+.memory-card--ticket.memory-card--front .memory-card__front-fields--dense h1 {
   font-size: 0.9rem;
+}
+
+.memory-card--ticket.memory-card--front .memory-card__front-fields--dense p {
+  font-size: 0.66rem;
+}
+
+.memory-card--ticket.memory-card--front .memory-card__front-fields--tiny h1 {
+  font-size: 0.74rem;
+}
+
+.memory-card--ticket.memory-card--front .memory-card__front-fields--tiny p {
+  font-size: 0.58rem;
 }
 
 .memory-card--ticket.memory-card--back {
