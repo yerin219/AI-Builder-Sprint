@@ -81,11 +81,11 @@
 
 .memory-card-list__item {
   display: grid;
-  grid-template-columns: 5.5rem 1fr auto;
+  grid-template-columns: minmax(0, 1fr) auto;
   align-items: center;
   gap: 1rem;
   width: 100%;
-  padding: 0.75rem;
+  padding: 1rem 1.1rem;
   border: 1px solid #ead9c1;
   border-radius: 0.9rem;
   background: #fffdf9;
@@ -94,31 +94,19 @@
   text-align: left;
 }
 
-.memory-card-list__image {
-  display: grid;
-  width: 5.5rem;
-  height: 5.5rem;
-  overflow: hidden;
-  border-radius: 0.55rem;
-  background: #f2e5d3;
-  color: #92633b;
-  font-size: 0.8rem;
-  place-items: center;
-}
-
-.memory-card-list__image img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
-
 .memory-card-list__body {
   display: grid;
   gap: 0.35rem;
 }
 
 .memory-card-list__body strong {
+  display: -webkit-box;
+  overflow: hidden;
   font-size: 1rem;
+  line-height: 1.45;
+  white-space: pre-wrap;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
 }
 
 .memory-card-list__body > span:last-child,

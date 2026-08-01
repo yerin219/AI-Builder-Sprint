@@ -11,7 +11,6 @@ import org.springframework.stereotype.Component;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.memorydrawer.card.FrontImageMode;
 import com.memorydrawer.card.WritingMode;
 import com.memorydrawer.card.domain.MemoryCard;
 import com.memorydrawer.card.query.dto.CardDetailResponse;
@@ -84,9 +83,7 @@ public class JpaCardQuerySource implements CardQuerySource {
 					optionalText(front, "seat")
 				);
 				case LETTER -> new YearCardListResponse.LetterFront(
-					requiredText(front, "ocrText"),
-					requiredText(front, "frontImageMode"),
-					frontImageUrl(card)
+					requiredText(front, "ocrText")
 				);
 			}
 		);
@@ -116,9 +113,7 @@ public class JpaCardQuerySource implements CardQuerySource {
 				optionalText(front, "seat")
 			);
 			case LETTER -> new CardDetailResponse.LetterFront(
-				requiredText(front, "ocrText"),
-				FrontImageMode.valueOf(requiredText(front, "frontImageMode")),
-				frontImageUrl(card)
+				requiredText(front, "ocrText")
 			);
 		};
 	}
@@ -228,10 +223,6 @@ public class JpaCardQuerySource implements CardQuerySource {
 		}
 		String normalized = value.asText().trim();
 		return normalized.isBlank() ? null : normalized;
-	}
-
-	private String frontImageUrl(MemoryCard card) {
-		return "/files/cards/%s/front".formatted(card.getId());
 	}
 
 	private List<String> backPhotoUrls(MemoryCard card) {

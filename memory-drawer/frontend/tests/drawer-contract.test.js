@@ -33,7 +33,7 @@ const {
 } = await import("../src/features/drawer/drawerApi.js");
 const { setAccessToken } = await import("../src/utils/tokenStorage.js");
 const { resolveApiUrl } = await import("../src/api/http.js");
-const { getDaysAgo, getImageUrl } = await import("../src/features/drawer/drawerViewUtils.js");
+const { getCardTitle, getDaysAgo, getImageUrl } = await import("../src/features/drawer/drawerViewUtils.js");
 
 const successResponse = (data) => ({
     ok: true,
@@ -152,5 +152,17 @@ describe("memory date relative labels", () => {
         assert.equal(getDaysAgo("2026-08-03", augustFirst), -2);
         assert.equal(getDaysAgo("2026-02-30", augustFirst), null);
         assert.equal(getDaysAgo("not-a-date", augustFirst), null);
+    });
+});
+
+describe("letter drawer text previews", () => {
+    it("uses the normalized OCR text instead of an image title", () => {
+        assert.equal(
+            getCardTitle({
+                documentType: "LETTER",
+                front: { ocrText: "  사랑하는 어머니께\n오늘도 감사합니다.  " },
+            }),
+            "사랑하는 어머니께 오늘도 감사합니다.",
+        );
     });
 });

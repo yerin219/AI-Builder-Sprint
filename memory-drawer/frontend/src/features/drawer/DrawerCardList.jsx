@@ -1,7 +1,6 @@
 import { useEffect, useState } from 'react'
 import { fetchCardsByYear } from './drawerApi'
-import AuthorizedImage from './AuthorizedImage'
-import { DOCUMENT_LABELS, formatMemoryDate, getCardTitle, getImageUrl } from './drawerViewUtils'
+import { DOCUMENT_LABELS, formatMemoryDate, getCardTitle } from './drawerViewUtils'
 import './DrawerCardList.css'
 
 function DrawerCardList({ year, onBack, onCardsLoaded, onSelectCard }) {
@@ -63,27 +62,18 @@ function DrawerCardList({ year, onBack, onCardsLoaded, onSelectCard }) {
 
       {!isLoading && !errorMessage && cards.length > 0 && (
         <ul className="memory-card-list" aria-label={`${year}년 카드 목록`}>
-          {cards.map((card) => {
-            const imageUrl = card.documentType === 'LETTER'
-              ? getImageUrl(card.front?.frontImageUrl)
-              : ''
-
-            return (
-              <li key={card.cardId}>
-                <button className="memory-card-list__item" type="button" onClick={() => onSelectCard?.(card.cardId)}>
-                  <span className="memory-card-list__image" aria-hidden={!imageUrl}>
-                    {imageUrl ? <AuthorizedImage imageUrl={imageUrl} alt="" /> : <span>{DOCUMENT_LABELS[card.documentType]}</span>}
-                  </span>
-                  <span className="memory-card-list__body">
-                    <span className="memory-card-list__type">{DOCUMENT_LABELS[card.documentType] || '기록'}</span>
-                    <strong>{getCardTitle(card)}</strong>
-                    <span>{formatMemoryDate(card.memoryDate)}</span>
-                  </span>
-                  <span className="memory-card-list__arrow" aria-hidden="true">›</span>
-                </button>
-              </li>
-            )
-          })}
+          {cards.map((card) => (
+            <li key={card.cardId}>
+              <button className="memory-card-list__item" type="button" onClick={() => onSelectCard?.(card.cardId)}>
+                <span className="memory-card-list__body">
+                  <span className="memory-card-list__type">{DOCUMENT_LABELS[card.documentType] || '기록'}</span>
+                  <strong>{getCardTitle(card)}</strong>
+                  <span>{formatMemoryDate(card.memoryDate)}</span>
+                </span>
+                <span className="memory-card-list__arrow" aria-hidden="true">›</span>
+              </button>
+            </li>
+          ))}
         </ul>
       )}
 

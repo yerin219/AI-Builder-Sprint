@@ -208,3 +208,9 @@ Document Parse는 한 이미지에 한 번만 호출해야 하므로 서버에�
 - 실행한 테스트: `npm.cmd run build`, `npm.cmd run lint`, `git diff --check`.
 - 테스트 결과: Vite production build 성공(59 modules), lint 오류 없음, 공백 오류 없음.
 - 관련 브랜치: `codex/logout-button`.
+
+### 손편지 최종 카드 텍스트 전용 표시
+
+- 연도별 카드 목록과 카드 상세 앞면에서 손편지 `frontImageUrl`을 렌더링하던 동작을 제거하고, Document Parse 후 사용자가 확인한 `ocrText`만 표시하도록 수정함.
+- 저장 카드 목록·상세 API의 손편지 앞면 응답도 `ocrText`만 제공하도록 축소해 프론트에서 원본 이미지를 다시 표시할 여지를 제거함.
+- 최신 `origin/develop`을 기준으로 프론트 테스트 33개와 Vite production build, `git diff --check`를 통과함. 백엔드 응답 대상 테스트는 develop 동기화 전 통과했으며 동기화 후 재실행은 기존 테스트 중단 요청에 따라 생략함.
