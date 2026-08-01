@@ -2,10 +2,10 @@
   box-sizing: border-box;
   display: flex;
   flex-direction: column;
-  min-height: 100vh;
-  max-width: 40rem;
+  width: min(100%, var(--app-max-width));
+  min-height: 100dvh;
   margin: 0 auto;
-  padding: 3rem 1.5rem 7rem;
+  padding: calc(2rem + env(safe-area-inset-top)) max(1rem, env(safe-area-inset-right)) calc(6.5rem + env(safe-area-inset-bottom)) max(1rem, env(safe-area-inset-left));
 }
 
 .drawer-home__header {
@@ -155,8 +155,8 @@
 
 .memory-create-button {
   position: fixed;
-  right: max(1.5rem, calc((100vw - 40rem) / 2 + 1.5rem));
-  bottom: 1.5rem;
+  right: max(1rem, calc((100vw - var(--app-max-width)) / 2 + 1rem));
+  bottom: calc(1rem + env(safe-area-inset-bottom));
   padding: 1rem 1.25rem;
   border: 0;
   border-radius: 999px;
@@ -170,11 +170,4 @@
 .memory-create-button span {
   margin-right: 0.25rem;
   font-size: 1.1rem;
-}
-
-@media (min-width: 640px) {
-  .drawer-home {
-    padding-right: 2.5rem;
-    padding-left: 2.5rem;
-  }
 }
