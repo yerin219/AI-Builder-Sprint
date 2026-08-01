@@ -212,12 +212,10 @@
 .memory-card--ticket.memory-card--back .memory-card__ticket-back-content > h1 {
   flex: 0 0 auto;
   margin: 0;
-  overflow: hidden;
   color: #2d2d2d;
   font-size: clamp(0.8rem, 3.6vw, 1.05rem);
   line-height: 1.2;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  overflow-wrap: anywhere;
 }
 
 .memory-card--ticket.memory-card--back .memory-card__ticket-summary {
@@ -225,16 +223,14 @@
   flex: 0 0 auto;
   gap: 0.35rem;
   margin: 0.3rem 0;
-  overflow: hidden;
   color: #5a5a5a;
   font-size: clamp(0.52rem, 2.4vw, 0.7rem);
   line-height: 1.2;
-  white-space: nowrap;
+  flex-wrap: wrap;
 }
 
 .memory-card--ticket.memory-card--back .memory-card__ticket-summary span {
-  overflow: hidden;
-  text-overflow: ellipsis;
+  overflow-wrap: anywhere;
 }
 
 .memory-card--ticket.memory-card--back .memory-card__ticket-page {
@@ -258,6 +254,16 @@
   line-height: 1.35;
   overflow-wrap: anywhere;
   white-space: pre-wrap;
+}
+
+.memory-card--ticket.memory-card--back .memory-card__ticket-page .memory-card__ticket-question {
+  margin-top: 0.35rem;
+  color: #2d2d2d;
+  font-weight: 700;
+}
+
+.memory-card--ticket.memory-card--back .memory-card__ticket-page .memory-card__ticket-answer {
+  margin-top: 0.35rem;
 }
 
 .memory-card--ticket.memory-card--back .memory-card__ticket-back-content--spacious .memory-card__ticket-page h2 {
@@ -393,8 +399,11 @@
   gap: 0.45rem;
   max-height: 30%;
   margin: 0;
-  padding: 0;
+  padding: 0 0.85rem 0 0;
   overflow-y: auto;
+  scrollbar-color: rgb(84 71 57 / 35%) transparent;
+  scrollbar-gutter: stable;
+  scrollbar-width: thin;
   color: #34302b;
   font-family: "NanumGoDing", "Noto Sans KR", sans-serif;
   font-size: clamp(0.82rem, 3.8vw, 1rem);
@@ -416,6 +425,19 @@
 
 .memory-card--receipt.memory-card--front > .memory-card__purchase-items strong {
   white-space: nowrap;
+}
+
+.memory-card--receipt.memory-card--front > .memory-card__purchase-items::-webkit-scrollbar {
+  width: 0.36rem;
+}
+
+.memory-card--receipt.memory-card--front > .memory-card__purchase-items::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.memory-card--receipt.memory-card--front > .memory-card__purchase-items::-webkit-scrollbar-thumb {
+  border-radius: 999px;
+  background: rgb(84 71 57 / 28%);
 }
 
 .memory-card--receipt.memory-card--back {
