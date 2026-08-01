@@ -19,10 +19,12 @@ API 3에서는 Information Extract를 호출하지 않습니다.
 2. `TYPE_PENDING` 상태에서만 확정된 `documentType`을 받습니다.
 3. 영수증과 티켓은 저장한 원본 이미지를 `information-extract` 모델에 전달합니다.
    Upstage 요청의 메시지에는 원본 이미지 `image_url` 항목 하나만 전달합니다.
-4. 영수증은 `memoryDate`, `storeName`만, 티켓은 `memoryDate`, `eventName`, `venue`, `seat`만 요청합니다.
-5. 손편지는 외부 API를 호출하지 않고 API 3의 `parsedContent` 본문을 재사용합니다.
-6. Information Extract가 불확실한 필드에 반환한 빈 문자열과 날짜 형식이 잘못된 값은 `null`로 정규화합니다.
-7. 외부 호출과 결과 검증이 성공한 뒤에만 앞면 후보를 저장하고 `FRONT_PENDING`으로 변경합니다.
+4. 영수증은 `memoryDate`, `storeName`, 중첩 객체 배열 `purchaseItems[{name, quantity}]`를, 티켓은 `memoryDate`, `eventName`, `venue`, `seat`만 요청합니다.
+5. 영수증 품목은 실제 구매·주문 항목만 남깁니다. 소계·합계·부가세·할인·쿠폰·포인트·결제수단·카드번호·승인번호·주문번호·사업자정보·광고 문구를 제외하고, 카페·음식점의 ICE·샷 추가·포장·사이즈업 옵션도 제외하되 마트의 실제 상품명은 유지합니다.
+6. 영수증 품목 선정을 위한 Solar 호출은 추가하지 않으며, 사용자가 API 5에서 이름·수량을 수정하고 항목을 추가·삭제·선택해 최종 확정합니다.
+7. 손편지는 외부 API를 호출하지 않고 API 3의 `parsedContent` 본문을 재사용합니다.
+8. Information Extract가 불확실한 필드에 반환한 빈 문자열과 날짜 형식이 잘못된 값은 `null`로, 유효한 영수증 품목이 없으면 `purchaseItems: []`로 정규화합니다.
+9. 외부 호출과 결과 검증이 성공한 뒤에만 앞면 후보를 저장하고 `FRONT_PENDING`으로 변경합니다.
 
 Information Extract 실패 시 `503 AI_001`을 반환하며 임시 기록은 `TYPE_PENDING` 상태로 유지합니다.
 
@@ -155,3 +157,26 @@ Document Parse는 한 이미지에 한 번만 호출해야 하므로 서버에�
 - 실행한 테스트: `npm test`, `npm run lint`, `npm run build`, `git diff --check`.
 - 팀 결정이 필요한 입력 제한·이미지 만료 정책과 명시적 제외 기능은 추가하지 않음.
 - 관련 브랜치: `feature/fe-api6-8-integration`.
+
+## 2026-08-01 영수증 구매 품목과 경과일 명세 보완
+
+- 사용 모델·도구: Codex, Git diff 검사. Upstage API는 실제 호출하지 않음.
+- 작업 목적: 기존 API 흐름을 유지하면서 영수증 구매 품목을 앞면 후보부터 저장·조회까지 연결하고, 서랍 카드의 `memoryDate` 기반 경과일 표시 규칙을 문서화함.
+- 사용한 프롬프트 요약: 원본 이미지 Information Extract에 `purchaseItems` 중첩 배열을 추가하고 결제·사업자·광고·옵션 행을 제외하며, 사용자가 최종 품목을 편집·선택하도록 명세를 수정하되 Solar·신규 API·별도 DB 컬럼은 추가하지 않도록 요청함. 경과일은 사용자 기기 날짜로 계산하고 1분마다 갱신하며 미래 날짜도 처리하도록 요청함.
+- AI가 제안·수정한 내용: API 4 `frontCandidate`, API 5 확정 `front`, API 11 목록과 API 12 상세의 `purchaseItems` 계약·예시를 추가함. 영수증 추출 제외 기준, 항목 검증, 사용자 최종 확인, Information Extract 원본 이미지 독립 호출과 Solar 미사용 원칙을 명시함. 경과일의 당일·과거·미래 표시와 1분 갱신 규칙을 추가함.
+- 팀원이 직접 결정·수정한 내용: 대표 품목은 AI가 자동 확정하지 않고 사용자가 최종 선택하며, 기존 API와 앞면 저장 구조를 재사용하고 별도 DB 컬럼은 만들지 않기로 결정함.
+- 실행한 검증: 문서 대상 `git diff --check`만 실행하고 광범위한 테스트는 실행하지 않음.
+- 발생한 문제와 해결: 기존 작업 중인 소스·테스트 변경은 건드리지 않고 문서 두 파일만 수정함.
+- 관련 PR 또는 커밋: 없음. 커밋·push·PR을 진행하지 않음.
+
+## 2026-08-01 제목 생성 품질 개선 및 통합 문서화
+
+- 사용 모델·도구: Codex, Gradle Wrapper, JUnit 5, Git. Upstage API는 실제 호출하지 않고 Mock 서버로 요청 형식을 검증함.
+- 작업 목적: 티켓 회상 답변 세 개를 쉼표로 이어 붙이던 제목 후보를 하나의 핵심 장면이나 의미로 압축하도록 Solar 요청을 개선하고, 영수증 구매 품목·카드 경과일과 함께 README·API 명세·에이전트 지침을 실제 구현에 맞춤.
+- 사용한 프롬프트 요약: 답변 나열·단순 연결을 금지하고 공백 포함 8~24자의 명사구 또는 짧은 문장을 권장하며, 사용자 답변에 없는 사실은 만들지 않도록 요청함.
+- AI가 제안·수정한 내용: 제목 생성 프롬프트에 나열 금지·핵심 장면 압축·권장 길이 규칙을 추가하고 제목 생성에만 `temperature: 0.3`을 적용함. 문서 유형과 티켓 세부 유형 분류는 기존 `temperature: 0`을 유지함. README와 API 명세에 영수증 `purchaseItems`, 사용자 최종 선택, 경과일 표시, 제목 생성 규칙을 함께 기록함.
+- 팀원이 직접 결정·수정한 내용: AI 제목은 최종값이 아닌 사용자 수정 가능한 후보로 유지하고, 8~24자는 생성 권장 범위로만 사용하며 미확정 API 최대 길이 제한으로 강제하지 않음.
+- 실행한 검증: 제목 생성 관련 Gradle 테스트, 백엔드 전체 `gradlew.bat test`, 프론트엔드 `npm test`, `npm run lint`, `npm run build`, `git diff --check`.
+- 검증 결과: 제목 생성 관련 테스트 6개와 백엔드 전체 테스트 통과, 프론트엔드 테스트 32개·lint·Vite production build 통과, diff 검사 통과.
+- 발생한 문제와 해결: 기본 Gradle 저장 경로가 쓰기 불가능한 `C:\\.gradle`로 지정돼 사용자 Gradle 캐시를 명시해 테스트를 실행함. 백엔드 `build`는 compile·패키징 후 OneDrive가 기존 테스트 HTML 리포트를 일반 파일로 제공하지 않아 리포트 스냅샷 단계에서 실패했지만, 전체 `test` 태스크는 별도로 정상 완료함.
+- 관련 PR 또는 커밋: 통합 PR 생성 후 갱신 예정.

@@ -12,6 +12,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.memorydrawer.card.DocumentType;
 import com.memorydrawer.card.WritingMode;
+import com.memorydrawer.receipt.PurchaseItem;
 import com.memorydrawer.ticket.recall.TicketSubtype;
 
 class CardQueryResponseTest {
@@ -44,6 +45,28 @@ class CardQueryResponseTest {
 		assertThat(json.at("/cards/0/memoryDate").asText()).isEqualTo("2026-07-25");
 		assertThat(json.at("/cards/0/front/seat").isNull()).isTrue();
 		assertThat(json.at("/cards/0/front/frontImageUrl").isMissingNode()).isTrue();
+	}
+
+	@Test
+	void receiptListContainsConfirmedPurchaseItems() throws Exception {
+		YearCardListResponse response = new YearCardListResponse(2026, List.of(
+			new YearCardListResponse.CardItem(
+				UUID.fromString("e89ed42d-1a89-4eea-8ddc-dca90a5c78c4"),
+				DocumentType.RECEIPT,
+				LocalDate.of(2026, 7, 25),
+				new YearCardListResponse.ReceiptFront(
+					"서면카페",
+					List.of(new PurchaseItem("아이스 아메리카노", 2))
+				)
+			)
+		));
+
+		JsonNode json = objectMapper.valueToTree(response);
+
+		assertThat(json.at("/cards/0/front/storeName").asText()).isEqualTo("서면카페");
+		assertThat(json.at("/cards/0/front/purchaseItems/0/name").asText())
+			.isEqualTo("아이스 아메리카노");
+		assertThat(json.at("/cards/0/front/purchaseItems/0/quantity").asInt()).isEqualTo(2);
 	}
 
 	@Test

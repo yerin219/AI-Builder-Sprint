@@ -365,6 +365,35 @@
   white-space: pre-wrap;
 }
 
+.card-preview__purchase-items dd,
+.card-preview__purchase-items ul {
+  min-width: 0;
+  padding: 0;
+  margin: 0;
+}
+
+.card-preview__purchase-items ul {
+  display: grid;
+  gap: 0.35rem;
+  list-style: none;
+}
+
+.card-preview__purchase-items li {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.75rem;
+  font-weight: 500;
+}
+
+.card-preview__purchase-items li span {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.card-preview__purchase-items li strong {
+  flex: none;
+}
+
 .card-preview__answers {
   display: grid;
   gap: 0.75rem;

@@ -1,6 +1,8 @@
 package com.memorydrawer.memorydraft.service;
 
+import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 
@@ -24,12 +26,14 @@ import com.memorydrawer.memorydraft.domain.DocumentType;
 import com.memorydrawer.memorydraft.domain.DraftStatus;
 import com.memorydrawer.memorydraft.domain.MemoryDraft;
 import com.memorydrawer.memorydraft.repository.MemoryDraftRepository;
+import com.memorydrawer.receipt.PurchaseItem;
 
 @Service
 public class MemoryDraftFrontService {
 
 	private static final String NEXT_ACTION = "WRITE_BACK";
-	private static final Set<String> RECEIPT_FIELDS = Set.of("storeName");
+	private static final Set<String> RECEIPT_FIELDS = Set.of("storeName", "purchaseItems");
+	private static final Set<String> PURCHASE_ITEM_FIELDS = Set.of("name", "quantity");
 	private static final Set<String> TICKET_FIELDS = Set.of(
 		"eventName",
 		"venue",
@@ -111,7 +115,36 @@ public class MemoryDraftFrontService {
 
 	private ReceiptConfirmedFront receiptFront(JsonNode front) {
 		validateAllowedFields(front, RECEIPT_FIELDS);
-		return new ReceiptConfirmedFront(requiredText(front, "storeName"));
+		return new ReceiptConfirmedFront(
+			requiredText(front, "storeName"),
+			purchaseItemsOrEmpty(front, "purchaseItems")
+		);
+	}
+
+	private List<PurchaseItem> purchaseItemsOrEmpty(JsonNode front, String fieldName) {
+		JsonNode value = front.get(fieldName);
+		if (value == null) {
+			return List.of();
+		}
+		if (!value.isArray()) {
+			throw new ApiException(ErrorCode.VALIDATION_001);
+		}
+
+		List<PurchaseItem> items = new ArrayList<>();
+		for (JsonNode item : value) {
+			if (!item.isObject()) {
+				throw new ApiException(ErrorCode.VALIDATION_001);
+			}
+			validateAllowedFields(item, PURCHASE_ITEM_FIELDS);
+			String name = requiredText(item, "name");
+			JsonNode quantity = item.get("quantity");
+			if (quantity == null || !quantity.isIntegralNumber()
+				|| !quantity.canConvertToInt() || quantity.intValue() < 1) {
+				throw new ApiException(ErrorCode.VALIDATION_001);
+			}
+			items.add(new PurchaseItem(name, quantity.intValue()));
+		}
+		return List.copyOf(items);
 	}
 
 	private TicketConfirmedFront ticketFront(JsonNode front) {

@@ -6,6 +6,7 @@ import java.util.UUID;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.memorydrawer.card.DocumentType;
+import com.memorydrawer.receipt.PurchaseItem;
 
 public record YearCardListResponse(int year, List<CardItem> cards) {
 
@@ -25,7 +26,13 @@ public record YearCardListResponse(int year, List<CardItem> cards) {
 	public sealed interface CardFront permits ReceiptFront, TicketFront, LetterFront {
 	}
 
-	public record ReceiptFront(String storeName) implements CardFront {
+	public record ReceiptFront(
+		String storeName,
+		List<PurchaseItem> purchaseItems
+	) implements CardFront {
+		public ReceiptFront {
+			purchaseItems = List.copyOf(purchaseItems);
+		}
 	}
 
 	public record TicketFront(

@@ -30,6 +30,36 @@ function PreviewField({ label, value }) {
   return <div><dt>{label}</dt><dd>{displayValue}</dd></div>
 }
 
+function PurchaseItemsPreview({ items }) {
+  const purchaseItems = Array.isArray(items)
+    ? items.filter((item) => (
+      item
+      && typeof item.name === 'string'
+      && item.name.trim()
+      && Number.isInteger(Number(item.quantity))
+      && Number(item.quantity) > 0
+    ))
+    : []
+
+  if (purchaseItems.length === 0) return null
+
+  return (
+    <div className="card-preview__purchase-items">
+      <dt>구매 항목</dt>
+      <dd>
+        <ul>
+          {purchaseItems.map(({ name, quantity }, index) => (
+            <li key={`${name}-${quantity}-${index}`}>
+              <span>{name}</span>
+              <strong>× {Number(quantity)}</strong>
+            </li>
+          ))}
+        </ul>
+      </dd>
+    </div>
+  )
+}
+
 function CardSavePage({ draftId, documentType, frontConfirmed, ticketRecall, onSaved, onOpenDrawer }) {
   const [companionInput, setCompanionInput] = useState('')
   const [companions, setCompanions] = useState([])
@@ -219,6 +249,7 @@ function CardSavePage({ draftId, documentType, frontConfirmed, ticketRecall, onS
               <dl className="card-preview__fields">
                 <PreviewField label="기억 날짜" value={frontConfirmed?.memoryDate} />
                 {documentType === 'RECEIPT' && <PreviewField label="가게 이름" value={front.storeName} />}
+                {documentType === 'RECEIPT' && <PurchaseItemsPreview items={front.purchaseItems} />}
                 {documentType === 'TICKET' && <PreviewField label="행사명" value={front.eventName} />}
                 {documentType === 'TICKET' && <PreviewField label="장소" value={front.venue} />}
                 {documentType === 'TICKET' && <PreviewField label="좌석" value={front.seat} />}

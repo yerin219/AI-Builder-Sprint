@@ -10,6 +10,14 @@
   margin: 0 auto;
 }
 
+.card-flip > .days-ago {
+  margin: 0.85rem 0 0;
+  color: #84634b;
+  font-size: 0.9rem;
+  font-weight: 700;
+  text-align: center;
+}
+
 .card-flip__tabs {
   display: flex;
   justify-content: center;
@@ -345,6 +353,40 @@
   color: #5e5a55;
   font-size: 23px;
   text-align: center;
+}
+
+.memory-card--receipt.memory-card--front > .memory-card__purchase-items {
+  position: absolute;
+  top: calc(25% + 5rem);
+  right: clamp(2.25rem, 10vw, 4.25rem);
+  left: clamp(2.25rem, 10vw, 4.25rem);
+  display: grid;
+  gap: 0.45rem;
+  max-height: 30%;
+  margin: 0;
+  padding: 0;
+  overflow-y: auto;
+  color: #34302b;
+  font-family: "NanumGoDing", "Noto Sans KR", sans-serif;
+  font-size: clamp(0.82rem, 3.8vw, 1rem);
+  list-style: none;
+}
+
+.memory-card--receipt.memory-card--front > .memory-card__purchase-items li {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 0.75rem;
+  align-items: baseline;
+  padding-bottom: 0.35rem;
+  border-bottom: 1px dashed rgb(55 52 48 / 24%);
+}
+
+.memory-card--receipt.memory-card--front > .memory-card__purchase-items span {
+  overflow-wrap: anywhere;
+}
+
+.memory-card--receipt.memory-card--front > .memory-card__purchase-items strong {
+  white-space: nowrap;
 }
 
 .memory-card--receipt.memory-card--back {

@@ -8,6 +8,7 @@ import com.fasterxml.jackson.annotation.JsonFormat;
 import com.memorydrawer.card.DocumentType;
 import com.memorydrawer.card.FrontImageMode;
 import com.memorydrawer.card.WritingMode;
+import com.memorydrawer.receipt.PurchaseItem;
 import com.memorydrawer.ticket.recall.TicketSubtype;
 
 public record CardDetailResponse(
@@ -22,7 +23,13 @@ public record CardDetailResponse(
 	public sealed interface CardFront permits ReceiptFront, TicketFront, LetterFront {
 	}
 
-	public record ReceiptFront(String storeName) implements CardFront {
+	public record ReceiptFront(
+		String storeName,
+		List<PurchaseItem> purchaseItems
+	) implements CardFront {
+		public ReceiptFront {
+			purchaseItems = List.copyOf(purchaseItems);
+		}
 	}
 
 	public record TicketFront(

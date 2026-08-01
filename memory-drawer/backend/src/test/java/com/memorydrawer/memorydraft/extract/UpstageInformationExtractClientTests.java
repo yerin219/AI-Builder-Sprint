@@ -23,6 +23,7 @@ import com.memorydrawer.ai.config.UpstageProperties;
 import com.memorydrawer.common.error.ApiException;
 import com.memorydrawer.common.error.ErrorCode;
 import com.memorydrawer.memorydraft.domain.DocumentType;
+import com.memorydrawer.receipt.PurchaseItem;
 
 class UpstageInformationExtractClientTests {
 
@@ -56,6 +57,9 @@ class UpstageInformationExtractClientTests {
 			.andExpect(content().string(containsString("\"model\":\"information-extract\"")))
 			.andExpect(content().string(containsString("\"memoryDate\"")))
 			.andExpect(content().string(containsString("\"storeName\"")))
+			.andExpect(content().string(containsString("\"purchaseItems\"")))
+			.andExpect(content().string(containsString("\"type\":\"array\"")))
+			.andExpect(content().string(containsString("\"quantity\"")))
 			.andExpect(content().string(containsString("data:image/jpeg;base64,/9j/")))
 			.andExpect(content().string(not(containsString("\"type\":\"text\""))))
 			.andExpect(content().string(containsString("\"type\":\"string\"")))
@@ -66,7 +70,7 @@ class UpstageInformationExtractClientTests {
 					  "choices": [
 					    {
 					      "message": {
-					        "content": "{\\"memoryDate\\":\\"2026-07-25\\",\\"storeName\\":\\"서면카페\\"}"
+					        "content": "{\\"memoryDate\\":\\"2026-07-25\\",\\"storeName\\":\\"서면카페\\",\\"purchaseItems\\":[{\\"name\\":\\"아이스 아메리카노\\",\\"quantity\\":2},{\\"name\\":\\"치즈케이크\\",\\"quantity\\":1}]}"
 					      }
 					    }
 					  ]
@@ -83,6 +87,10 @@ class UpstageInformationExtractClientTests {
 
 		assertThat(result.memoryDate()).isEqualTo("2026-07-25");
 		assertThat(result.storeName()).isEqualTo("서면카페");
+		assertThat(result.purchaseItems()).containsExactly(
+			new PurchaseItem("아이스 아메리카노", 2),
+			new PurchaseItem("치즈케이크", 1)
+		);
 		assertThat(result.eventName()).isNull();
 		server.verify();
 	}

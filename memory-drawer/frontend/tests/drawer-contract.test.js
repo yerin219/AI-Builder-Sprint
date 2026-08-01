@@ -33,7 +33,7 @@ const {
 } = await import("../src/features/drawer/drawerApi.js");
 const { setAccessToken } = await import("../src/utils/tokenStorage.js");
 const { resolveApiUrl } = await import("../src/api/http.js");
-const { getImageUrl } = await import("../src/features/drawer/drawerViewUtils.js");
+const { getDaysAgo, getImageUrl } = await import("../src/features/drawer/drawerViewUtils.js");
 
 const successResponse = (data) => ({
     ok: true,
@@ -137,5 +137,20 @@ describe("API 8 drawer read contracts", () => {
             () => fetchDrawers({ signal: new AbortController().signal }),
             (error) => error?.name === "AbortError",
         );
+    });
+});
+
+describe("memory date relative labels", () => {
+    const augustFirst = new Date(2026, 7, 1, 12, 0, 0);
+
+    it("calculates past and same-day memories from the device date", () => {
+        assert.equal(getDaysAgo("2026-07-25", augustFirst), 7);
+        assert.equal(getDaysAgo("2026-08-01", augustFirst), 0);
+    });
+
+    it("returns a negative value for a future memory and rejects invalid dates", () => {
+        assert.equal(getDaysAgo("2026-08-03", augustFirst), -2);
+        assert.equal(getDaysAgo("2026-02-30", augustFirst), null);
+        assert.equal(getDaysAgo("not-a-date", augustFirst), null);
     });
 });

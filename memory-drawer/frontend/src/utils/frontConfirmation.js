@@ -1,6 +1,25 @@
 const hasText = (value) =>
     typeof value === "string" && value.trim().length > 0;
 
+const isSelectedPurchaseItem = (item) => item?.selected !== false;
+
+const isPositiveInteger = (value) => {
+    const quantity = Number(value);
+    return Number.isInteger(quantity) && quantity > 0;
+};
+
+const createPurchaseItems = (purchaseItems) => {
+    if (!Array.isArray(purchaseItems)) return [];
+
+    return purchaseItems
+        .filter((item) => item && typeof item === "object")
+        .map((item) => ({
+            name: typeof item.name === "string" ? item.name : "",
+            quantity: item.quantity ?? "",
+            selected: true,
+        }));
+};
+
 export function createFrontForm(candidate = {}) {
     return {
         memoryDate: candidate.memoryDate ?? "",
@@ -9,6 +28,7 @@ export function createFrontForm(candidate = {}) {
         venue: candidate.venue ?? "",
         seat: candidate.seat ?? "",
         ocrText: candidate.ocrText ?? "",
+        purchaseItems: createPurchaseItems(candidate.purchaseItems),
     };
 }
 
@@ -25,8 +45,22 @@ export function validateFrontForm(documentType, form) {
         return "날짜를 입력해주세요.";
     }
 
-    if (documentType === "RECEIPT" && !hasText(form.storeName)) {
-        return "상호명을 입력해주세요.";
+    if (documentType === "RECEIPT") {
+        if (!hasText(form.storeName)) {
+            return "상호명을 입력해주세요.";
+        }
+
+        const selectedItems = Array.isArray(form.purchaseItems)
+            ? form.purchaseItems.filter(isSelectedPurchaseItem)
+            : [];
+
+        if (selectedItems.some((item) => !hasText(item?.name))) {
+            return "선택한 구매 항목의 이름을 입력해주세요.";
+        }
+
+        if (selectedItems.some((item) => !isPositiveInteger(item?.quantity))) {
+            return "구매 항목 수량은 1 이상의 정수로 입력해주세요.";
+        }
     }
 
     if (documentType === "TICKET") {
@@ -60,10 +94,20 @@ export function buildFrontPayload(documentType, form) {
     const memoryDate = form.memoryDate.trim();
 
     if (documentType === "RECEIPT") {
+        const purchaseItems = Array.isArray(form.purchaseItems)
+            ? form.purchaseItems
+                .filter(isSelectedPurchaseItem)
+                .map((item) => ({
+                    name: item.name.trim(),
+                    quantity: Number(item.quantity),
+                }))
+            : [];
+
         return {
             memoryDate,
             front: {
                 storeName: form.storeName.trim(),
+                purchaseItems,
             },
         };
     }

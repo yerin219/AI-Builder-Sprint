@@ -2,6 +2,8 @@ package com.memorydrawer.ticket.recall;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.hamcrest.Matchers.containsString;
+import static org.springframework.test.web.client.match.MockRestRequestMatchers.jsonPath;
 import static org.springframework.test.web.client.match.MockRestRequestMatchers.requestTo;
 import static org.springframework.test.web.client.response.MockRestResponseCreators.withSuccess;
 
@@ -45,6 +47,9 @@ class UpstageTicketRecallSolarGatewayTests {
 		JsonNode content = objectMapper.createObjectNode()
 			.put("titleCandidate", "함께 본 영화");
 		server.expect(requestTo("https://api.upstage.ai/v1/chat/completions"))
+			.andExpect(jsonPath("$.temperature").value(0.3))
+			.andExpect(jsonPath("$.messages[0].content", containsString("답변을 그대로 나열하거나 이어 붙이지 말고")))
+			.andExpect(jsonPath("$.messages[0].content", containsString("8~24자")))
 			.andRespond(withSuccess(solarResponse(content), MediaType.APPLICATION_JSON));
 
 		String result = gateway.generateTitle(answeredQuestions());

@@ -1,5 +1,6 @@
 package com.memorydrawer.memorydraft.extract;
 
+import java.util.ArrayList;
 import java.util.Base64;
 import java.util.List;
 
@@ -17,6 +18,7 @@ import com.memorydrawer.ai.config.UpstageProperties;
 import com.memorydrawer.common.error.ApiException;
 import com.memorydrawer.common.error.ErrorCode;
 import com.memorydrawer.memorydraft.domain.DocumentType;
+import com.memorydrawer.receipt.PurchaseItem;
 
 @Component
 public class UpstageInformationExtractClient implements InformationExtractClient {
@@ -115,6 +117,9 @@ public class UpstageInformationExtractClient implements InformationExtractClient
 			);
 			required.add(field.name());
 		}
+		if (documentType == DocumentType.RECEIPT) {
+			addPurchaseItemsSchema(propertiesNode, required);
+		}
 		schema.set("required", required);
 		schema.put("additionalProperties", false);
 
@@ -134,6 +139,32 @@ public class UpstageInformationExtractClient implements InformationExtractClient
 		return responseFormat;
 	}
 
+	private void addPurchaseItemsSchema(ObjectNode propertiesNode, ArrayNode required) {
+		ObjectNode purchaseItems = propertiesNode.putObject("purchaseItems");
+		purchaseItems.put("type", "array");
+		purchaseItems.put(
+			"description",
+			"실제로 구매하거나 주문한 메뉴·상품만 추출합니다. 소계, 합계, 부가세, 할인, "
+				+ "쿠폰, 포인트, 결제수단, 카드번호, 승인번호, 주문번호, 사업자정보, 광고 문구는 "
+				+ "제외합니다. 카페·음식점의 ICE, 샷 추가, 포장, 사이즈업 같은 옵션은 제외하고, "
+				+ "마트 영수증은 실제 상품명은 남기되 할인 행은 제외합니다."
+		);
+
+		ObjectNode itemSchema = purchaseItems.putObject("items");
+		itemSchema.put("type", "object");
+		ObjectNode itemProperties = itemSchema.putObject("properties");
+		itemProperties.putObject("name")
+			.put("type", "string")
+			.put("description", "실제로 구매하거나 주문한 메뉴 또는 상품명");
+		itemProperties.putObject("quantity")
+			.put("type", "integer")
+			.put("minimum", 1)
+			.put("description", "구매 수량. 별도 수량 표시가 없으면 1");
+		itemSchema.putArray("required").add("name").add("quantity");
+		itemSchema.put("additionalProperties", false);
+		required.add("purchaseItems");
+	}
+
 	private ExtractedFrontFields normalizeResponse(
 		DocumentType documentType,
 		JsonNode response
@@ -151,6 +182,7 @@ public class UpstageInformationExtractClient implements InformationExtractClient
 				? new ExtractedFrontFields(
 					textOrNull(result, "memoryDate"),
 					textOrNull(result, "storeName"),
+					purchaseItemsOrEmpty(result),
 					null,
 					null,
 					null
@@ -158,6 +190,7 @@ public class UpstageInformationExtractClient implements InformationExtractClient
 				: new ExtractedFrontFields(
 					textOrNull(result, "memoryDate"),
 					null,
+					List.of(),
 					textOrNull(result, "eventName"),
 					textOrNull(result, "venue"),
 					textOrNull(result, "seat")
@@ -165,6 +198,25 @@ public class UpstageInformationExtractClient implements InformationExtractClient
 		} catch (JsonProcessingException exception) {
 			throw new ApiException(ErrorCode.AI_001, exception);
 		}
+	}
+
+	private List<PurchaseItem> purchaseItemsOrEmpty(JsonNode result) {
+		JsonNode items = result.path("purchaseItems");
+		if (!items.isArray()) {
+			return List.of();
+		}
+
+		List<PurchaseItem> purchaseItems = new ArrayList<>();
+		for (JsonNode item : items) {
+			String name = textOrNull(item, "name");
+			JsonNode quantity = item.path("quantity");
+			if (name == null || !quantity.isIntegralNumber() || !quantity.canConvertToInt()
+				|| quantity.intValue() < 1) {
+				continue;
+			}
+			purchaseItems.add(new PurchaseItem(name, quantity.intValue()));
+		}
+		return List.copyOf(purchaseItems);
 	}
 
 	private String textOrNull(JsonNode result, String fieldName) {

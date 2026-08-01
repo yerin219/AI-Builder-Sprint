@@ -10,6 +10,7 @@ import static org.mockito.Mockito.when;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
+import java.util.List;
 import java.util.UUID;
 
 import org.junit.jupiter.api.BeforeEach;
@@ -32,6 +33,7 @@ import com.memorydrawer.memorydraft.extract.ExtractedFrontFields;
 import com.memorydrawer.memorydraft.extract.InformationExtractClient;
 import com.memorydrawer.memorydraft.image.OriginalImageStorage;
 import com.memorydrawer.memorydraft.repository.MemoryDraftRepository;
+import com.memorydrawer.receipt.PurchaseItem;
 
 @ExtendWith(MockitoExtension.class)
 class MemoryDraftDocumentTypeServiceTests {
@@ -65,17 +67,46 @@ class MemoryDraftDocumentTypeServiceTests {
 		when(memoryDraftRepository.findById(draft.getId())).thenReturn(java.util.Optional.of(draft));
 		when(originalImageStorage.load(draft.getOriginalImageKey())).thenReturn(imageBytes);
 		when(informationExtractClient.extract(DocumentType.RECEIPT, imageBytes, "image/jpeg"))
-			.thenReturn(new ExtractedFrontFields("2026-07-25", " 서면카페 ", null, null, null));
+			.thenReturn(new ExtractedFrontFields(
+				"2026-07-25",
+				" 서면카페 ",
+				List.of(
+					new PurchaseItem(" 아이스 아메리카노 ", 2),
+					new PurchaseItem("합 계", 1),
+					new PurchaseItem("Discount 1,000", 1),
+					new PurchaseItem("ICE", 1),
+					new PurchaseItem("Extra Shot", 1),
+					new PurchaseItem("치즈케이크", 1),
+					new PurchaseItem("Card Holder", 1),
+					new PurchaseItem("Total Cereal", 1),
+					new PurchaseItem("수량 오류", 0)
+				),
+				null,
+				null,
+				null
+			));
 
 		var response = service.confirm(ownerId, draft.getId(), "RECEIPT");
 
 		assertThat(response.frontCandidate())
-			.isEqualTo(new ReceiptFrontCandidate(LocalDate.of(2026, 7, 25), "서면카페"));
+			.isEqualTo(new ReceiptFrontCandidate(
+				LocalDate.of(2026, 7, 25),
+				"서면카페",
+				List.of(
+					new PurchaseItem("아이스 아메리카노", 2),
+					new PurchaseItem("치즈케이크", 1),
+					new PurchaseItem("Card Holder", 1),
+					new PurchaseItem("Total Cereal", 1)
+				)
+			));
 		assertThat(response.emptyFields()).isEmpty();
 		assertThat(response.draftStatus()).isEqualTo(DraftStatus.FRONT_PENDING);
 		assertThat(response.nextAction()).isEqualTo("CONFIRM_FRONT");
 		assertThat(draft.getDocumentType()).isEqualTo(DocumentType.RECEIPT);
 		assertThat(draft.getFrontCandidate()).contains("\"storeName\":\"서면카페\"");
+		assertThat(draft.getFrontCandidate())
+			.contains("\"purchaseItems\":[{\"name\":\"아이스 아메리카노\",\"quantity\":2}")
+			.doesNotContain("합 계", "Discount 1,000", "Extra Shot");
 		verify(memoryDraftRepository).saveAndFlush(draft);
 	}
 
@@ -90,6 +121,7 @@ class MemoryDraftDocumentTypeServiceTests {
 			.thenReturn(new ExtractedFrontFields(
 				"날짜 불확실",
 				null,
+				List.of(),
 				" 흠뻑쇼 ",
 				" ",
 				null

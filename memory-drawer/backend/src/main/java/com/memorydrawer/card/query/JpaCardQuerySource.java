@@ -21,6 +21,7 @@ import com.memorydrawer.card.query.dto.YearCardListResponse.CardItem;
 import com.memorydrawer.card.repository.MemoryCardRepository;
 import com.memorydrawer.common.error.ApiException;
 import com.memorydrawer.common.error.ErrorCode;
+import com.memorydrawer.receipt.PurchaseItem;
 import com.memorydrawer.ticket.recall.TicketSubtype;
 
 @Component
@@ -74,7 +75,8 @@ public class JpaCardQuerySource implements CardQuerySource {
 			card.getMemoryDate(),
 			switch (card.getDocumentType()) {
 				case RECEIPT -> new YearCardListResponse.ReceiptFront(
-					requiredText(front, "storeName")
+					requiredText(front, "storeName"),
+					purchaseItems(front)
 				);
 				case TICKET -> new YearCardListResponse.TicketFront(
 					requiredText(front, "eventName"),
@@ -105,7 +107,8 @@ public class JpaCardQuerySource implements CardQuerySource {
 	private CardDetailResponse.CardFront detailFront(MemoryCard card, JsonNode front) {
 		return switch (card.getDocumentType()) {
 			case RECEIPT -> new CardDetailResponse.ReceiptFront(
-				requiredText(front, "storeName")
+				requiredText(front, "storeName"),
+				purchaseItems(front)
 			);
 			case TICKET -> new CardDetailResponse.TicketFront(
 				requiredText(front, "eventName"),
@@ -180,6 +183,31 @@ public class JpaCardQuerySource implements CardQuerySource {
 		List<String> values = new ArrayList<>();
 		value.forEach(item -> values.add(item.asText()));
 		return List.copyOf(values);
+	}
+
+	private List<PurchaseItem> purchaseItems(JsonNode front) {
+		JsonNode value = front.get("purchaseItems");
+		if (value == null || value.isNull()) {
+			return List.of();
+		}
+		if (!value.isArray()) {
+			throw new ApiException(ErrorCode.CARD_003);
+		}
+
+		List<PurchaseItem> items = new ArrayList<>();
+		for (JsonNode item : value) {
+			if (!item.isObject()) {
+				throw new ApiException(ErrorCode.CARD_003);
+			}
+			String name = requiredText(item, "name");
+			JsonNode quantity = item.get("quantity");
+			if (quantity == null || !quantity.isIntegralNumber()
+				|| !quantity.canConvertToInt() || quantity.intValue() < 1) {
+				throw new ApiException(ErrorCode.CARD_003);
+			}
+			items.add(new PurchaseItem(name, quantity.intValue()));
+		}
+		return List.copyOf(items);
 	}
 
 	private String requiredText(JsonNode node, String fieldName) {

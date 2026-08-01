@@ -59,7 +59,10 @@ class MemoryDraftFrontControllerTests {
 					{
 					  "memoryDate": "2026-07-12",
 					  "front": {
-					    "storeName": "직접 확인한 가게명"
+					    "storeName": "직접 확인한 가게명",
+					    "purchaseItems": [
+					      {"name": "아이스 아메리카노", "quantity": 2}
+					    ]
 					  }
 					}
 					"""))
@@ -70,13 +73,16 @@ class MemoryDraftFrontControllerTests {
 			.andExpect(jsonPath("$.data.documentType").value("RECEIPT"))
 			.andExpect(jsonPath("$.data.memoryDate").value("2026-07-12"))
 			.andExpect(jsonPath("$.data.front.storeName").value("직접 확인한 가게명"))
+			.andExpect(jsonPath("$.data.front.purchaseItems[0].name").value("아이스 아메리카노"))
+			.andExpect(jsonPath("$.data.front.purchaseItems[0].quantity").value(2))
 			.andExpect(jsonPath("$.data.draftStatus").value("FRONT_CONFIRMED"))
 			.andExpect(jsonPath("$.data.nextAction").value("WRITE_BACK"));
 
 		MemoryDraft saved = memoryDraftRepository.findById(draft.getId()).orElseThrow();
 		assertThat(saved.getFrontCandidate())
 			.contains("\"memoryDate\":\"2026-07-12\"")
-			.contains("\"storeName\":\"직접 확인한 가게명\"");
+			.contains("\"storeName\":\"직접 확인한 가게명\"")
+			.contains("\"name\":\"아이스 아메리카노\",\"quantity\":2");
 		assertThat(saved.getDraftStatus()).isEqualTo(DraftStatus.FRONT_CONFIRMED);
 	}
 
@@ -106,19 +112,22 @@ class MemoryDraftFrontControllerTests {
 					{
 					  "memoryDate": "2026-07-13",
 					  "front": {
-					    "storeName": "수정한 가게명"
+					    "storeName": "수정한 가게명",
+					    "purchaseItems": []
 					  }
 					}
 					"""))
 			.andExpect(status().isOk())
 			.andExpect(jsonPath("$.data.memoryDate").value("2026-07-13"))
 			.andExpect(jsonPath("$.data.front.storeName").value("수정한 가게명"))
+			.andExpect(jsonPath("$.data.front.purchaseItems").isEmpty())
 			.andExpect(jsonPath("$.data.draftStatus").value("FRONT_CONFIRMED"));
 
 		MemoryDraft saved = memoryDraftRepository.findById(draft.getId()).orElseThrow();
 		assertThat(saved.getFrontCandidate())
 			.contains("\"memoryDate\":\"2026-07-13\"")
 			.contains("\"storeName\":\"수정한 가게명\"")
+			.contains("\"purchaseItems\":[]")
 			.doesNotContain("처음 확인한 가게명");
 	}
 
@@ -241,7 +250,8 @@ class MemoryDraftFrontControllerTests {
 					{
 					  "memoryDate": "%s",
 					  "front": {
-					    "storeName": "%s"
+					    "storeName": "%s",
+					    "purchaseItems": []
 					  }
 					}
 					""".formatted(memoryDate, storeName)))

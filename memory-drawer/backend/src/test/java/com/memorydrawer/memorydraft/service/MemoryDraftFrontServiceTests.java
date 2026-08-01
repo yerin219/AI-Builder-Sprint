@@ -9,6 +9,7 @@ import static org.mockito.Mockito.when;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -34,6 +35,7 @@ import com.memorydrawer.memorydraft.domain.DraftStatus;
 import com.memorydrawer.memorydraft.domain.MemoryDraft;
 import com.memorydrawer.memorydraft.domain.ParsedContent;
 import com.memorydrawer.memorydraft.repository.MemoryDraftRepository;
+import com.memorydrawer.receipt.PurchaseItem;
 
 @ExtendWith(MockitoExtension.class)
 class MemoryDraftFrontServiceTests {
@@ -65,7 +67,11 @@ class MemoryDraftFrontServiceTests {
 				LocalDate.of(2026, 7, 25),
 				"""
 					{
-					  "storeName": " 서면카페 "
+					  "storeName": " 서면카페 ",
+					  "purchaseItems": [
+					    {"name": " 아이스 아메리카노 ", "quantity": 2},
+					    {"name": " Discount 쿠키 ", "quantity": 1}
+					  ]
 					}
 					"""
 			)
@@ -73,14 +79,46 @@ class MemoryDraftFrontServiceTests {
 
 		assertThat(response.documentType()).isEqualTo(DocumentType.RECEIPT);
 		assertThat(response.memoryDate()).isEqualTo(LocalDate.of(2026, 7, 25));
-		assertThat(response.front()).isEqualTo(new ReceiptConfirmedFront("서면카페"));
+		assertThat(response.front()).isEqualTo(new ReceiptConfirmedFront(
+			"서면카페",
+			List.of(
+				new PurchaseItem("아이스 아메리카노", 2),
+				new PurchaseItem("Discount 쿠키", 1)
+			)
+		));
 		assertThat(response.draftStatus()).isEqualTo(DraftStatus.FRONT_CONFIRMED);
 		assertThat(response.nextAction()).isEqualTo("WRITE_BACK");
 		assertThat(draft.getFrontCandidate())
 			.contains("\"memoryDate\":\"2026-07-25\"")
-			.contains("\"storeName\":\"서면카페\"");
+			.contains("\"storeName\":\"서면카페\"")
+			.contains("\"name\":\"Discount 쿠키\",\"quantity\":1");
 		assertThat(draft.getDraftStatus()).isEqualTo(DraftStatus.FRONT_CONFIRMED);
 		verify(memoryDraftRepository).saveAndFlush(draft);
+	}
+
+	@Test
+	void keepsLegacyReceiptConfirmationWithoutPurchaseItemsCompatible() throws Exception {
+		UUID ownerId = UUID.randomUUID();
+		MemoryDraft draft = frontPendingDraft(ownerId, DocumentType.RECEIPT);
+		when(memoryDraftRepository.findById(draft.getId())).thenReturn(Optional.of(draft));
+
+		var response = service.confirm(
+			ownerId,
+			draft.getId(),
+			request(
+				LocalDate.of(2026, 7, 25),
+				"""
+					{
+					  "storeName": "기존 가게"
+					}
+					"""
+			)
+		);
+
+		assertThat(response.front()).isEqualTo(
+			new ReceiptConfirmedFront("기존 가게", List.of())
+		);
+		assertThat(draft.getFrontCandidate()).contains("\"purchaseItems\":[]");
 	}
 
 	@Test
@@ -96,7 +134,8 @@ class MemoryDraftFrontServiceTests {
 				LocalDate.of(2026, 7, 25),
 				"""
 					{
-					  "storeName": "처음 확인한 가게명"
+					  "storeName": "처음 확인한 가게명",
+					  "purchaseItems": [{"name": "첫 메뉴", "quantity": 1}]
 					}
 					"""
 			)
@@ -109,19 +148,21 @@ class MemoryDraftFrontServiceTests {
 				LocalDate.of(2026, 7, 26),
 				"""
 					{
-					  "storeName": "수정한 가게명"
+					  "storeName": "수정한 가게명",
+					  "purchaseItems": []
 					}
 					"""
 			)
 		);
 
 		assertThat(response.memoryDate()).isEqualTo(LocalDate.of(2026, 7, 26));
-		assertThat(response.front()).isEqualTo(new ReceiptConfirmedFront("수정한 가게명"));
+		assertThat(response.front()).isEqualTo(new ReceiptConfirmedFront("수정한 가게명", List.of()));
 		assertThat(response.draftStatus()).isEqualTo(DraftStatus.FRONT_CONFIRMED);
 		assertThat(draft.getFrontCandidate())
 			.contains("\"memoryDate\":\"2026-07-26\"")
 			.contains("\"storeName\":\"수정한 가게명\"")
-			.doesNotContain("처음 확인한 가게명");
+			.contains("\"purchaseItems\":[]")
+			.doesNotContain("처음 확인한 가게명", "첫 메뉴");
 		verify(memoryDraftRepository, org.mockito.Mockito.times(2)).saveAndFlush(draft);
 	}
 
@@ -193,6 +234,35 @@ class MemoryDraftFrontServiceTests {
 				ownerId,
 				draft.getId(),
 				request(LocalDate.of(2026, 7, 25), "{}")
+			),
+			ErrorCode.VALIDATION_001
+		);
+
+		assertThat(draft.getDraftStatus()).isEqualTo(DraftStatus.FRONT_PENDING);
+		verify(memoryDraftRepository, never()).saveAndFlush(draft);
+	}
+
+	@Test
+	void rejectsInvalidReceiptPurchaseItem() throws Exception {
+		UUID ownerId = UUID.randomUUID();
+		MemoryDraft draft = frontPendingDraft(ownerId, DocumentType.RECEIPT);
+		when(memoryDraftRepository.findById(draft.getId())).thenReturn(Optional.of(draft));
+
+		assertApiError(
+			() -> service.confirm(
+				ownerId,
+				draft.getId(),
+				request(
+					LocalDate.of(2026, 7, 25),
+					"""
+						{
+						  "storeName": "서면카페",
+						  "purchaseItems": [
+						    {"name": "아메리카노", "quantity": 0}
+						  ]
+						}
+						"""
+				)
 			),
 			ErrorCode.VALIDATION_001
 		);

@@ -96,6 +96,8 @@ Authorization: Bearer {accessToken}
 - 카드가 들어갈 서랍 연도는 `memoryDate`에서 계산합니다.
 - AI가 날짜를 찾지 못해도 오늘 날짜를 자동 입력하지 않습니다.
 - 손편지는 날짜를 자동 추출하지 않으므로 사용자가 직접 입력합니다.
+- `오늘로부터 n일 전` 표시는 API 필드가 아니라 프론트엔드가 카드의 `memoryDate`와 사용자 기기의 로컬 오늘 날짜를 날짜 단위로 비교해 계산합니다.
+- 프론트엔드는 페이지를 열 때 계산하고 1분마다 오늘 날짜를 다시 확인합니다. 당일은 `오늘의 기억`, 과거는 `오늘로부터 n일 전`, 미래는 `오늘로부터 n일 후`로 표시합니다.
 
 ### 2.5 `null`, 빈 문자열, 빈 배열
 
@@ -413,7 +415,7 @@ AI의 판단이 맞으면 제안된 유형을, 틀리면 사용자가 직접 선
 
 | 기록 유형 | 사용하는 Upstage 결과 | 필드 | 처리 원칙 |
 |---|---|---|---|
-| 영수증 | Information Extract | `memoryDate`, `storeName` | 확신할 수 있는 값만 입력 |
+| 영수증 | Information Extract | `memoryDate`, `storeName`, `purchaseItems` | 실제 구매·주문 품목 후보만 입력 |
 | 티켓 | Information Extract | `memoryDate`, `eventName`, `venue`, `seat` | 확신할 수 있는 값만 입력 |
 | 손편지 | 저장된 Document Parse 결과 | `ocrText` | 인식된 전체 본문 사용 |
 | 손편지 공통 날짜 | 사용하지 않음 | `memoryDate` | 자동 추출하지 않고 `null` 반환 |
@@ -421,6 +423,40 @@ AI의 판단이 맞으면 제안된 유형을, 틀리면 사용자가 직접 선
 - Information Extract 결과의 날짜는 백엔드가 `YYYY-MM-DD`로 정규화합니다.
 - 날짜를 정규화할 수 없거나 값이 불확실하면 추측하지 않고 `null`로 반환합니다.
 - 유형별로 정의하지 않은 필드는 Information Extract 결과에 있더라도 프론트엔드 응답에 포함하지 않습니다.
+- 영수증의 `purchaseItems`는 `{ "name": String, "quantity": Integer }` 객체 배열이며 품목을 찾지 못하면 `[]`을 반환합니다.
+- `purchaseItems`가 비어 있으면 `emptyFields`에도 `"purchaseItems"`를 포함해 사용자가 직접 추가할 수 있게 합니다.
+
+#### Response — 영수증 예시
+
+`200 OK`
+
+```json
+{
+  "success": true,
+  "message": "영수증 정보를 추출했습니다.",
+  "data": {
+    "draftId": "9bb06555-85de-46e2-b44e-8f67eb8e08d2",
+    "documentType": "RECEIPT",
+    "frontCandidate": {
+      "memoryDate": "2026-07-25",
+      "storeName": "서면카페",
+      "purchaseItems": [
+        {
+          "name": "아이스 아메리카노",
+          "quantity": 2
+        },
+        {
+          "name": "치즈케이크",
+          "quantity": 1
+        }
+      ]
+    },
+    "emptyFields": [],
+    "draftStatus": "FRONT_PENDING",
+    "nextAction": "CONFIRM_FRONT"
+  }
+}
+```
 
 #### Response — 티켓 예시
 
@@ -476,6 +512,7 @@ AI의 판단이 맞으면 제안된 유형을, 틀리면 사용자가 직접 선
 - 프론트엔드는 추출 결과 확인 화면에 원본 이미지를 함께 표시하지 않습니다.
 - `null` 필드는 빈 입력칸으로 보여주며 AI가 만든 추정값으로 채우지 않습니다.
 - 사용자는 값이 틀리면 수정하고 빈칸은 직접 입력할 수 있습니다.
+- 영수증 품목은 후보로만 표시하며 사용자가 이름·수량을 수정하고 품목을 삭제·추가하거나 선택 해제한 뒤 최종 확정합니다.
 
 #### 주요 오류
 
@@ -499,7 +536,17 @@ AI의 판단이 맞으면 제안된 유형을, 틀리면 사용자가 직접 선
 {
   "memoryDate": "2026-07-25",
   "front": {
-    "storeName": "서면카페"
+    "storeName": "서면카페",
+    "purchaseItems": [
+      {
+        "name": "아이스 아메리카노",
+        "quantity": 2
+      },
+      {
+        "name": "치즈케이크",
+        "quantity": 1
+      }
+    ]
   }
 }
 ```
@@ -532,11 +579,41 @@ AI의 판단이 맞으면 제안된 유형을, 틀리면 사용자가 직접 선
 
 | 기록 유형 | 필수 | 선택 |
 |---|---|---|
-| 영수증 | `memoryDate`, `front.storeName` | 없음 |
+| 영수증 | `memoryDate`, `front.storeName`, `front.purchaseItems` | 없음 |
 | 티켓 | `memoryDate`, `front.eventName`, `front.venue` | `front.seat` |
 | 손편지 | `memoryDate`, `front.ocrText` | 없음 |
 
 좌석이 `null`이면 정상 요청으로 처리하며 완성 카드에서는 좌석 항목명까지 숨깁니다.
+영수증의 `purchaseItems`는 빈 배열을 허용합니다. 항목이 있으면 `name`은 비어 있지 않아야 하고 `quantity`는 1 이상의 정수여야 하며, UI의 선택 상태는 보내지 않고 사용자가 최종 선택한 항목만 배열에 담습니다. 신규 클라이언트는 이 필드를 보내야 하며, 기존 클라이언트 호환을 위해 필드가 누락된 요청만 `[]`로 정규화합니다.
+
+#### Response — 영수증 예시
+
+```json
+{
+  "success": true,
+  "message": "카드 앞면이 확정되었습니다.",
+  "data": {
+    "draftId": "9bb06555-85de-46e2-b44e-8f67eb8e08d2",
+    "documentType": "RECEIPT",
+    "memoryDate": "2026-07-25",
+    "front": {
+      "storeName": "서면카페",
+      "purchaseItems": [
+        {
+          "name": "아이스 아메리카노",
+          "quantity": 2
+        },
+        {
+          "name": "치즈케이크",
+          "quantity": 1
+        }
+      ]
+    },
+    "draftStatus": "FRONT_CONFIRMED",
+    "nextAction": "WRITE_BACK"
+  }
+}
+```
 
 #### Response — 티켓 예시
 
@@ -784,6 +861,9 @@ AI의 판단이 맞으면 제안된 유형을, 틀리면 사용자가 직접 선
 - `titleCandidate` 한 줄만 반환합니다.
 - `oneLineMemoryCandidate`, `memoryTextCandidate` 등 별도의 한 줄 추억은 생성하지 않습니다.
 - Solar에는 비어 있지 않은 사용자 답변만 사실 근거로 전달합니다.
+- 여러 답변을 쉼표로 나열하거나 서로 다른 답변의 문구를 그대로 이어 붙이지 않습니다.
+- 답변들이 함께 나타내는 핵심 장면이나 의미를 명사구 또는 짧은 문장 하나로 압축합니다.
+- 제목은 공백을 포함해 8~24자를 권장합니다. 이는 생성 품질을 위한 지침이며 공개 API의 강제 길이 제한은 아닙니다.
 - 날짜·장소·티켓 앞면 정보·동행인·날씨·기분은 제목 생성을 위한 추가 사실로 전달하지 않습니다.
 - 사용자 답변에 없는 사실·인물·감정을 추가하지 않습니다.
 - 답변의 의미를 바꾸거나 감정을 과장하지 않습니다.
@@ -955,6 +1035,7 @@ Solar 호출이 실패하면 사용자의 답변을 그대로 유지하고 제�
 - `draftId`의 사용자 확정 앞면만 사용합니다.
 - 실제 추억 날짜 `memoryDate`의 연도 서랍에 저장합니다.
 - AI 최초 추출값이 아니라 사용자가 수정·확정한 값을 저장합니다.
+- 영수증은 사용자가 최종 선택한 `front.purchaseItems`만 기존 확정 앞면 데이터에 함께 저장하며, 별도 공개 API나 `purchaseItems` 전용 DB 컬럼을 추가하지 않습니다.
 - 선택 항목이 `null`이면 카드 조회 응답에서도 `null`로 유지합니다.
 - 같은 `draftId`로 두 개의 카드를 생성하지 않습니다.
 
@@ -1043,7 +1124,17 @@ Solar 호출이 실패하면 사용자의 답변을 그대로 유지하고 제�
         "documentType": "RECEIPT",
         "memoryDate": "2026-04-02",
         "front": {
-          "storeName": "서면카페"
+          "storeName": "서면카페",
+          "purchaseItems": [
+            {
+              "name": "아이스 아메리카노",
+              "quantity": 2
+            },
+            {
+              "name": "치즈케이크",
+              "quantity": 1
+            }
+          ]
         }
       },
       {
@@ -1064,6 +1155,7 @@ Solar 호출이 실패하면 사용자의 답변을 그대로 유지하고 제�
 - 해당 연도에 카드가 없으면 `cards: []`을 반환합니다.
 - `seat`가 `null`이면 프론트엔드는 좌석 항목명까지 숨깁니다.
 - 같은 연도의 카드는 `memoryDate` 오름차순, 즉 오래된 날짜부터 최신 날짜 순서로 반환합니다.
+- 프론트엔드는 각 카드 프레임 아래에 `memoryDate` 기준 경과일 문구를 표시합니다. 날짜 차이는 일광 절약 시간의 영향을 피하도록 날짜 부분을 UTC 자정 값으로 변환해 계산하고, 사용자 기기 날짜를 1분마다 다시 확인합니다.
 
 ### 8.3 카드 상세 조회
 
@@ -1123,10 +1215,12 @@ Solar 호출이 실패하면 사용자의 답변을 그대로 유지하고 제�
 
 | 기록 유형 | 앞면 | 뒷면 |
 |---|---|---|
-| 영수증 | `storeName` | `companions`, `weather`, `mood`, `diaryText`, `backPhotoUrls` |
+| 영수증 | `storeName`, `purchaseItems` | `companions`, `weather`, `mood`, `diaryText`, `backPhotoUrls` |
 | 티켓 직접 기록 | `eventName`, `venue`, `seat` | 공통 정보, `writingMode`, `title`, `memoryText` |
 | 티켓 AI 질문 | 티켓 직접 기록과 동일 | 공통 정보, `writingMode`, `ticketSubtype`, `title`, `answers` |
 | 손편지 | `ocrText`, `frontImageMode`, `frontImageUrl` | `companions`, `weather`, `mood`, `diaryText`, `backPhotoUrls` |
+
+API 11 목록과 API 12 상세의 영수증 `front.purchaseItems`는 모두 사용자가 API 5에서 최종 확정한 `{ "name", "quantity" }` 배열입니다.
 
 #### 주요 오류
 
@@ -1146,7 +1240,7 @@ Solar 호출이 실패하면 사용자의 답변을 그대로 유지하고 제�
 | 앱 단계 | Upstage 호출 | 백엔드 처리 |
 |---|---|---|
 | 이미지 분석 | Document Parse → Solar | 전체 텍스트·구조를 한 번 인식해 임시 기록에 보관하고, 그 결과로 문서 유형 후보만 생성 |
-| 영수증 유형 확정 | Information Extract | `memoryDate`, `storeName` 스키마로 필요한 필드만 추출 |
+| 영수증 유형 확정 | Information Extract | 원본 이미지에서 `memoryDate`, `storeName`, `purchaseItems`만 구조화해 추출 |
 | 티켓 유형 확정 | Information Extract | `memoryDate`, `eventName`, `venue`, `seat` 스키마로 필요한 필드만 추출 |
 | 손편지 유형 확정 | 추가 호출 없음 | 저장해 둔 Document Parse 전체 본문을 `ocrText`로 사용하고 `memoryDate`는 `null` 반환 |
 | 카드 앞면 확정 | Upstage 호출 없음 | 사용자가 수정한 값을 확정하고 이미지 처리 결과를 연결 |
@@ -1182,16 +1276,27 @@ Information Extract는 사용자가 문서 유형을 확인한 뒤 영수증 또
 - 입력은 `parsedContent`가 아니라 `draftId`에 연결해 보관한 원본 문서 이미지입니다.
 - Document Parse와 Information Extract는 서로 다른 목적의 독립 API이며, Information Extract가 Document Parse 결과를 입력받는 구조로 구현하지 않습니다.
 - 현재 Upstage의 `information-extract` 모델을 `/v1/information-extraction/chat/completions`로 호출하고, 메시지에는 data URL 형식의 원본 이미지 `image_url` 항목 하나만 전달합니다.
-- `response_format`의 JSON Schema에는 Upstage가 지원하는 `string` 필드만 사용합니다. 모든 유형별 필드를 필수로 요청하되 불확실한 값은 빈 문자열로 받은 뒤, 백엔드가 이를 `null`로 정규화하고 다시 검증합니다.
+- 영수증의 `response_format` JSON Schema는 배열과 중첩 객체를 사용하며, 티켓은 문자열 필드만 사용합니다. 불확실한 문자열은 빈 문자열로 받은 뒤 백엔드가 `null`로 정규화하고, 영수증 품목 배열은 항목별 형식을 다시 검증합니다.
 
 #### 영수증 추출 스키마
 
 ```json
 {
   "memoryDate": "YYYY-MM-DD 또는 null",
-  "storeName": "문자열 또는 null"
+  "storeName": "문자열 또는 null",
+  "purchaseItems": [
+    {
+      "name": "실제 구매하거나 주문한 메뉴·상품명",
+      "quantity": 1
+    }
+  ]
 }
 ```
+
+- 실제 구매·주문 품목만 추출하고 소계, 합계, 부가세, 할인, 쿠폰, 포인트, 결제수단, 카드번호, 승인번호, 주문번호, 사업자정보와 광고 문구는 제외합니다.
+- 카페·음식점의 `ICE`, 샷 추가, 포장, 사이즈업 같은 옵션은 기본적으로 제외합니다. 마트 영수증은 실제 상품명을 유지하고 할인 행만 제외합니다.
+- 품목의 `name`은 비어 있지 않은 문자열, `quantity`는 1 이상의 정수여야 합니다. 유효한 품목이 없으면 `purchaseItems: []`로 정규화합니다.
+- 대표 메뉴를 AI가 자동 확정하지 않으며 품목 추천을 위한 Solar 호출도 추가하지 않습니다. 사용자가 후보를 수정·삭제·추가하고 최종 선택한 항목만 카드 앞면에 저장합니다.
 
 #### 티켓 추출 스키마
 
@@ -1250,8 +1355,11 @@ Solar 호출 결과는 백엔드가 다음 내부 형식으로 정규화하고 �
 
 - 서버 질문 은행과 일치하는 `questionId`만 허용합니다.
 - Solar에는 비어 있지 않은 사용자 답변만 사실 근거로 전달합니다.
+- 답변을 쉼표로 나열하거나 서로 다른 답변 문구를 그대로 이어 붙이지 않고, 공통된 핵심 장면이나 의미로 압축합니다.
+- 공백 포함 8~24자의 명사구 또는 짧은 문장을 권장하되, 이는 생성 프롬프트 지침이며 공개 API의 강제 길이 제한은 아닙니다.
 - 답변에 없는 인물·사건·감정·장소를 추가하거나 의미를 과장하지 않습니다.
-- 줄바꿈, 빈 제목 또는 정해진 최대 길이를 넘는 결과는 유효하지 않은 응답으로 처리합니다.
+- 빈 제목이나 여러 줄 결과는 유효하지 않은 응답으로 처리합니다.
+- 문서 유형·티켓 세부 유형 분류는 결정적인 결과를 위해 `temperature: 0`, 제목 생성은 제한된 표현 다양성을 위해 `temperature: 0.3`을 사용합니다.
 - 생성 결과는 최종값이 아니라 수정 가능한 후보이며, 카드에는 사용자가 확정한 `title`을 저장합니다.
 
 ### 9.5 환경 변수와 보안
@@ -1294,6 +1402,7 @@ memory-drawer:
 
 - AI가 추출하거나 생성한 값은 항상 사용자가 확인·수정할 수 있습니다.
 - AI 원본 결과와 사용자 확정값을 구분하고 최종 카드에는 사용자 확정값만 저장합니다.
+- 영수증 구매 품목은 Information Extract 후보를 그대로 확정하지 않고 사용자의 최종 선택을 거칩니다.
 - 동행인·날씨·기분은 AI가 추측하지 않습니다.
 - Solar가 질문이나 별도의 한 줄 추억을 새로 생성하지 않습니다.
 
@@ -1343,12 +1452,14 @@ memory-drawer:
 | 카메라·앨범 | 촬영·선택, 미리보기, 방향·크기 보정 | 보정된 파일 수신 |
 | 문서 유형 카드 | enum에 맞는 프레임 표시, 맞음·아님 입력 | 유형 후보 생성 |
 | 추출 결과 확인 | 원본 없이 결과 입력칸만 표시, 수정값 전송 | 확신하는 값만 반환, 불확실하면 `null` |
+| 영수증 구매 품목 | 후보의 이름·수량 수정, 추가·삭제·선택 후 최종 항목 전송 | 원본 이미지의 Information Extract 결과를 정제해 `purchaseItems` 후보 반환 |
 | 티켓 세부 유형 | AI 질문 선택 후에만 후보 표시·수정 | 해당 시점에만 Solar로 후보 계산하고 최종 선택값 검증 |
 | 회상 질문 | 유형별 질문 전체와 입력칸 표시 | 고정 질문 은행 반환 |
 | AI 제목 | 후보를 수정 가능한 형태로 표시 | `questionId`를 서버 질문 은행과 검증하고 사용자 답변만 근거로 제목 한 줄 생성 |
 | 카드 미리보기 | 세 유형 모두 흰색 배경으로 앞·뒷면 렌더링, 빈 선택 항목 숨김 | 확정 데이터와 이미지 처리 결과 제공, 배경색 값은 저장·반환하지 않음 |
 | 최종 저장 | 최종 뒷면 데이터와 사진 전송 | 카드 저장 및 실제 날짜의 연도 서랍 배치 |
 | 서랍 화면 | 최근 연도부터 표시, 카드 펼침·앞뒤 전환 | 사용자별 연도와 카드 데이터 반환 |
+| 경과일 표시 | 기기 로컬 날짜로 `memoryDate`와의 날짜 차이를 계산하고 1분마다 갱신 | 별도 시간·경과일 필드를 제공하지 않음 |
 
 ---
 
@@ -1386,6 +1497,7 @@ API 3 관련 이미지 형식·용량·HEIC 처리·임시 보관·이미지 접
 - 서랍 생성·이름 변경·삭제
 - 음식·풍경·영상·음성 기록
 - 영수증·손편지 AI 회상 질문
+- Solar를 이용한 영수증 대표 품목 자동 확정
 - 영수증 가격·지도·위치·스티커
 - 카드 배경색 추출·선택·변경 및 관련 API 필드
 - 티켓 직접 기록 시 세부 유형 분류

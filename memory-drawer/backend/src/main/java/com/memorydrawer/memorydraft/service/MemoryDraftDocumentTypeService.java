@@ -4,6 +4,8 @@ import java.time.LocalDate;
 import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
+import java.util.Set;
 import java.util.UUID;
 
 import org.springframework.stereotype.Service;
@@ -26,11 +28,84 @@ import com.memorydrawer.memorydraft.extract.ExtractedFrontFields;
 import com.memorydrawer.memorydraft.extract.InformationExtractClient;
 import com.memorydrawer.memorydraft.image.OriginalImageStorage;
 import com.memorydrawer.memorydraft.repository.MemoryDraftRepository;
+import com.memorydrawer.receipt.PurchaseItem;
 
 @Service
 public class MemoryDraftDocumentTypeService {
 
 	private static final String NEXT_ACTION = "CONFIRM_FRONT";
+	private static final Set<String> EXCLUDED_PURCHASE_ITEM_PREFIXES = Set.of(
+		"소계",
+		"합계",
+		"총합계",
+		"총액",
+		"결제금액",
+		"받을금액",
+		"청구금액",
+		"부가세",
+		"부가가치세",
+		"공급가액",
+		"과세물품",
+		"면세물품",
+		"할인",
+		"쿠폰",
+		"포인트",
+		"적립",
+		"결제수단",
+		"현금",
+		"신용카드",
+		"체크카드",
+		"카드번호",
+		"승인번호",
+		"주문번호",
+		"거래번호",
+		"사업자정보",
+		"사업자등록번호",
+		"대표자",
+		"광고",
+		"subtotal",
+		"totalamount",
+		"totaldue",
+		"grandtotal",
+		"vatamount",
+		"taxamount",
+		"discount",
+		"coupon",
+		"points",
+		"payment",
+		"cardnumber",
+		"cardno",
+		"cardpayment",
+		"approval",
+		"approvalnumber",
+		"ordernumber",
+		"orderno",
+		"businessinfo",
+		"businessnumber",
+		"businessregistration",
+		"advert"
+	);
+	private static final Set<String> EXCLUDED_PURCHASE_ITEM_NAMES = Set.of(
+		"total",
+		"vat",
+		"tax",
+		"card",
+		"order",
+		"business"
+	);
+	private static final Set<String> EXCLUDED_PURCHASE_OPTION_NAMES = Set.of(
+		"ice",
+		"iced",
+		"hot",
+		"샷추가",
+		"extrashot",
+		"포장",
+		"테이크아웃",
+		"takeout",
+		"사이즈업",
+		"sizeup",
+		"옵션"
+	);
 
 	private final MemoryDraftRepository memoryDraftRepository;
 	private final OriginalImageStorage originalImageStorage;
@@ -116,7 +191,8 @@ public class MemoryDraftDocumentTypeService {
 		return documentType == DocumentType.RECEIPT
 			? new ReceiptFrontCandidate(
 				memoryDate,
-				normalizeText(extracted.storeName())
+				normalizeText(extracted.storeName()),
+				normalizePurchaseItems(extracted.purchaseItems())
 			)
 			: new TicketFrontCandidate(
 				memoryDate,
@@ -162,11 +238,42 @@ public class MemoryDraftDocumentTypeService {
 		return normalized.isBlank() ? null : normalized;
 	}
 
+	private List<PurchaseItem> normalizePurchaseItems(List<PurchaseItem> items) {
+		if (items == null || items.isEmpty()) {
+			return List.of();
+		}
+
+		List<PurchaseItem> normalizedItems = new ArrayList<>();
+		for (PurchaseItem item : items) {
+			if (item == null || item.quantity() < 1) {
+				continue;
+			}
+			String name = normalizeText(item.name());
+			if (name == null || isExcludedPurchaseItem(name)) {
+				continue;
+			}
+			normalizedItems.add(new PurchaseItem(name, item.quantity()));
+		}
+		return List.copyOf(normalizedItems);
+	}
+
+	private boolean isExcludedPurchaseItem(String name) {
+		String key = name.toLowerCase(Locale.ROOT).replaceAll("[\\s\\p{P}\\p{S}]+", "");
+		if (EXCLUDED_PURCHASE_ITEM_NAMES.contains(key)
+			|| EXCLUDED_PURCHASE_OPTION_NAMES.contains(key)) {
+			return true;
+		}
+		return EXCLUDED_PURCHASE_ITEM_PREFIXES.stream().anyMatch(key::startsWith);
+	}
+
 	private List<String> emptyFields(FrontCandidate frontCandidate) {
 		List<String> fields = new ArrayList<>();
 		if (frontCandidate instanceof ReceiptFrontCandidate receipt) {
 			addIfNull(fields, "memoryDate", receipt.memoryDate());
 			addIfNull(fields, "storeName", receipt.storeName());
+			if (receipt.purchaseItems().isEmpty()) {
+				fields.add("purchaseItems");
+			}
 		} else if (frontCandidate instanceof TicketFrontCandidate ticket) {
 			addIfNull(fields, "memoryDate", ticket.memoryDate());
 			addIfNull(fields, "eventName", ticket.eventName());

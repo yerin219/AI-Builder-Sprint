@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { fetchCardDetail } from './drawerApi'
 import AuthorizedImage from './AuthorizedImage'
-import { DOCUMENT_LABELS, formatMemoryDate, getImageUrl } from './drawerViewUtils'
+import { DOCUMENT_LABELS, formatMemoryDate, getDaysAgo, getImageUrl } from './drawerViewUtils'
 import './CardDetail.css'
 
 function getTicketTextDensity(front) {
@@ -22,6 +22,7 @@ function CardDetail({ cardId, cardsInYear, onBack, onSelectCard }) {
   const [isLoading, setIsLoading] = useState(true)
   const [errorMessage, setErrorMessage] = useState('')
   const [reloadKey, setReloadKey] = useState(0)
+  const [now, setNow] = useState(() => new Date())
 
   const currentCardIndex = useMemo(
     () => cardsInYear.findIndex((item) => item.cardId === cardId),
@@ -58,6 +59,25 @@ function CardDetail({ cardId, cardsInYear, onBack, onSelectCard }) {
     return () => controller.abort()
   }, [cardId, reloadKey])
 
+  useEffect(() => {
+    const refreshNow = () => setNow(new Date())
+    const timer = window.setInterval(refreshNow, 60_000)
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'visible') refreshNow()
+    }
+
+    document.addEventListener('visibilitychange', handleVisibilityChange)
+    window.addEventListener('focus', refreshNow)
+
+    return () => {
+      window.clearInterval(timer)
+      document.removeEventListener('visibilitychange', handleVisibilityChange)
+      window.removeEventListener('focus', refreshNow)
+    }
+  }, [])
+
+  const daysAgo = card ? getDaysAgo(card.memoryDate, now) : null
+
   return (
     <main className="card-detail-page">
       <header className="card-detail-page__header">
@@ -83,6 +103,15 @@ function CardDetail({ cardId, cardsInYear, onBack, onSelectCard }) {
             </div>
 
             {isFront ? <CardFront card={card} /> : <CardBack card={card} />}
+            {daysAgo !== null && (
+              <p className="days-ago" aria-live="polite">
+                {daysAgo === 0
+                  ? '오늘의 기억'
+                  : daysAgo > 0
+                    ? `오늘로부터 ${daysAgo}일 전`
+                    : `오늘로부터 ${Math.abs(daysAgo)}일 후`}
+              </p>
+            )}
           </section>
 
           <nav className="card-navigation" aria-label="같은 연도의 다른 카드">
@@ -109,6 +138,16 @@ function CardFront({ card }) {
       {!isTicket && <p className="memory-card__date">{formatMemoryDate(card.memoryDate)}</p>}
       {imageUrl && <AuthorizedImage className="memory-card__front-image" imageUrl={imageUrl} alt="저장한 원본 종이 기록" />}
       {isReceipt && <h1>{card.front.storeName}</h1>}
+      {isReceipt && Array.isArray(card.front.purchaseItems) && card.front.purchaseItems.length > 0 && (
+        <ul className="memory-card__purchase-items" aria-label="구매 항목">
+          {card.front.purchaseItems.map((item, index) => (
+            <li key={`${item.name}-${index}`}>
+              <span>{item.name}</span>
+              <strong>× {item.quantity}</strong>
+            </li>
+          ))}
+        </ul>
+      )}
       {isTicket && (
         <div className={`memory-card__front-fields memory-card__front-fields--${ticketTextDensity}`}>
           <h1>{card.front.eventName}</h1>
