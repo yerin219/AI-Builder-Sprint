@@ -63,7 +63,13 @@ export function formatRelativeMemoryDate(daysAgo) {
 export function getCardTitle(card) {
   if (card.documentType === 'RECEIPT') return card.front?.storeName || '이름 없는 영수증'
   if (card.documentType === 'TICKET') return card.front?.eventName || '이름 없는 티켓'
-  return '손편지'
+  if (card.documentType === 'LETTER') {
+    const ocrText = typeof card.front?.ocrText === 'string'
+      ? card.front.ocrText.trim().replace(/\s+/g, ' ')
+      : ''
+    return ocrText || '내용 없는 손편지'
+  }
+  return '기록'
 }
 
 export function getImageUrl(imageUrl) {

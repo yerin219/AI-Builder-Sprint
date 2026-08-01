@@ -35,6 +35,7 @@ const { setAccessToken } = await import("../src/utils/tokenStorage.js");
 const { resolveApiUrl } = await import("../src/api/http.js");
 const {
     formatRelativeMemoryDate,
+    getCardTitle,
     getDaysAgo,
     getImageUrl,
 } = await import("../src/features/drawer/drawerViewUtils.js");
@@ -164,5 +165,17 @@ describe("memory date relative labels", () => {
         assert.equal(formatRelativeMemoryDate(399), "오늘로부터 1년 34일 전");
         assert.equal(formatRelativeMemoryDate(730), "오늘로부터 2년 전");
         assert.equal(formatRelativeMemoryDate(-399), "오늘로부터 1년 34일 후");
+    });
+});
+
+describe("letter drawer text previews", () => {
+    it("uses the normalized OCR text instead of an image title", () => {
+        assert.equal(
+            getCardTitle({
+                documentType: "LETTER",
+                front: { ocrText: "  사랑하는 어머니께\n오늘도 감사합니다.  " },
+            }),
+            "사랑하는 어머니께 오늘도 감사합니다.",
+        );
     });
 });

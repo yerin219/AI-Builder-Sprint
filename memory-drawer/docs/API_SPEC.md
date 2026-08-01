@@ -99,7 +99,7 @@ Authorization: Bearer {accessToken}
 - AI가 날짜를 찾지 못해도 오늘 날짜를 자동 입력하지 않습니다.
 - 손편지는 날짜를 자동 추출하지 않으므로 사용자가 직접 입력합니다.
 - `오늘로부터 n일 전` 표시는 API 필드가 아니라 프론트엔드가 카드의 `memoryDate`와 사용자 기기의 로컬 오늘 날짜를 날짜 단위로 비교해 계산합니다.
-- 프론트엔드는 페이지를 열 때 계산하고 1분마다 오늘 날짜를 다시 확인합니다. 당일은 `오늘의 기억`, 과거는 `오늘로부터 n일 전`, 미래는 `오늘로부터 n일 후`로 표시합니다.
+- 프론트엔드는 페이지를 열 때 계산하고 1분마다 오늘 날짜를 다시 확인합니다. 당일은 `오늘의 기억`, 365일 미만은 `오늘로부터 n일 전·후`, 365일 이상은 365일을 1년으로 계산해 `오늘로부터 n년 n일 전·후`로 표시합니다. 남은 일수가 0일이면 일수는 생략합니다.
 
 ### 2.5 `null`, 빈 문자열, 빈 배열
 
@@ -135,12 +135,14 @@ Authorization: Bearer {accessToken}
 | `DIRECT` | 제목과 추억을 직접 작성 |
 | `AI_RECALL` | 유형별 질문에 답하고 AI 제목 사용 |
 
-#### 손편지 앞면 이미지 방식 `frontImageMode`
+#### 손편지 처리 메타데이터 `frontImageMode`
 
 | 값 | 의미 |
 |---|---|
 | `ORIGINAL` | 원본 이미지 사용 |
 | `BACKGROUND_REMOVED` | 단순 배경 제거 결과 사용 |
+
+이 값은 앞면 확정 과정의 기존 처리 메타데이터입니다. 저장된 카드의 목록·상세 응답에는 포함하지 않으며 프론트엔드는 손편지 원본 또는 배경 제거 이미지를 카드에 렌더링하지 않습니다.
 
 #### 임시 기록 상태 `draftStatus`
 
@@ -161,14 +163,14 @@ Authorization: Bearer {accessToken}
 
 - 영수증·티켓·손편지 카드의 배경은 모두 흰색으로 통일합니다.
 - 영수증과 티켓 앞면에는 사용자가 확인한 Upstage 추출값만 표시하고, 분석에 사용한 원본 이미지는 표시하지 않습니다.
-- 손편지는 `frontImageMode`에 따라 글씨 분리 결과 또는 원본 이미지를 표시할 수 있습니다.
+- 손편지 앞면에도 업로드 원본 이미지를 표시하지 않고 사용자가 확인한 `ocrText` 전체 본문만 표시합니다.
 - 카드 배경색 선택·변경 기능을 제공하지 않습니다.
 - 카드 배경색과 관련된 필드를 요청·응답에 포함하지 않습니다.
 - 흰색 배경은 프론트엔드 표시 규칙이며 백엔드가 별도 값으로 저장하거나 반환하지 않습니다.
 
 ### 2.9 보호된 카드 이미지 URL
 
-손편지 카드의 `frontImageUrl`과 영수증·손편지 카드의 `backPhotoUrls`는 Base URL 아래에서 조회하는 상대 API 경로입니다. 영수증·티켓의 앞면 응답에는 `frontImageUrl`이 포함되지 않습니다.
+영수증·손편지 카드의 `backPhotoUrls`는 Base URL 아래에서 조회하는 상대 API 경로입니다. 저장된 카드의 목록·상세 응답에는 문서 유형과 관계없이 `frontImageUrl`을 포함하지 않습니다.
 
 ```http
 GET /files/cards/{cardId}/front
@@ -176,8 +178,7 @@ GET /files/cards/{cardId}/back/{index}
 Authorization: Bearer {accessToken}
 ```
 
-- 프론트엔드는 손편지 앞면에 한해 `/files/cards/{cardId}/front`를 `{Base URL}/files/cards/{cardId}/front`로 요청합니다.
-- 영수증·티켓 카드의 앞면 이미지 경로를 직접 요청하면 `404 CARD_002`를 반환합니다.
+- 업로드 원본은 내부 보관할 수 있지만 프론트엔드는 손편지 카드 앞면을 위해 `/files/cards/{cardId}/front`를 요청하거나 렌더링하지 않습니다.
 - `index`는 `1`부터 시작하며 상세 응답의 `backPhotoUrls` 순서를 따릅니다.
 - 성공 응답은 공통 JSON envelope가 아닌 저장된 이미지 binary이며 `Content-Type`은 `image/jpeg`, `image/png`, `image/webp` 중 하나입니다.
 - 성공 응답은 `Cache-Control: no-store`를 사용합니다.
@@ -644,7 +645,7 @@ AI의 판단이 맞으면 제안된 유형을, 틀리면 사용자가 직접 선
 - 카드 배경색은 이 응답에서 추출하거나 반환하지 않습니다.
 - 이 단계에서는 티켓 세부 유형을 추정하거나 반환하지 않습니다. 사용자가 뒷면에서 `AI 질문으로 떠올리기`를 선택했을 때만 6.1 API를 호출합니다.
 
-#### Response — 손편지 이미지 처리 예시
+#### Response — 손편지 본문 확정 예시
 
 ```json
 {
@@ -664,8 +665,7 @@ AI의 판단이 맞으면 제안된 유형을, 틀리면 사용자가 직접 선
 }
 ```
 
-배경 제거 결과의 품질이 낮으면 백엔드는 `frontImageMode`를 `ORIGINAL`로 반환합니다.
-`frontImageMode`는 사용자가 보내거나 수정하는 필드가 아닙니다. 별도 배경 제거 산출물이 준비되지 않은 경우에도 안전한 폴백으로 `ORIGINAL`을 사용합니다.
+`frontImageMode`는 사용자가 보내거나 수정하는 필드가 아닌 기존 처리 메타데이터입니다. 최종 카드 목록·상세 화면은 이 값과 무관하게 `ocrText`만 사용합니다.
 
 #### 주요 오류
 
@@ -1157,7 +1157,7 @@ Solar 호출이 실패하면 사용자의 답변을 그대로 유지하고 제�
 - 해당 연도에 카드가 없으면 `cards: []`을 반환합니다.
 - `seat`가 `null`이면 프론트엔드는 좌석 항목명까지 숨깁니다.
 - 같은 연도의 카드는 `memoryDate` 오름차순, 즉 오래된 날짜부터 최신 날짜 순서로 반환합니다.
-- 프론트엔드는 각 카드 프레임 아래에 `memoryDate` 기준 경과일 문구를 표시합니다. 날짜 차이는 일광 절약 시간의 영향을 피하도록 날짜 부분을 UTC 자정 값으로 변환해 계산하고, 사용자 기기 날짜를 1분마다 다시 확인합니다.
+- 프론트엔드는 각 카드 프레임 아래에 `memoryDate` 기준 경과일 문구를 표시합니다. 날짜 차이는 일광 절약 시간의 영향을 피하도록 날짜 부분을 UTC 자정 값으로 변환해 계산하고, 사용자 기기 날짜를 1분마다 다시 확인합니다. 365일 이상은 365일 단위의 연수와 남은 일수로 나누어 표시합니다.
 
 ### 8.3 카드 상세 조회
 
@@ -1220,7 +1220,7 @@ Solar 호출이 실패하면 사용자의 답변을 그대로 유지하고 제�
 | 영수증 | `storeName`, `purchaseItems` | `companions`, `weather`, `mood`, `diaryText`, `backPhotoUrls` |
 | 티켓 직접 기록 | `eventName`, `venue`, `seat` | 공통 정보, `writingMode`, `title`, `memoryText` |
 | 티켓 AI 질문 | 티켓 직접 기록과 동일 | 공통 정보, `writingMode`, `ticketSubtype`, `title`, `answers` |
-| 손편지 | `ocrText`, `frontImageMode`, `frontImageUrl` | `companions`, `weather`, `mood`, `diaryText`, `backPhotoUrls` |
+| 손편지 | `ocrText` | `companions`, `weather`, `mood`, `diaryText`, `backPhotoUrls` |
 
 API 11 목록과 API 12 상세의 영수증 `front.purchaseItems`는 모두 사용자가 API 5에서 최종 확정한 `{ "name", "quantity" }` 배열입니다.
 
@@ -1299,7 +1299,7 @@ API 11 목록과 API 12 상세의 영수증 `front.purchaseItems`는 모두 사�
 - 문서 유형은 기존 카드의 유형을 사용하며 요청으로 변경하지 않습니다.
 - 영수증 `front.purchaseItems`는 `{ "name", "quantity" }` 배열이며 빈 배열로 모든 품목을 지울 수 있습니다. 각 이름은 비어 있지 않고 수량은 1 이상의 정수여야 합니다.
 - 신규 프론트엔드는 영수증 수정 시 `purchaseItems`를 항상 전송합니다. 기존 클라이언트가 이 필드를 생략한 경우에는 저장된 품목을 유지합니다.
-- 손편지는 `front.ocrText`만 수정할 수 있고 `frontImageMode`와 원본 이미지는 그대로 유지합니다.
+- 손편지는 `front.ocrText`만 수정할 수 있습니다. 업로드 원본은 내부 보관하더라도 카드 목록·상세 화면에는 표시하지 않습니다.
 - 티켓은 저장 당시의 `writingMode`를 유지해야 합니다. `AI_RECALL` 카드의 질문 ID는 저장된 `ticketSubtype`의 고정 질문과 다시 검증합니다.
 - 영수증·손편지의 기존 뒷면 사진은 유지합니다. 이 API에서는 사진을 추가·교체·삭제하지 않습니다.
 - 날짜의 연도가 바뀌면 수정된 연도 서랍에서 조회됩니다.

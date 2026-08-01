@@ -6,7 +6,6 @@ import java.util.UUID;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.memorydrawer.card.DocumentType;
-import com.memorydrawer.card.FrontImageMode;
 import com.memorydrawer.card.WritingMode;
 import com.memorydrawer.receipt.PurchaseItem;
 import com.memorydrawer.ticket.recall.TicketSubtype;
@@ -40,9 +39,7 @@ public record CardDetailResponse(
 	}
 
 	public record LetterFront(
-		String ocrText,
-		FrontImageMode frontImageMode,
-		String frontImageUrl
+		String ocrText
 	) implements CardFront {
 	}
 

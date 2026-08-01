@@ -415,9 +415,6 @@ function CardEditForm({ card, isSubmitting, onCancel, onSubmit }) {
 }
 
 function CardFront({ card }) {
-  const imageUrl = card.documentType === 'LETTER'
-    ? getImageUrl(card.front?.frontImageUrl)
-    : ''
   const isTicket = card.documentType === 'TICKET'
   const isReceipt = card.documentType === 'RECEIPT'
   const ticketTextDensity = isTicket ? getTicketTextDensity(card.front) : ''
@@ -425,7 +422,6 @@ function CardFront({ card }) {
   return (
     <article className={`memory-card memory-card--front${card.documentType === 'LETTER' ? ' memory-card--letter' : ''}${card.documentType === 'TICKET' ? ' memory-card--ticket' : ''}${card.documentType === 'RECEIPT' ? ' memory-card--receipt' : ''}`}>
       {!isTicket && <p className="memory-card__date">{formatMemoryDate(card.memoryDate)}</p>}
-      {imageUrl && <AuthorizedImage className="memory-card__front-image" imageUrl={imageUrl} alt="저장한 원본 종이 기록" />}
       {isReceipt && <h1>{card.front.storeName}</h1>}
       {isReceipt && Array.isArray(card.front.purchaseItems) && card.front.purchaseItems.length > 0 && (
         <ul className="memory-card__purchase-items" aria-label="구매 항목">
