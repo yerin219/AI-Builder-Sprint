@@ -141,7 +141,20 @@ function CardBack({ card }) {
         <div><dt>기분</dt><dd>{back.mood}</dd></div>
       </dl>
 
-      {card.documentType !== 'TICKET' && back.diaryText && <p className="memory-card__diary">{back.diaryText}</p>}
+      {isReceipt && (back.diaryText || photoUrls.length > 0) && (
+        <section className="memory-card__receipt-content" aria-label="영수증 뒷면 기록">
+          {back.diaryText && <p className="memory-card__diary">{back.diaryText}</p>}
+          {photoUrls.length > 0 && (
+            <div className="memory-card__photos" aria-label="추가 사진">
+              {photoUrls.map((photoUrl, index) => (
+                <AuthorizedImage key={`${photoUrl}-${index}`} imageUrl={getImageUrl(photoUrl)} alt={`추가 사진 ${index + 1}`} loading="lazy" />
+              ))}
+            </div>
+          )}
+        </section>
+      )}
+
+      {!isReceipt && card.documentType !== 'TICKET' && back.diaryText && <p className="memory-card__diary">{back.diaryText}</p>}
       {card.documentType === 'TICKET' && (
         <section className="memory-card__ticket-memory">
           <h1>{back.title}</h1>
@@ -155,7 +168,7 @@ function CardBack({ card }) {
         </section>
       )}
 
-      {photoUrls.length > 0 && (
+      {!isReceipt && photoUrls.length > 0 && (
         <div className="memory-card__photos" aria-label="추가 사진">
           {photoUrls.map((photoUrl, index) => (
             <AuthorizedImage key={`${photoUrl}-${index}`} imageUrl={getImageUrl(photoUrl)} alt={`추가 사진 ${index + 1}`} loading="lazy" />
