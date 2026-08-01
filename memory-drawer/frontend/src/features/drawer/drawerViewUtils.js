@@ -4,6 +4,73 @@ export const DOCUMENT_LABELS = {
   LETTER: '손편지',
 }
 
+const DRAWER_SLOTS = [
+  { x: 26, y: 18, rotation: -7 },
+  { x: 50, y: 20, rotation: 4 },
+  { x: 74, y: 19, rotation: -3 },
+  { x: 28, y: 40, rotation: 3 },
+  { x: 72, y: 41, rotation: 7 },
+  { x: 50, y: 52, rotation: -5 },
+  { x: 26, y: 65, rotation: -3 },
+  { x: 74, y: 66, rotation: 4 },
+  { x: 46, y: 79, rotation: 6 },
+  { x: 58, y: 33, rotation: -7 },
+  { x: 40, y: 31, rotation: 5 },
+  { x: 52, y: 67, rotation: -2 },
+]
+
+const MAX_DRAWER_CARDS = 10
+
+function hashCardId(cardId) {
+  const value = typeof cardId === 'string' ? cardId : ''
+  let hash = 2166136261
+
+  for (const character of value) {
+    hash ^= character.codePointAt(0)
+    hash = Math.imul(hash, 16777619)
+  }
+
+  return hash >>> 0
+}
+
+function getLayoutSeed(card) {
+  const apiSeed = Number(card?.layoutSeed)
+  return Number.isSafeInteger(apiSeed) && apiSeed >= 0
+    ? apiSeed
+    : hashCardId(card?.cardId)
+}
+
+export function createDrawerLayout(cards, limit = MAX_DRAWER_CARDS) {
+  if (!Array.isArray(cards) || cards.length === 0) return []
+
+  const normalizedLimit = Math.min(DRAWER_SLOTS.length, Math.max(1, limit))
+  const visibleCards = cards.slice(-normalizedLimit)
+  const occupiedSlots = new Set()
+
+  return visibleCards.map((card, index) => {
+    const seed = getLayoutSeed(card)
+    let slotIndex = seed % DRAWER_SLOTS.length
+
+    while (occupiedSlots.has(slotIndex)) {
+      slotIndex = (slotIndex + 1) % DRAWER_SLOTS.length
+    }
+    occupiedSlots.add(slotIndex)
+
+    const slot = DRAWER_SLOTS[slotIndex]
+    const rotationJitter = ((seed >>> 8) % 5) - 2
+
+    return {
+      card,
+      placement: {
+        x: slot.x,
+        y: slot.y,
+        rotation: slot.rotation + rotationJitter,
+        zIndex: index + 1,
+      },
+    }
+  })
+}
+
 export function formatMemoryDate(memoryDate) {
   if (typeof memoryDate !== 'string') return ''
 

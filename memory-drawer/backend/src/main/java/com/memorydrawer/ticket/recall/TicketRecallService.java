@@ -12,6 +12,8 @@ import com.memorydrawer.ticket.recall.dto.TitleCandidateResponse;
 @Service
 public final class TicketRecallService {
 
+	private static final String LIST_SEPARATORS = ",，、;；|/·";
+
 	private final TicketRecallSolarGateway solarGateway;
 
 	public TicketRecallService(TicketRecallSolarGateway solarGateway) {
@@ -43,10 +45,15 @@ public final class TicketRecallService {
 		var answeredQuestions = TicketRecallAnswerValidator.validate(ticketSubtype, answers);
 		String titleCandidate = solarGateway.generateTitle(answeredQuestions);
 		if (titleCandidate == null || titleCandidate.isBlank()
-			|| titleCandidate.lines().count() != 1) {
-			throw new IllegalStateException("Solar 제목 생성 결과는 비어 있지 않은 한 줄이어야 합니다.");
+			|| titleCandidate.lines().count() != 1
+			|| isListLikeTitle(titleCandidate)) {
+			throw new IllegalStateException("Solar 제목은 답변을 나열하지 않은 한 줄이어야 합니다.");
 		}
 
 		return new TitleCandidateResponse(titleCandidate.trim());
+	}
+
+	private boolean isListLikeTitle(String title) {
+		return title.chars().anyMatch(character -> LIST_SEPARATORS.indexOf(character) >= 0);
 	}
 }
