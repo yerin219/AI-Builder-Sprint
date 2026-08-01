@@ -9,6 +9,7 @@ import com.memorydrawer.card.DocumentType;
 public record CardCreateResponse(
 	UUID cardId,
 	DocumentType documentType,
+	CardPrintLayout printLayout,
 	@JsonFormat(pattern = "yyyy-MM-dd")
 	LocalDate memoryDate,
 	int year,
@@ -22,6 +23,7 @@ public record CardCreateResponse(
 		return new CardCreateResponse(
 			cardId,
 			documentType,
+			CardPrintLayout.from(documentType),
 			memoryDate,
 			memoryDate.getYear(),
 			"SAVED"
