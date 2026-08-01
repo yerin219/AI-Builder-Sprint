@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { deleteCard, fetchCardDetail, updateCard } from './drawerApi'
 import AuthorizedImage from './AuthorizedImage'
-import { DOCUMENT_LABELS, formatMemoryDate, getDaysAgo, getImageUrl } from './drawerViewUtils'
+import { DOCUMENT_LABELS, formatMemoryDate, formatRelativeMemoryDate, getDaysAgo, getImageUrl } from './drawerViewUtils'
 import './CardDetail.css'
 
 function getTicketTextDensity(front) {
@@ -139,11 +139,7 @@ function CardDetail({ cardId, cardsInYear, onBack, onSelectCard }) {
             {isFront ? <CardFront card={card} /> : <CardBack card={card} />}
             {daysAgo !== null && (
               <p className="days-ago" aria-live="polite">
-                {daysAgo === 0
-                  ? '오늘의 기억'
-                  : daysAgo > 0
-                    ? `오늘로부터 ${daysAgo}일 전`
-                    : `오늘로부터 ${Math.abs(daysAgo)}일 후`}
+                {formatRelativeMemoryDate(daysAgo)}
               </p>
             )}
           </section>
