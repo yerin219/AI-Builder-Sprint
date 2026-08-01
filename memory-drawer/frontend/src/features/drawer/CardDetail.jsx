@@ -10,9 +10,9 @@ function getTicketTextDensity(front) {
     .join('')
     .replace(/\s/g, '').length
 
-  if (textLength <= 22) return 'standard'
-  if (textLength <= 40) return 'compact'
-  if (textLength <= 64) return 'dense'
+  if (textLength <= 32) return 'standard'
+  if (textLength <= 48) return 'compact'
+  if (textLength <= 70) return 'dense'
   return 'tiny'
 }
 
