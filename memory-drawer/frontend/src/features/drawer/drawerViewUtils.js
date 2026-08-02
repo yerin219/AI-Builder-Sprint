@@ -40,6 +40,38 @@ function getLayoutSeed(card) {
     : hashCardId(card?.cardId)
 }
 
+function getSlotDistance(firstSlot, secondSlot) {
+  const horizontalDistance = (firstSlot.x - secondSlot.x) / 24
+  const verticalDistance = (firstSlot.y - secondSlot.y) / 61
+
+  return (horizontalDistance ** 2) + (verticalDistance ** 2)
+}
+
+function selectSpreadOutSlot(seed, occupiedSlots) {
+  if (occupiedSlots.size === 0) return seed % DRAWER_SLOTS.length
+
+  const availableSlots = DRAWER_SLOTS
+    .map((slot, index) => ({ slot, index }))
+    .filter(({ index }) => !occupiedSlots.has(index))
+    .map(({ slot, index }) => ({
+      index,
+      minimumDistance: Math.min(
+        ...Array.from(occupiedSlots, (occupiedIndex) => (
+          getSlotDistance(slot, DRAWER_SLOTS[occupiedIndex])
+        )),
+      ),
+    }))
+
+  const greatestDistance = Math.max(
+    ...availableSlots.map(({ minimumDistance }) => minimumDistance),
+  )
+  const furthestSlots = availableSlots.filter(({ minimumDistance }) => (
+    Math.abs(minimumDistance - greatestDistance) < Number.EPSILON
+  ))
+
+  return furthestSlots[seed % furthestSlots.length].index
+}
+
 export function createDrawerLayout(cards, limit = MAX_DRAWER_CARDS) {
   if (!Array.isArray(cards) || cards.length === 0) return []
 
@@ -49,11 +81,7 @@ export function createDrawerLayout(cards, limit = MAX_DRAWER_CARDS) {
 
   return visibleCards.map((card, index) => {
     const seed = getLayoutSeed(card)
-    let slotIndex = seed % DRAWER_SLOTS.length
-
-    while (occupiedSlots.has(slotIndex)) {
-      slotIndex = (slotIndex + 1) % DRAWER_SLOTS.length
-    }
+    const slotIndex = selectSpreadOutSlot(seed, occupiedSlots)
     occupiedSlots.add(slotIndex)
 
     const slot = DRAWER_SLOTS[slotIndex]
