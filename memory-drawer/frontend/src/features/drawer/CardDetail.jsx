@@ -548,7 +548,10 @@ function CardBack({ card }) {
       {isTicket && <TicketBackContent back={back} />}
 
       {isReceipt && (back.diaryText || photoUrls.length > 0) && (
-        <section className="memory-card__receipt-content" aria-label="영수증 뒷면 기록">
+        <section
+          className={`memory-card__receipt-content${photoUrls.length > 0 ? ' memory-card__receipt-content--with-photos' : ''}`}
+          aria-label="영수증 뒷면 기록"
+        >
           {back.diaryText && <p className="memory-card__diary">{back.diaryText}</p>}
           {photoUrls.length > 0 && (
             <div className="memory-card__photos" aria-label="추가 사진">
