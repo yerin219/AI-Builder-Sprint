@@ -482,3 +482,187 @@ Solar가 유형을 확신하지 못해 `UNKNOWN`을 반환한 경우는 API 오�
 Upstage API는 Spring Boot 백엔드에서 호출합니다. API 키는 `UPSTAGE_API_KEY` 환경 변수로 관리하며 코드나 GitHub 저장소에 포함하지 않습니다. 프론트엔드는 Upstage API를 직접 호출하지 않고 백엔드 API를 통해 분석 결과를 전달받습니다.
 
 공개 API 계약과 오류 코드의 최종 기준은 `docs/API_SPEC.md`입니다.
+
+---
+
+## 11. 실행 및 배포 환경
+
+기억서랍은 별도 배포 주소 없이 로컬 기동 방식으로 제출합니다. AWS, Supabase 등 외부 클라우드 인프라를 사용하지 않습니다.
+
+| 구분 | 환경 |
+|---|---|
+| 서비스 형태 | 모바일 우선 웹 서비스 |
+| Frontend | React, JavaScript, Vite, Node.js 24 LTS, npm |
+| Backend | Java 21, Spring Boot 3.5.16, Gradle Wrapper |
+| Database | 로컬 MySQL 8.4 |
+| 파일 저장 | 백엔드 실행 환경의 로컬 파일 시스템 |
+| 외부 AI | Upstage Document Parse, Information Extract, Solar |
+| Frontend URL | `http://localhost:5173` |
+| Backend Base URL | `http://localhost:8080/api` |
+
+Upstage API 키는 대회 운영진이 보유하고 있으므로 저장소와 별도 메일에 포함하지 않습니다. 로컬 실행 시 `UPSTAGE_API_KEY` 환경변수로 설정해야 합니다.
+
+## 12. 로컬 기동 실행 가이드
+
+### 12.1 사전 요구사항
+
+- Git
+- Java 21
+- Node.js 24 LTS와 npm
+- MySQL 8.4
+- Upstage API Key
+- npm·Gradle 의존성과 Upstage API 호출을 위한 인터넷 연결
+
+Spring Boot와 Gradle을 별도로 설치하지 않고 저장소에 포함된 Gradle Wrapper를 사용합니다.
+
+### 12.2 저장소 복제
+
+```bash
+git clone https://github.com/yerin219/AI-Builder-Sprint.git
+cd AI-Builder-Sprint/memory-drawer
+```
+
+### 12.3 MySQL 준비
+
+MySQL 서버를 실행하고 다음 데이터베이스를 생성합니다.
+
+```sql
+CREATE DATABASE memory_drawer
+  CHARACTER SET utf8mb4
+  COLLATE utf8mb4_unicode_ci;
+```
+
+백엔드 시작 시 `backend/src/main/resources/schema.sql`을 통해 필요한 테이블을 초기화합니다.
+
+### 12.4 백엔드 환경변수
+
+[`backend/.env.example`](./backend/.env.example)은 필요한 변수명을 보여주는 참고 파일이며 Spring Boot가 자동으로 읽지 않습니다. 같은 터미널 세션 또는 IDE 실행 설정에 환경변수를 직접 지정해야 합니다.
+
+Windows PowerShell:
+
+```powershell
+cd backend
+$env:DB_URL="jdbc:mysql://localhost:3306/memory_drawer"
+$env:DB_USERNAME="your_mysql_username"
+$env:DB_PASSWORD="your_mysql_password"
+$env:UPSTAGE_API_KEY="your_upstage_api_key"
+$env:JWT_SECRET="replace_with_at_least_32_random_characters"
+$env:JWT_ACCESS_TOKEN_EXPIRATION_SECONDS="3600"
+$env:MEMORY_DRAWER_STORAGE_ROOT="./data/memory-drawer"
+```
+
+macOS/Linux:
+
+```bash
+cd backend
+export DB_URL='jdbc:mysql://localhost:3306/memory_drawer'
+export DB_USERNAME='your_mysql_username'
+export DB_PASSWORD='your_mysql_password'
+export UPSTAGE_API_KEY='your_upstage_api_key'
+export JWT_SECRET='replace_with_at_least_32_random_characters'
+export JWT_ACCESS_TOKEN_EXPIRATION_SECONDS='3600'
+export MEMORY_DRAWER_STORAGE_ROOT='./data/memory-drawer'
+```
+
+### 12.5 백엔드 실행
+
+Windows PowerShell:
+
+```powershell
+.\gradlew.bat bootRun
+```
+
+macOS/Linux:
+
+```bash
+./gradlew bootRun
+```
+
+백엔드는 `http://localhost:8080/api`에서 실행됩니다.
+
+### 12.6 프론트엔드 실행
+
+새 터미널에서 `memory-drawer/frontend`로 이동합니다.
+
+```bash
+cd frontend
+npm ci
+npm run dev
+```
+
+기본 `VITE_API_BASE_URL`은 `/api`이며 Vite가 요청을 `http://localhost:8080`으로 프록시합니다. 브라우저에서 `http://localhost:5173`에 접속합니다.
+
+### 12.7 실행 확인 시나리오
+
+1. 회원가입 후 로그인합니다.
+2. 모바일에서는 카메라 촬영 또는 앨범 선택, PC에서는 이미지 파일 선택을 사용합니다.
+3. 영수증, 티켓 또는 손편지 이미지를 업로드합니다.
+4. AI 문서 유형 후보와 추출 결과를 확인·수정합니다.
+5. 카드 뒷면을 작성하고 최종 미리보기에서 저장합니다.
+6. 연도별 서랍에서 저장된 카드를 열어 상세 조회·수정·삭제를 확인합니다.
+
+별도 테스트 계정은 필요하지 않으며 회원가입 화면에서 로컬 계정을 만들 수 있습니다.
+
+## 13. 환경변수 정보
+
+| 변수 | 필수 | 설명 | 예시·기본값 |
+|---|:---:|---|---|
+| `DB_URL` | O | MySQL JDBC URL | `jdbc:mysql://localhost:3306/memory_drawer` |
+| `DB_USERNAME` | O | 로컬 MySQL 사용자명 | `root` 등 로컬 계정 |
+| `DB_PASSWORD` | O | 로컬 MySQL 비밀번호 | 실제 값은 Git에 저장하지 않음 |
+| `UPSTAGE_API_KEY` | O | Upstage API 인증 키 | 운영진 보유 키 사용 |
+| `JWT_SECRET` | O | JWT HS256 서명 키 | 32자 이상의 임의 문자열 |
+| `JWT_ACCESS_TOKEN_EXPIRATION_SECONDS` | O | 액세스 토큰 만료 시간(초) | `3600` |
+| `MEMORY_DRAWER_STORAGE_ROOT` | 선택 | 업로드·파생 이미지 저장 경로 | `./data/memory-drawer` |
+| `VITE_API_BASE_URL` | 선택 | 프론트엔드 API 기본 경로 | `/api` |
+
+실제 API 키, DB 비밀번호, JWT 비밀값, 토큰과 개인정보는 GitHub, README, 예시 파일과 로그에 포함하지 않습니다.
+
+## 14. AI 활용 증빙
+
+### 14.1 서비스 내 AI
+
+- Document Parse: 업로드 문서의 전체 텍스트와 구조를 한 번 인식합니다.
+- Information Extract: 영수증·티켓 유형 확정 후 필요한 필드만 추출합니다.
+- Solar: 문서 유형 후보, 선택적 티켓 세부 유형 후보와 사용자 답변 기반 제목 후보를 생성합니다.
+- 모든 AI 결과는 후보이며 사용자가 확인·수정한 뒤에만 최종 카드에 저장합니다.
+
+### 14.2 개발 과정의 AI
+
+Codex를 요구사항 분석, 구현·테스트 제안, 오류 원인 분석, UI 개선과 문서화에 활용했습니다. 팀원은 API 계약, enum, 상태 코드, 화면·보안·데이터 정책을 직접 결정하고 AI 제안을 검토한 뒤 적용했습니다.
+
+상세 증빙은 다음 문서에서 확인할 수 있습니다.
+
+- [팀 전체 AI 활용 기록](./docs/AI_USAGE.md)
+- [프로젝트 에이전트 지침](./AGENTS.md)
+- [API 계약과 Upstage 내부 연동 명세](./docs/API_SPEC.md)
+
+## 15. 테스트 및 검증
+
+Frontend:
+
+```bash
+cd frontend
+npm ci
+npm test
+npm run lint
+npm run build
+```
+
+Backend - Windows:
+
+```powershell
+cd backend
+.\gradlew.bat clean test
+.\gradlew.bat build
+```
+
+Backend - macOS/Linux:
+
+```bash
+cd backend
+./gradlew clean test
+./gradlew build
+```
+
+API 요청·응답, 상태 전이와 오류 코드는 [API 명세](./docs/API_SPEC.md)를 따릅니다.
