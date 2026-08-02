@@ -1,0 +1,270 @@
+{
+  "info": {
+    "_postman_id": "3bf58b9d-7cf1-4fb9-95bb-6c48f88912d2",
+    "name": "Memory Drawer API 6-8",
+    "description": "API 4·5가 연결된 뒤 사용하는 API 6·7·8 테스트 컬렉션입니다. 실제 비밀번호, JWT, Upstage 키, draftId는 포함하지 않습니다.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "baseUrl", "value": "http://localhost:8080/api" },
+    { "key": "accessToken", "value": "" },
+    { "key": "ticketAiDraftId", "value": "" },
+    { "key": "ticketDirectDraftId", "value": "" },
+    { "key": "receiptDraftId", "value": "" },
+    { "key": "letterDraftId", "value": "" },
+    { "key": "ticketSubtype", "value": "CONCERT_PERFORMANCE" },
+    { "key": "questionId1", "value": "CONCERT_PERFORMANCE_1" },
+    { "key": "questionId2", "value": "CONCERT_PERFORMANCE_2" },
+    { "key": "questionId3", "value": "CONCERT_PERFORMANCE_3" },
+    { "key": "createdCardId", "value": "" },
+    { "key": "year", "value": "2026" }
+  ],
+  "auth": {
+    "type": "bearer",
+    "bearer": [
+      { "key": "token", "value": "{{accessToken}}", "type": "string" }
+    ]
+  },
+  "item": [
+    {
+      "name": "API 6 티켓 AI 회상",
+      "item": [
+        {
+          "name": "6.1 티켓 세부 유형 후보 생성",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": "{{baseUrl}}/memory-drafts/{{ticketAiDraftId}}/ticket-recall/subtype-suggestion",
+            "description": "Body 없음. TICKET + FRONT_CONFIRMED 상태의 ticketAiDraftId가 필요합니다."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('200 OK', function () { pm.response.to.have.status(200); });",
+                  "var body = pm.response.json();",
+                  "if (body.data && body.data.suggestedTicketSubtype) { pm.collectionVariables.set('ticketSubtype', body.data.suggestedTicketSubtype); }"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "6.2 티켓 세부 유형 확정 및 질문 조회",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"ticketSubtype\": \"{{ticketSubtype}}\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": "{{baseUrl}}/memory-drafts/{{ticketAiDraftId}}/ticket-recall/questions",
+            "description": "6.1에서 UNKNOWN이 나왔다면 ticketSubtype 변수를 사용자가 직접 CONCERT_PERFORMANCE, MOVIE, EXHIBITION 중 하나로 바꾼 뒤 실행합니다."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('200 OK', function () { pm.response.to.have.status(200); });",
+                  "var questions = pm.response.json().data.questions;",
+                  "pm.test('질문이 세 개다', function () { pm.expect(questions).to.have.length(3); });",
+                  "pm.collectionVariables.set('questionId1', questions[0].questionId);",
+                  "pm.collectionVariables.set('questionId2', questions[1].questionId);",
+                  "pm.collectionVariables.set('questionId3', questions[2].questionId);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "6.3 답변으로 제목 생성",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"answers\": [\n    { \"questionId\": \"{{questionId1}}\", \"answer\": \"마지막 곡을 다 같이 부르던 순간이 가장 벅찼어요.\" },\n    { \"questionId\": \"{{questionId2}}\", \"answer\": \"앙코르에서 모두 함께 노래했어요.\" },\n    { \"questionId\": \"{{questionId3}}\", \"answer\": null }\n  ]\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": "{{baseUrl}}/memory-drafts/{{ticketAiDraftId}}/ticket-recall/title",
+            "description": "6.2를 먼저 실행해야 합니다. 답하지 않은 질문은 null로 보냅니다. 응답 titleCandidate는 사용자가 수정 가능한 후보입니다."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('200 OK', function () { pm.response.to.have.status(200); });",
+                  "pm.test('한 줄 제목 후보가 있다', function () { pm.expect(pm.response.json().data.titleCandidate).to.be.a('string').and.not.empty; });"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "API 7 최종 카드 저장",
+      "item": [
+        {
+          "name": "7.1 영수증 저장",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "card",
+                  "value": "{\n  \"draftId\": \"{{receiptDraftId}}\",\n  \"back\": {\n    \"companions\": [\"민지\"],\n    \"weather\": \"맑음\",\n    \"mood\": \"행복\",\n    \"diaryText\": \"오랜만에 만나서 오래 이야기한 날.\"\n  }\n}",
+                  "type": "text",
+                  "contentType": "application/json"
+                }
+              ]
+            },
+            "url": "{{baseUrl}}/cards",
+            "description": "backPhotos 없이 일기만 저장하는 영수증 예시입니다."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('201 Created', function () { pm.response.to.have.status(201); });",
+                  "pm.collectionVariables.set('createdCardId', pm.response.json().data.cardId);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "7.2 손편지 저장",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "card",
+                  "value": "{\n  \"draftId\": \"{{letterDraftId}}\",\n  \"back\": {\n    \"companions\": [\"지수\"],\n    \"weather\": \"흐림\",\n    \"mood\": \"감동\",\n    \"diaryText\": \"생일에 받은 편지를 다시 읽어 보았다.\"\n  }\n}",
+                  "type": "text",
+                  "contentType": "application/json"
+                }
+              ]
+            },
+            "url": "{{baseUrl}}/cards",
+            "description": "backPhotos 없이 일기만 저장하는 손편지 예시입니다."
+          }
+        },
+        {
+          "name": "7.3 티켓 직접 기록 저장",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "card",
+                  "value": "{\n  \"draftId\": \"{{ticketDirectDraftId}}\",\n  \"back\": {\n    \"companions\": [\"현수\"],\n    \"weather\": \"맑음\",\n    \"mood\": \"벅참\",\n    \"writingMode\": \"DIRECT\",\n    \"title\": \"여름밤의 흠뻑쇼\",\n    \"memoryText\": \"마지막 앙코르까지 함께 노래했다.\"\n  }\n}",
+                  "type": "text",
+                  "contentType": "application/json"
+                }
+              ]
+            },
+            "url": "{{baseUrl}}/cards",
+            "description": "DIRECT에는 ticketSubtype, answers, backPhotos를 보내지 않습니다."
+          }
+        },
+        {
+          "name": "7.4 티켓 AI 회상 저장",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "card",
+                  "value": "{\n  \"draftId\": \"{{ticketAiDraftId}}\",\n  \"back\": {\n    \"companions\": [\"현수\"],\n    \"weather\": \"맑음\",\n    \"mood\": \"벅참\",\n    \"writingMode\": \"AI_RECALL\",\n    \"title\": \"함께 부른 마지막 앙코르\",\n    \"answers\": [\n      { \"questionId\": \"{{questionId1}}\", \"answer\": \"마지막 곡을 다 같이 불렀어요.\" },\n      { \"questionId\": \"{{questionId2}}\", \"answer\": \"앙코르에서 노래했어요.\" },\n      { \"questionId\": \"{{questionId3}}\", \"answer\": null }\n    ]\n  }\n}",
+                  "type": "text",
+                  "contentType": "application/json"
+                }
+              ]
+            },
+            "url": "{{baseUrl}}/cards",
+            "description": "6.2와 6.3 후 실행합니다. ticketSubtype과 memoryText, backPhotos를 보내지 않습니다."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('201 Created', function () { pm.response.to.have.status(201); });",
+                  "pm.collectionVariables.set('createdCardId', pm.response.json().data.cardId);",
+                  "pm.collectionVariables.set('year', String(pm.response.json().data.year));"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "API 8 서랍 및 카드 조회",
+      "item": [
+        {
+          "name": "8.1 연도별 서랍 목록 조회",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/drawers"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('200 OK', function () { pm.response.to.have.status(200); });",
+                  "pm.test('drawers 배열이 있다', function () { pm.expect(pm.response.json().data.drawers).to.be.an('array'); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "8.2 특정 연도 카드 목록 조회",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/drawers/{{year}}/cards",
+            "description": "같은 연도 카드는 memoryDate 오래된 순으로 반환됩니다."
+          }
+        },
+        {
+          "name": "8.3 카드 상세 조회",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/cards/{{createdCardId}}",
+            "description": "API 7 저장 성공 시 자동 저장된 createdCardId를 사용합니다."
+          }
+        }
+      ]
+    }
+  ]
+}

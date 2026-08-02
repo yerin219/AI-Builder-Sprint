@@ -1,0 +1,867 @@
+.card-detail-page {
+  padding-bottom: 2.5rem;
+}
+
+.card-detail-page__header {
+  justify-content: flex-start;
+}
+
+.card-flip {
+  margin: 0 auto;
+}
+
+.card-flip > .days-ago {
+  margin: 0.85rem 0 0;
+  color: #84634b;
+  font-size: 0.9rem;
+  font-weight: 700;
+  text-align: center;
+}
+
+.card-flip__tabs {
+  display: flex;
+  justify-content: center;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+.card-flip__tabs button {
+  padding: 0.55rem 1rem;
+  border: 1px solid #e1c8aa;
+  border-radius: 999px;
+  background: transparent;
+  color: #795e48;
+  font: inherit;
+}
+
+.card-flip__tabs button.is-selected {
+  border-color: #6e432a;
+  background: #6e432a;
+  color: #fff;
+  font-weight: 700;
+}
+
+.memory-card {
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  min-height: 31rem;
+  overflow: hidden;
+  padding: 2rem 1.5rem;
+  border: 1px solid #e7ded2;
+  border-radius: 0.9rem;
+  background: #fff;
+  box-shadow: 0 1rem 2rem rgb(70 45 26 / 12%);
+  color: #35271e;
+}
+
+.memory-card--letter {
+  aspect-ratio: 1944 / 1468;
+  min-height: 0;
+  padding: clamp(1rem, 5vw, 1.8rem) clamp(1rem, 6vw, 2rem);
+  border: 0;
+  border-radius: 0;
+  background-color: transparent;
+  background-image: url('../../assets/letter-note-template-transparent.png');
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: 100% 100%;
+  box-shadow: 0 0.8rem 1.5rem rgb(70 45 26 / 14%);
+}
+
+.memory-card--letter.memory-card--back {
+  padding-right: clamp(1rem, 4vw, 2rem);
+  padding-left: clamp(5rem, 14vw, 7.25rem);
+}
+
+.memory-card--letter .memory-card__date {
+  color: #766c61;
+}
+
+.memory-card--letter .memory-card__letter-text,
+.memory-card--letter .memory-card__diary {
+  flex: 1;
+  min-height: 0;
+  margin-right: 0.5rem;
+  overflow-y: auto;
+  color: #443d35;
+  font-family: "NanumGoDing", "Noto Sans KR", sans-serif;
+}
+
+.memory-card--letter.memory-card--front .memory-card__letter-text {
+  margin-left: clamp(3.5rem, 10vw, 5.25rem);
+}
+
+.memory-card--letter.memory-card--front .memory-card__front-image {
+  width: 100%;
+  max-height: 38%;
+  margin: 0.35rem 0;
+  object-fit: contain;
+}
+
+.memory-card--letter .memory-card__letter-correspondents {
+  margin: 0 0 0.5rem clamp(3.5rem, 10vw, 5.25rem);
+  color: #766c61;
+  font-size: 0.85rem;
+}
+
+.memory-card--letter .memory-card__metadata {
+  border-color: rgb(123 111 96 / 35%);
+}
+
+.memory-card--letter .memory-card__metadata div {
+  border-color: rgb(123 111 96 / 28%);
+}
+
+.memory-card--letter.memory-card--back .memory-card__metadata {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  flex: 0 0 auto;
+}
+
+.memory-card--letter.memory-card--back .memory-card__metadata div {
+  grid-template-columns: minmax(3.1rem, auto) minmax(0, 1fr);
+  gap: 0.35rem;
+  min-width: 0;
+  padding: 0.42rem 0.35rem;
+}
+
+.memory-card--letter.memory-card--back .memory-card__metadata div:nth-child(odd) {
+  border-right: 1px solid rgb(123 111 96 / 28%);
+}
+
+.memory-card--letter.memory-card--back .memory-card__metadata dt,
+.memory-card--letter.memory-card--back .memory-card__metadata dd {
+  overflow: hidden;
+  font-size: clamp(0.68rem, 2.4vw, 0.82rem);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.memory-card--ticket {
+  aspect-ratio: 1061 / 425;
+  width: calc(100% + 2rem);
+  min-height: 0;
+  margin-left: -1rem;
+  padding: clamp(0.8rem, 4vw, 1.25rem) clamp(1rem, 5vw, 1.75rem);
+  border: 0;
+  border-radius: 0;
+  background-color: transparent;
+  background-image: url('../../assets/ticket-template-transparent.png');
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: 100% 100%;
+  box-shadow: 0 0.8rem 1.5rem rgb(45 45 45 / 15%);
+}
+
+.memory-card--ticket .memory-card__date,
+.memory-card--ticket .memory-card__front-fields p,
+.memory-card--ticket .memory-card__metadata dt {
+  color: #5a5a5a;
+}
+
+.memory-card--ticket .memory-card__metadata,
+.memory-card--ticket .memory-card__metadata div {
+  border-color: rgb(50 50 50 / 22%);
+}
+
+.memory-card--ticket .memory-card__ticket-memory h1,
+.memory-card--ticket .memory-card__answer h2 {
+  color: #2d2d2d;
+}
+
+.memory-card--ticket.memory-card--front {
+  position: relative;
+}
+
+.memory-card--ticket.memory-card--front .memory-card__front-fields {
+  position: absolute;
+  top: 50%;
+  right: 29%;
+  left: 12%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  height: 76%;
+  overflow: hidden;
+  transform: translateY(-50%);
+}
+
+.memory-card--ticket.memory-card--front .memory-card__front-fields h1 {
+  flex: 0 1 auto;
+  font-size: 1.55rem;
+  line-height: 1.28;
+  overflow-wrap: anywhere;
+}
+
+.memory-card--ticket.memory-card--front .memory-card__front-fields p {
+  flex: 0 1 auto;
+  margin: 0.2rem 0 0;
+  font-size: 0.98rem;
+  line-height: 1.25;
+  overflow-wrap: anywhere;
+}
+
+.memory-card--ticket.memory-card--front .memory-card__ticket-date {
+  margin-top: 0.3rem;
+  font-size: 0.92rem;
+}
+
+.memory-card--ticket.memory-card--front .memory-card__front-fields--compact h1 {
+  font-size: 1.3rem;
+}
+
+.memory-card--ticket.memory-card--front .memory-card__front-fields--compact p {
+  font-size: 0.84rem;
+}
+
+.memory-card--ticket.memory-card--front .memory-card__front-fields--dense h1 {
+  font-size: 1.08rem;
+}
+
+.memory-card--ticket.memory-card--front .memory-card__front-fields--dense p {
+  font-size: 0.72rem;
+}
+
+.memory-card--ticket.memory-card--front .memory-card__front-fields--tiny h1 {
+  font-size: 0.88rem;
+}
+
+.memory-card--ticket.memory-card--front .memory-card__front-fields--tiny p {
+  font-size: 0.62rem;
+}
+
+.memory-card--ticket.memory-card--back {
+  position: relative;
+  padding-right: 29%;
+  padding-left: 12%;
+}
+
+.memory-card--ticket.memory-card--back > .memory-card__metadata,
+.memory-card--ticket.memory-card--back > .memory-card__ticket-memory {
+  display: none;
+}
+
+.memory-card--ticket.memory-card--back .memory-card__ticket-back-content {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.memory-card--ticket.memory-card--back .memory-card__ticket-page > h1 {
+  flex: 0 0 auto;
+  margin: 0;
+  color: #2d2d2d;
+  font-size: clamp(0.8rem, 3.6vw, 1.05rem);
+  line-height: 1.2;
+  overflow-wrap: anywhere;
+}
+
+.memory-card--ticket.memory-card--back .memory-card__ticket-summary {
+  display: flex;
+  flex: 0 0 auto;
+  gap: 0.35rem;
+  margin: 0.3rem 0;
+  color: #5a5a5a;
+  font-size: clamp(0.52rem, 2.4vw, 0.7rem);
+  line-height: 1.2;
+  flex-wrap: wrap;
+}
+
+.memory-card--ticket.memory-card--back .memory-card__ticket-summary span {
+  overflow-wrap: anywhere;
+}
+
+.memory-card--ticket.memory-card--back .memory-card__ticket-page {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.memory-card--ticket.memory-card--back .memory-card__ticket-page--summary,
+.memory-card--ticket.memory-card--back .memory-card__ticket-page--question {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+}
+
+.memory-card--ticket.memory-card--back .memory-card__ticket-page--question h2,
+.memory-card--ticket.memory-card--back .memory-card__ticket-page--question .memory-card__ticket-answer {
+  width: 100%;
+  text-align: center;
+}
+
+.memory-card--ticket.memory-card--back .memory-card__ticket-page h2 {
+  margin: 0;
+  color: #2d2d2d;
+  font-size: clamp(0.58rem, 2.7vw, 0.78rem);
+  line-height: 1.3;
+  overflow-wrap: anywhere;
+}
+
+.memory-card--ticket.memory-card--back .memory-card__ticket-page p {
+  margin: 0.3rem 0 0;
+  color: #3e3e3e;
+  font-size: clamp(0.52rem, 2.4vw, 0.68rem);
+  line-height: 1.35;
+  overflow-wrap: anywhere;
+  white-space: pre-wrap;
+}
+
+.memory-card--ticket.memory-card--back .memory-card__ticket-page .memory-card__ticket-answer {
+  margin-top: 0.35rem;
+}
+
+.memory-card--ticket.memory-card--back .memory-card__ticket-back-content--spacious .memory-card__ticket-page h2 {
+  max-width: 100%;
+  font-size: clamp(0.48rem, 1.8vw, 0.7rem);
+  line-height: 1.2;
+  letter-spacing: -0.02em;
+  white-space: nowrap;
+}
+
+.memory-card--ticket.memory-card--back .memory-card__ticket-back-content--spacious .memory-card__ticket-page p {
+  margin-top: 0.45rem;
+  font-size: clamp(0.76rem, 3.4vw, 1rem);
+  line-height: 1.5;
+}
+
+.memory-card--ticket.memory-card--back .memory-card__ticket-back-content--standard .memory-card__ticket-page h2 {
+  font-size: clamp(0.7rem, 3.1vw, 0.92rem);
+  line-height: 1.35;
+}
+
+.memory-card--ticket.memory-card--back .memory-card__ticket-back-content--standard .memory-card__ticket-page p {
+  font-size: clamp(0.65rem, 2.9vw, 0.84rem);
+  line-height: 1.45;
+}
+
+.memory-card--ticket.memory-card--back .memory-card__ticket-back-content--standard > h1 {
+  font-size: clamp(0.74rem, 3vw, 0.94rem);
+}
+
+.memory-card--ticket.memory-card--back .memory-card__ticket-back-content--standard .memory-card__ticket-summary {
+  font-size: clamp(0.5rem, 2.2vw, 0.63rem);
+}
+
+.memory-card--ticket.memory-card--back .memory-card__ticket-back-content--compact .memory-card__ticket-page h2 {
+  font-size: clamp(0.62rem, 2.8vw, 0.82rem);
+}
+
+.memory-card--ticket.memory-card--back .memory-card__ticket-back-content--compact .memory-card__ticket-page p {
+  font-size: clamp(0.58rem, 2.6vw, 0.76rem);
+}
+
+.memory-card--ticket.memory-card--back .memory-card__ticket-back-content--compact > h1 {
+  font-size: clamp(0.64rem, 2.65vw, 0.82rem);
+}
+
+.memory-card--ticket.memory-card--back .memory-card__ticket-back-content--compact .memory-card__ticket-summary {
+  font-size: clamp(0.45rem, 1.9vw, 0.56rem);
+}
+
+.memory-card--ticket.memory-card--back .memory-card__ticket-back-content--dense > h1 {
+  font-size: clamp(0.56rem, 2.35vw, 0.72rem);
+}
+
+.memory-card--ticket.memory-card--back .memory-card__ticket-back-content--dense .memory-card__ticket-summary {
+  font-size: clamp(0.42rem, 1.75vw, 0.5rem);
+}
+
+.memory-card--ticket.memory-card--back .memory-card__ticket-page-navigation {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  flex: 0 0 auto;
+  align-items: center;
+  margin-top: 0.15rem;
+  color: #5a5a5a;
+  font-size: 0.6rem;
+  text-align: center;
+}
+
+.memory-card--ticket.memory-card--back .memory-card__ticket-page-navigation button {
+  width: 1.25rem;
+  height: 1.1rem;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: #2d2d2d;
+  font-size: 1rem;
+  line-height: 1;
+}
+
+.memory-card--ticket.memory-card--back .memory-card__ticket-page-navigation button:last-child {
+  justify-self: end;
+}
+
+.memory-card--ticket.memory-card--back .memory-card__ticket-page-navigation button:disabled {
+  color: #c8c8c8;
+}
+
+.memory-card--ticket.memory-card--back .memory-card__metadata div {
+  grid-template-columns: 4.8rem 1fr;
+  padding: 0.55rem 0;
+}
+
+.memory-card--ticket.memory-card--back .memory-card__ticket-memory {
+  margin-top: 0.8rem;
+}
+
+.memory-card--receipt {
+  aspect-ratio: 1080 / 1780;
+  min-height: 0;
+  padding: clamp(1.25rem, 6vw, 2.2rem) clamp(1rem, 5vw, 1.8rem);
+  border: 0;
+  border-radius: 0;
+  background-color: transparent;
+  background-image: url('../../assets/receipt-template-transparent.png');
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: 100% 100%;
+  box-shadow: 0 0.8rem 1.5rem rgb(45 45 45 / 15%);
+}
+
+.memory-card--receipt .memory-card__date,
+.memory-card--receipt .memory-card__metadata dt {
+  color: #5e5a55;
+}
+
+.memory-card--receipt .memory-card__metadata,
+.memory-card--receipt .memory-card__metadata div {
+  border-color: rgb(55 52 48 / 25%);
+}
+
+.memory-card--receipt .memory-card__diary {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  color: #2c2925;
+  font-family: "NanumGoDing", "Noto Sans KR", sans-serif;
+}
+
+.memory-card--receipt.memory-card--front {
+  position: relative;
+}
+
+.memory-card--receipt.memory-card--front > h1 {
+  position: absolute;
+  top: 25%;
+  right: 1.5rem;
+  left: 1.5rem;
+  transform: translateY(-50%);
+  font-size: 1.65rem;
+}
+
+.memory-card--receipt.memory-card--front > .memory-card__date {
+  position: absolute;
+  top: calc(25% + 1.55rem);
+  right: 1.5rem;
+  left: 1.5rem;
+  margin: 0;
+  color: #5e5a55;
+  font-size: 23px;
+  text-align: center;
+}
+
+.memory-card--receipt.memory-card--front > .memory-card__purchase-items {
+  position: absolute;
+  top: calc(25% + 5rem);
+  right: clamp(2.25rem, 10vw, 4.25rem);
+  left: clamp(2.25rem, 10vw, 4.25rem);
+  display: grid;
+  gap: 0.45rem;
+  max-height: 30%;
+  margin: 0;
+  padding: 0 0.85rem 0 0;
+  overflow-y: auto;
+  scrollbar-color: rgb(84 71 57 / 35%) transparent;
+  scrollbar-gutter: stable;
+  scrollbar-width: thin;
+  color: #34302b;
+  font-family: "NanumGoDing", "Noto Sans KR", sans-serif;
+  font-size: clamp(0.82rem, 3.8vw, 1rem);
+  list-style: none;
+}
+
+.memory-card--receipt.memory-card--front > .memory-card__purchase-items li {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 0.75rem;
+  align-items: baseline;
+  padding-bottom: 0.35rem;
+  border-bottom: 1px dashed rgb(55 52 48 / 24%);
+}
+
+.memory-card--receipt.memory-card--front > .memory-card__purchase-items span {
+  overflow-wrap: anywhere;
+}
+
+.memory-card--receipt.memory-card--front > .memory-card__purchase-items strong {
+  white-space: nowrap;
+}
+
+.memory-card--receipt.memory-card--front > .memory-card__purchase-items::-webkit-scrollbar {
+  width: 0.36rem;
+}
+
+.memory-card--receipt.memory-card--front > .memory-card__purchase-items::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.memory-card--receipt.memory-card--front > .memory-card__purchase-items::-webkit-scrollbar-thumb {
+  border-radius: 999px;
+  background: rgb(84 71 57 / 28%);
+}
+
+.memory-card--receipt.memory-card--back {
+  /* 기록·사진은 바코드 바로 위까지만 표시하고, 하단 바코드 영역은 비워둔다. */
+  padding-bottom: 42%;
+}
+
+.memory-card--receipt.memory-card--back .memory-card__metadata {
+  flex: 0 0 auto;
+}
+
+.memory-card--receipt.memory-card--back .memory-card__receipt-content {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  width: 100%;
+  min-height: 0;
+  min-width: 0;
+  max-width: 100%;
+  margin-top: 0.75rem;
+  overflow-x: hidden;
+  overflow-y: hidden;
+}
+
+.memory-card--receipt.memory-card--back .memory-card__receipt-content .memory-card__diary {
+  flex: 0 0 auto;
+  width: 100%;
+  min-width: 0;
+  max-width: 100%;
+  margin: 0;
+  padding-right: 0;
+  overflow-x: hidden;
+  overflow-y: visible;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+
+.memory-card--receipt.memory-card--back .memory-card__receipt-content--with-photos .memory-card__diary {
+  max-height: calc(1.8em * 3);
+  padding-right: 0.4rem;
+  overflow-y: auto;
+  overscroll-behavior-block: contain;
+  scrollbar-color: #999 transparent;
+  scrollbar-width: thin;
+}
+
+.memory-card--receipt.memory-card--back .memory-card__receipt-content--with-photos .memory-card__diary::-webkit-scrollbar {
+  width: 0.35rem;
+}
+
+.memory-card--receipt.memory-card--back .memory-card__receipt-content--with-photos .memory-card__diary::-webkit-scrollbar-track,
+.memory-card--receipt.memory-card--back .memory-card__receipt-content--with-photos .memory-card__diary::-webkit-scrollbar-corner {
+  background: transparent;
+}
+
+.memory-card--receipt.memory-card--back .memory-card__receipt-content--with-photos .memory-card__diary::-webkit-scrollbar-thumb {
+  border-radius: 999px;
+  background: #999;
+}
+
+.memory-card--receipt.memory-card--back .memory-card__receipt-content--with-photos .memory-card__diary::-webkit-scrollbar-button {
+  display: none;
+  width: 0;
+  height: 0;
+}
+
+.memory-card--receipt.memory-card--back .memory-card__receipt-content .memory-card__photos {
+  grid-template-columns: repeat(auto-fit, minmax(5rem, 1fr));
+  flex: 0 0 auto;
+  margin-top: 0.75rem;
+  overflow: visible;
+}
+
+.memory-card--receipt.memory-card--back .memory-card__receipt-content .memory-card__photos img {
+  height: clamp(6rem, 26vw, 9rem);
+  max-height: none;
+  aspect-ratio: auto;
+  object-fit: contain;
+}
+
+.memory-card__date {
+  flex: 0 0 auto;
+  margin: 0 0 1.25rem;
+  color: #82654d;
+  font-size: 0.85rem;
+  text-align: right;
+}
+
+.memory-card--front h1,
+.memory-card__ticket-memory h1 {
+  margin: 0;
+  font-family: "NanumGoDing", "Noto Sans KR", sans-serif;
+  font-size: 1.55rem;
+  line-height: 1.35;
+}
+
+.memory-card--front > h1 {
+  text-align: center;
+}
+
+.memory-card__front-fields {
+  min-height: 0;
+  overflow-y: auto;
+  text-align: center;
+}
+
+.memory-card__front-fields p {
+  margin: 0.55rem 0 0;
+  color: #6f5644;
+  line-height: 1.5;
+}
+
+.memory-card__letter-text,
+.memory-card__diary {
+  white-space: pre-wrap;
+  line-height: 1.8;
+}
+
+.memory-card__letter-text {
+  margin: 1.5rem 0 0;
+}
+
+.memory-card__metadata {
+  display: grid;
+  gap: 0;
+  margin: 0;
+  border-top: 1px solid #eddfd0;
+}
+
+.memory-card__metadata div {
+  display: grid;
+  grid-template-columns: 6.5rem 1fr;
+  padding: 0.85rem 0;
+  border-bottom: 1px solid #eddfd0;
+}
+
+.memory-card__metadata dt {
+  color: #8a684e;
+  font-size: 0.85rem;
+}
+
+.memory-card__metadata dd {
+  margin: 0;
+  line-height: 1.4;
+}
+
+.memory-card__ticket-memory {
+  flex: 1;
+  min-height: 0;
+  margin-top: 1.75rem;
+  overflow-y: auto;
+}
+
+.memory-card__ticket-memory > p,
+.memory-card__answer p {
+  margin: 0.8rem 0 0;
+  white-space: pre-wrap;
+  line-height: 1.75;
+}
+
+.memory-card__answer {
+  margin-top: 1.5rem;
+}
+
+.memory-card__answer h2 {
+  margin: 0;
+  color: #704d35;
+  font-size: 0.95rem;
+  line-height: 1.5;
+}
+
+.memory-card__photos {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 0.75rem;
+  margin-top: 1.5rem;
+}
+
+.memory-card__photos img {
+  width: 100%;
+  aspect-ratio: 1;
+  border-radius: 0.5rem;
+  object-fit: cover;
+}
+
+.memory-card--letter.memory-card--back .memory-card__photos {
+  grid-template-columns: 1fr;
+  flex: 1 1 auto;
+  min-height: 0;
+  margin-top: 0.35rem;
+  padding-right: 0.25rem;
+  overflow-y: auto;
+}
+
+.memory-card--letter.memory-card--back .memory-card__photos img {
+  width: 100%;
+  height: auto;
+  max-height: none;
+  aspect-ratio: auto;
+  object-fit: contain;
+}
+
+.card-navigation {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  gap: 0.5rem;
+  margin-top: 1.5rem;
+  color: #84634b;
+  font-size: 0.82rem;
+  text-align: center;
+}
+
+.card-navigation button {
+  padding: 0.6rem 0;
+  border: 0;
+  background: transparent;
+  color: #5e3521;
+  font: inherit;
+  font-size: 16px;
+  font-weight: 700;
+}
+
+.card-navigation button:disabled {
+  color: #c2ae9b;
+}
+
+.card-navigation button:last-child {
+  text-align: right;
+}
+
+.card-navigation button:first-child {
+  text-align: left;
+}
+
+.card-management-actions {
+  display: flex;
+  justify-content: center;
+  gap: 0.75rem;
+  margin-top: 1.5rem;
+}
+
+.card-management-actions button,
+.card-edit-form__actions button {
+  padding: 0.55rem 1rem;
+  border: 1px solid #e1c8aa;
+  border-radius: 999px;
+  background: transparent;
+  color: #795e48;
+  font: inherit;
+}
+
+.card-management-actions button:hover,
+.card-management-actions button:focus-visible,
+.card-edit-form__actions button:hover,
+.card-edit-form__actions button:focus-visible {
+  border-color: #6e432a;
+}
+
+.card-management-actions__delete {
+  color: #8a3a32 !important;
+}
+
+.card-management-actions button:disabled,
+.card-edit-form__actions button:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+
+.card-management-message {
+  margin: 1rem 0 0;
+  color: #6e432a;
+  text-align: center;
+}
+
+.card-edit-form {
+  margin-top: 1.75rem;
+  padding: 1.25rem;
+  border: 1px solid #e7ded2;
+  border-radius: 1rem;
+  background: rgb(255 255 255 / 75%);
+}
+
+.card-edit-form h2 {
+  margin: 0;
+  color: #5e3521;
+  font-size: 1.25rem;
+}
+
+.card-edit-form > p {
+  margin: 0.5rem 0 1rem;
+  color: #795e48;
+  font-size: 0.88rem;
+}
+
+.card-edit-form form,
+.card-edit-form label {
+  display: grid;
+  gap: 0.4rem;
+}
+
+.card-edit-form form {
+  gap: 1rem;
+}
+
+.card-edit-form__grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.9rem;
+}
+
+.card-edit-form input,
+.card-edit-form textarea {
+  box-sizing: border-box;
+  width: 100%;
+  padding: 0.7rem 0.8rem;
+  border: 1px solid #dfcbb6;
+  border-radius: 0.65rem;
+  background: #fffdf9;
+  color: #35271e;
+  font: inherit;
+}
+
+.card-edit-form textarea {
+  resize: vertical;
+}
+
+.card-edit-form__actions {
+  display: flex;
+  justify-content: center;
+  gap: 0.75rem;
+}
+
+.card-edit-form__actions .is-selected {
+  border-color: #6e432a;
+  background: #6e432a;
+  color: #fff;
+  font-weight: 700;
+}
+
+.card-edit-form__error {
+  margin: 0;
+  color: #a13e36;
+}
+
+@media (max-width: 26rem) {
+  .card-edit-form__grid {
+    grid-template-columns: 1fr;
+  }
+}

@@ -1,0 +1,37 @@
+spring:
+  servlet:
+    multipart:
+      max-file-size: 10MB
+      max-request-size: 10MB
+  datasource:
+    url: jdbc:h2:mem:memory_drawer_test;MODE=MySQL;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE
+    username: sa
+    password:
+    driver-class-name: org.h2.Driver
+  sql:
+    init:
+      mode: always
+  jpa:
+    hibernate:
+      ddl-auto: none
+    database-platform: org.hibernate.dialect.H2Dialect
+
+upstage:
+  api-key: test-placeholder
+  base-url: http://localhost
+  document-parse-model: document-parse
+  information-extract-model: information-extract
+  solar-model: solar-pro3
+  connect-timeout: 1s
+  request-timeout: 1s
+
+memory-drawer:
+  auth:
+    jwt-secret: test-jwt-secret-that-is-at-least-32-characters
+    access-token-expiration-seconds: 3600
+    issuer: memory-drawer
+  storage:
+    root: ${java.io.tmpdir}/memory-drawer-test
+  draft:
+    retention: 7d
+    cleanup-interval-ms: 3600000

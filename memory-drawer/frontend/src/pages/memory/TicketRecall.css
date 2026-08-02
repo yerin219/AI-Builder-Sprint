@@ -1,0 +1,184 @@
+.ticket-recall-page {
+    padding: 28px 22px 48px;
+}
+
+.text-back-button {
+    width: 100%;
+    min-height: 3.25rem;
+    margin: 0 0 1.5rem;
+    padding: 0.75rem 1rem;
+    border: 1px solid #4e2d14;
+    border-radius: 999px;
+    background: #6b4020;
+    box-shadow: inset 0 1px 1px #c99a6a66, 0 5px 10px #6b402055;
+    color: #fff7ea;
+    font-weight: 700;
+}
+
+.ticket-recall-eyebrow {
+    margin: 0 0 10px;
+    color: var(--accent);
+    font-size: 13px;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+}
+
+.ticket-recall-page h1 {
+    margin: 0;
+    color: #593318;
+    font-size: 29px;
+    letter-spacing: -1.5px;
+    line-height: 1.3;
+}
+
+.ticket-recall-description {
+    margin: 14px 0 28px;
+    color: #8d6747;
+    font-size: 15px;
+    line-height: 1.6;
+}
+
+.ticket-mode-list,
+.subtype-list,
+.recall-question-form {
+    display: grid;
+    gap: 12px;
+}
+
+.ticket-mode-card,
+.subtype-option,
+.subtype-suggestion-card {
+    display: grid;
+    gap: 7px;
+    width: 100%;
+    padding: 22px;
+    border: 1px solid #d9b58a;
+    border-radius: 18px;
+    background: #fff9ef;
+    color: #663c1f;
+    text-align: left;
+}
+
+.ticket-mode-card span {
+    color: var(--accent);
+    font-size: 24px;
+}
+
+.ticket-mode-card strong,
+.subtype-option strong,
+.subtype-suggestion-card strong {
+    font-size: 18px;
+}
+
+.ticket-mode-card small,
+.subtype-option span,
+.subtype-suggestion-card span {
+    color: #8d6747;
+    font-size: 14px;
+    line-height: 1.45;
+}
+
+.ticket-mode-card--accent {
+    border-color: #9e6835;
+    background: #fff5dc;
+}
+
+.ticket-primary-button,
+.ticket-secondary-button {
+    width: 100%;
+    margin-top: 18px;
+    padding: 15px 18px;
+    border: 1px solid #4e2d14;
+    border-radius: 999px;
+    background: #6b4020;
+    box-shadow: inset 0 1px 1px #c99a6a66, 0 5px 10px #6b402055;
+    color: #fff7ea;
+    font-weight: 800;
+}
+
+.ticket-primary-button {
+    color: #fff7ea;
+}
+
+.ticket-secondary-button {
+    color: #fff7ea;
+}
+
+.ticket-choice-button {
+    width: fit-content;
+    min-width: 7.5rem;
+    margin-right: auto;
+    margin-left: auto;
+    padding-right: 1.5rem;
+    padding-left: 1.5rem;
+}
+
+.ticket-primary-button:disabled,
+.ticket-secondary-button:disabled,
+.ticket-mode-card:disabled,
+.subtype-option:disabled {
+    cursor: not-allowed;
+    opacity: 0.6;
+}
+
+.ticket-recall-note,
+.ticket-recall-complete {
+    margin: 22px 0 0;
+    padding: 15px;
+    border-radius: 12px;
+    background: #f4e2c7;
+    color: #714b2d;
+    font-size: 14px;
+    line-height: 1.6;
+}
+
+.ticket-recall-complete strong,
+.ticket-recall-complete p {
+    margin: 0;
+}
+
+.ticket-recall-complete p {
+    margin-top: 6px;
+}
+
+.subtype-suggestion-card {
+    margin-top: 28px;
+    padding: 26px;
+    background: #fff7e8;
+}
+
+.recall-question-form {
+    margin-top: 26px;
+}
+
+.recall-question-form label,
+.title-editor {
+    display: grid;
+    gap: 9px;
+    color: #63391a;
+    font-size: 15px;
+    font-weight: 800;
+    line-height: 1.5;
+}
+
+.recall-question-form textarea,
+.title-editor input {
+    width: 100%;
+    resize: vertical;
+    padding: 14px;
+    border: 1px solid #d9b58a;
+    border-radius: 13px;
+    outline-color: var(--accent);
+    background: #fffdf9;
+    color: #4f2e19;
+    font: inherit;
+    font-weight: 400;
+}
+
+.title-editor {
+    margin-top: 28px;
+}
+
+.title-editor input {
+    height: 56px;
+}
