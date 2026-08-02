@@ -40,6 +40,7 @@ const {
     getDaysAgo,
     getFrontImageUrl,
     getImageUrl,
+    normalizeLetterDisplayText,
 } = await import("../src/features/drawer/drawerViewUtils.js");
 
 const successResponse = (data) => ({
@@ -210,6 +211,14 @@ describe("memory date relative labels", () => {
 });
 
 describe("letter drawer text previews", () => {
+    it("removes OCR line wraps while preserving intentional paragraph breaks", () => {
+        assert.equal(
+            normalizeLetterDisplayText("희도야 네가 기다리고 있던거였\n면,\n\n함께한 날들이 600일\n은 되었어."),
+            "희도야 네가 기다리고 있던거였면,\n\n함께한 날들이 600일은 되었어.",
+        );
+        assert.equal(normalizeLetterDisplayText("   "), "");
+    });
+
     it("uses the normalized OCR text instead of an image title", () => {
         assert.equal(
             getCardTitle({
