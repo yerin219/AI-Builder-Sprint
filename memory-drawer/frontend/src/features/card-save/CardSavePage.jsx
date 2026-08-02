@@ -1,6 +1,8 @@
 import { useState } from 'react'
+import printerSlotImage from '../../assets/memory-printer-slot-brown.png'
 import { removeFrontConfirmed } from '../../utils/draftStorage.js'
 import { removeTicketRecall, removeTicketRecallFlow } from '../../utils/ticketRecallStorage.js'
+import { formatMemoryDate } from '../drawer/drawerViewUtils.js'
 import { CardSaveError, saveCard } from './cardSaveApi.js'
 import './CardSavePage.css'
 
@@ -9,6 +11,11 @@ const DOCUMENT_LABELS = {
   RECEIPT: '영수증',
   TICKET: '티켓',
   LETTER: '손편지',
+}
+const PRINT_LAYOUT_BY_DOCUMENT = {
+  RECEIPT: 'NARROW_RECEIPT',
+  TICKET: 'LANDSCAPE_TICKET',
+  LETTER: 'LETTER_SHEET',
 }
 const SAVE_ERROR_MESSAGES = {
   VALIDATION_001: '입력한 내용을 다시 확인해주세요.',
@@ -30,6 +37,112 @@ function PreviewField({ label, value }) {
   return <div><dt>{label}</dt><dd>{displayValue}</dd></div>
 }
 
+function PurchaseItemsPreview({ items }) {
+  const purchaseItems = Array.isArray(items)
+    ? items.filter((item) => (
+      item
+      && typeof item.name === 'string'
+      && item.name.trim()
+      && Number.isInteger(Number(item.quantity))
+      && Number(item.quantity) > 0
+    ))
+    : []
+
+  if (purchaseItems.length === 0) return null
+
+  return (
+    <div className="card-preview__purchase-items">
+      <dt>구매 항목</dt>
+      <dd>
+        <ul>
+          {purchaseItems.map(({ name, quantity }, index) => (
+            <li key={`${name}-${quantity}-${index}`}>
+              <span>{name}</span>
+              <strong>× {Number(quantity)}</strong>
+            </li>
+          ))}
+        </ul>
+      </dd>
+    </div>
+  )
+}
+
+function PrintedCardFace({ side, documentType, frontConfirmed, previewBack, backPhotoCount }) {
+  const front = frontConfirmed?.front || {}
+  const isFront = side === 'front'
+  const answeredRecall = Array.isArray(previewBack?.answers)
+    ? previewBack.answers.filter(({ answer }) => answer)
+    : []
+
+  if (documentType === 'TICKET') {
+    const companions = previewBack?.companions?.length ? previewBack.companions.join(', ') : '혼자'
+    const memorySummary = previewBack?.memoryText || answeredRecall[0]?.answer || ''
+
+    return (
+      <article className={`printed-card__face printed-card__face--${side} printed-card__face--ticket`}>
+        <div className="printed-ticket__main">
+          <span className="printed-ticket__eyebrow">TICKET · {isFront ? '앞면' : '뒷면'}</span>
+          {isFront ? (
+            <>
+              <strong>{front.eventName || '이름 없는 티켓'}</strong>
+              <span>{formatMemoryDate(frontConfirmed?.memoryDate)}</span>
+              <span>{front.venue}</span>
+              {front.seat && <span>좌석 · {front.seat}</span>}
+            </>
+          ) : (
+            <>
+              <strong>{previewBack?.title || '그날의 기억'}</strong>
+              <span>{companions} · {previewBack?.weather} · {previewBack?.mood}</span>
+              {memorySummary && <span className="printed-ticket__memory">{memorySummary}</span>}
+            </>
+          )}
+        </div>
+        <div className="printed-ticket__stub" aria-hidden="true">
+          <span className="printed-ticket__barcode" />
+        </div>
+      </article>
+    )
+  }
+
+  return (
+    <article className={`printed-card__face printed-card__face--${side}`}>
+      <span className="printed-card__side-label">{isFront ? '앞면' : '뒷면'}</span>
+      <h2>{isFront ? DOCUMENT_LABELS[documentType] : '그날의 기억'}</h2>
+
+      {isFront ? (
+        <dl className="printed-card__fields">
+          <PreviewField label="기억 날짜" value={frontConfirmed?.memoryDate} />
+          {documentType === 'RECEIPT' && <PreviewField label="가게 이름" value={front.storeName} />}
+          {documentType === 'RECEIPT' && <PurchaseItemsPreview items={front.purchaseItems} />}
+          {documentType === 'TICKET' && <PreviewField label="행사명" value={front.eventName} />}
+          {documentType === 'TICKET' && <PreviewField label="장소" value={front.venue} />}
+          {documentType === 'TICKET' && <PreviewField label="좌석" value={front.seat} />}
+          {documentType === 'LETTER' && <PreviewField label="편지 내용" value={front.ocrText} />}
+        </dl>
+      ) : (
+        <>
+          <dl className="printed-card__fields">
+            <PreviewField label="함께한 사람" value={previewBack?.companions?.length ? previewBack.companions : '혼자'} />
+            <PreviewField label="날씨" value={previewBack?.weather} />
+            <PreviewField label="기분" value={previewBack?.mood} />
+            <PreviewField label="제목" value={previewBack?.title} />
+            <PreviewField label="추억" value={previewBack?.memoryText} />
+            <PreviewField label="일기" value={previewBack?.diaryText} />
+            {backPhotoCount > 0 && <PreviewField label="추가 사진" value={`${backPhotoCount}장`} />}
+          </dl>
+          {answeredRecall.length > 0 && (
+            <ol className="printed-card__answers">
+              {answeredRecall.map(({ questionId, answer }, index) => (
+                <li key={questionId}><strong>회상 {index + 1}</strong><p>{answer}</p></li>
+              ))}
+            </ol>
+          )}
+        </>
+      )}
+    </article>
+  )
+}
+
 function CardSavePage({ draftId, documentType, frontConfirmed, ticketRecall, onSaved, onOpenDrawer }) {
   const [companionInput, setCompanionInput] = useState('')
   const [companions, setCompanions] = useState([])
@@ -45,8 +158,11 @@ function CardSavePage({ draftId, documentType, frontConfirmed, ticketRecall, onS
   const [isSaving, setIsSaving] = useState(false)
   const [savedCard, setSavedCard] = useState(null)
   const [previewBack, setPreviewBack] = useState(null)
+  const [isPrintComplete, setIsPrintComplete] = useState(false)
+  const [isCardFlipped, setIsCardFlipped] = useState(false)
 
   const isTicket = documentType === 'TICKET'
+  const isLetter = documentType === 'LETTER'
   const isRecallFlow = isTicket && Boolean(ticketRecall)
   const documentLabel = documentType === 'LETTER' ? '손편지' : isTicket ? '티켓' : '영수증'
   const isSupportedDocument = SUPPORTED_DOCUMENT_TYPES.has(documentType)
@@ -78,7 +194,7 @@ function CardSavePage({ draftId, documentType, frontConfirmed, ticketRecall, onS
   }
 
   function buildBack() {
-    const submittedCompanions = [
+    const submittedCompanions = isLetter ? [] : [
       ...companions,
       ...splitCompanions(companionInput).filter((name) => !companions.includes(name)),
     ]
@@ -179,18 +295,82 @@ function CardSavePage({ draftId, documentType, frontConfirmed, ticketRecall, onS
   }
 
   if (savedCard) {
+    const printLayout = savedCard.printLayout || PRINT_LAYOUT_BY_DOCUMENT[documentType]
+    const printLayoutClass = printLayout.toLowerCase().replaceAll('_', '-')
+
     return (
       <main className="card-save-page">
-        <section className="save-result" aria-live="polite">
-          <p className="save-result__eyebrow">기억서랍</p>
-          <h1>추억 카드를 저장했어요.</h1>
-          <p>{savedCard.year}년 서랍에서 이 카드를 다시 꺼내볼 수 있어요.</p>
-          <dl className="save-result__details">
-            <div><dt>기록 유형</dt><dd>{DOCUMENT_LABELS[savedCard.documentType] || savedCard.documentType}</dd></div>
-            <div><dt>추억 날짜</dt><dd>{savedCard.memoryDate}</dd></div>
-          </dl>
-          <button className="primary-button" type="button" onClick={() => onOpenDrawer?.(savedCard.year)}>
-            {savedCard.year}년 서랍에서 확인하기
+        <section className={`print-result print-result--${printLayoutClass}`}>
+          <header className="print-result__header">
+            <p className="save-result__eyebrow">기억 출력 중</p>
+            <h1>{isPrintComplete ? '추억 카드가 나왔어요.' : '카드를 천천히 꺼내고 있어요.'}</h1>
+            <p>{isPrintComplete ? '카드를 눌러 앞면과 뒷면을 확인해보세요.' : '저장이 끝났어요. 잠시만 기다려주세요.'}</p>
+          </header>
+
+          <div className="printer-stage" role="group" aria-label={`${DOCUMENT_LABELS[documentType]} 카드 출력 장면`}>
+            <div className="printer-machine">
+              <div className="printer-output-window">
+                <div
+                  className={`printer-paper printer-paper--${printLayoutClass}`}
+                  onAnimationEnd={(event) => {
+                    if (event.target === event.currentTarget) setIsPrintComplete(true)
+                  }}
+                >
+                  <div className="printer-paper__orientation">
+                    <div
+                      className="printed-card"
+                      role="button"
+                      tabIndex={isPrintComplete ? 0 : -1}
+                      aria-disabled={!isPrintComplete}
+                      aria-label={isCardFlipped ? '카드 앞면 보기' : '카드 뒷면 보기'}
+                      aria-pressed={isCardFlipped}
+                      onClick={() => {
+                        if (isPrintComplete) setIsCardFlipped((current) => !current)
+                      }}
+                      onKeyDown={(event) => {
+                        if (isPrintComplete && (event.key === 'Enter' || event.key === ' ')) {
+                          event.preventDefault()
+                          setIsCardFlipped((current) => !current)
+                        }
+                      }}
+                    >
+                      <div className={`printed-card__flipper${isCardFlipped ? ' printed-card__flipper--flipped' : ''}`}>
+                        <PrintedCardFace
+                          side="front"
+                          documentType={documentType}
+                          frontConfirmed={frontConfirmed}
+                          previewBack={previewBack}
+                          backPhotoCount={backPhotos.length}
+                        />
+                        <PrintedCardFace
+                          side="back"
+                          documentType={documentType}
+                          frontConfirmed={frontConfirmed}
+                          previewBack={previewBack}
+                          backPhotoCount={backPhotos.length}
+                        />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <img className="printer-device" src={printerSlotImage} alt="" aria-hidden="true" />
+              <span className="printer-slot-lip" aria-hidden="true" />
+            </div>
+          </div>
+
+          <p className="print-result__status" aria-live="polite">
+            {isPrintComplete
+              ? `${isCardFlipped ? '뒷면' : '앞면'}을 보고 있어요. 카드를 누르면 뒤집혀요.`
+              : '출력 장치가 카드를 배출하고 있어요.'}
+          </p>
+          <button
+            className="primary-button"
+            type="button"
+            disabled={!isPrintComplete}
+            onClick={() => onOpenDrawer?.(savedCard.year)}
+          >
+            {savedCard.year}년 기억서랍에서 확인하기
           </button>
         </section>
       </main>
@@ -219,9 +399,12 @@ function CardSavePage({ draftId, documentType, frontConfirmed, ticketRecall, onS
               <dl className="card-preview__fields">
                 <PreviewField label="기억 날짜" value={frontConfirmed?.memoryDate} />
                 {documentType === 'RECEIPT' && <PreviewField label="가게 이름" value={front.storeName} />}
+                {documentType === 'RECEIPT' && <PurchaseItemsPreview items={front.purchaseItems} />}
                 {documentType === 'TICKET' && <PreviewField label="행사명" value={front.eventName} />}
                 {documentType === 'TICKET' && <PreviewField label="장소" value={front.venue} />}
                 {documentType === 'TICKET' && <PreviewField label="좌석" value={front.seat} />}
+                {isLetter && <PreviewField label="쓴 사람" value={front.sender || '확인되지 않음'} />}
+                {isLetter && <PreviewField label="받는 사람" value={front.recipient || '확인되지 않음'} />}
                 {documentType === 'LETTER' && <PreviewField label="편지 내용" value={front.ocrText} />}
               </dl>
             </article>
@@ -230,7 +413,8 @@ function CardSavePage({ draftId, documentType, frontConfirmed, ticketRecall, onS
               <span>뒷면</span>
               <h2>그날의 기억</h2>
               <dl className="card-preview__fields">
-                <PreviewField label="함께한 사람" value={previewBack.companions.length ? previewBack.companions : '혼자'} />
+                {!isLetter && <PreviewField label="함께한 사람" value={previewBack.companions.length ? previewBack.companions : '혼자'} />}
+                {isLetter && <PreviewField label="쓴 사람 → 받는 사람" value={`${front.sender || '미확인'} → ${front.recipient || '미확인'}`} />}
                 <PreviewField label="날씨" value={previewBack.weather} />
                 <PreviewField label="기분" value={previewBack.mood} />
                 <PreviewField label="제목" value={previewBack.title} />
@@ -265,15 +449,17 @@ function CardSavePage({ draftId, documentType, frontConfirmed, ticketRecall, onS
           <p>그날의 기억은 사용자가 직접 남겨요.</p>
         </header>
 
-        <section className="form-section" aria-labelledby="companion-label">
-          <label id="companion-label" htmlFor="companion-input">동행인</label>
-          <div className="field-row">
-            <input id="companion-input" value={companionInput} onChange={(event) => setCompanionInput(event.target.value)} onKeyDown={handleCompanionKeyDown} placeholder="이름을 입력하고 추가하세요" />
-            <button className="secondary-button" type="button" onClick={addCompanions}>추가</button>
-          </div>
-          <p className="field-help">혼자였다면 비워두세요. 여러 명은 쉼표로 구분할 수 있어요.</p>
-          {companions.length > 0 && <ul className="tag-list" aria-label="입력한 동행인">{companions.map((companion) => <li key={companion}>{companion}<button type="button" onClick={() => setCompanions((current) => current.filter((name) => name !== companion))} aria-label={`${companion} 삭제`}>×</button></li>)}</ul>}
-        </section>
+        {!isLetter && (
+          <section className="form-section" aria-labelledby="companion-label">
+            <label id="companion-label" htmlFor="companion-input">동행인</label>
+            <div className="field-row">
+              <input id="companion-input" value={companionInput} onChange={(event) => setCompanionInput(event.target.value)} onKeyDown={handleCompanionKeyDown} placeholder="이름을 입력하고 추가하세요" />
+              <button className="secondary-button" type="button" onClick={addCompanions}>추가</button>
+            </div>
+            <p className="field-help">혼자였다면 비워두세요. 여러 명은 쉼표로 구분할 수 있어요.</p>
+            {companions.length > 0 && <ul className="tag-list" aria-label="입력한 동행인">{companions.map((companion) => <li key={companion}>{companion}<button type="button" onClick={() => setCompanions((current) => current.filter((name) => name !== companion))} aria-label={`${companion} 삭제`}>×</button></li>)}</ul>}
+          </section>
+        )}
 
         <section className="form-section field-grid">
           <div><label htmlFor="weather">날씨 <span aria-hidden="true">*</span></label><input id="weather" value={weather} onChange={(event) => setWeather(event.target.value)} placeholder="예: 맑음" required /></div>

@@ -1,6 +1,8 @@
 .card-save-page {
   box-sizing: border-box;
   width: min(100%, var(--app-max-width));
+  max-width: 100%;
+  overflow-x: hidden;
   min-height: 100dvh;
   margin: 0 auto;
   padding: calc(1.25rem + env(safe-area-inset-top)) max(1rem, env(safe-area-inset-right)) calc(2rem + env(safe-area-inset-bottom)) max(1rem, env(safe-area-inset-left));
@@ -9,7 +11,8 @@
 
 .card-save-form,
 .card-preview,
-.save-result {
+.save-result,
+.print-result {
   box-sizing: border-box;
   width: 100%;
   margin: 0 auto;
@@ -18,6 +21,433 @@
   border-radius: 1.25rem;
   background: #fffdfa;
   box-shadow: 0 0.5rem 1.5rem rgb(78 50 25 / 8%);
+}
+
+.print-result {
+  padding: 1.35rem 1rem 1.5rem;
+  overflow: hidden;
+}
+
+.print-result__header {
+  position: relative;
+  z-index: 5;
+  text-align: center;
+}
+
+.print-result__header h1 {
+  margin: 0;
+  color: #362313;
+  font-size: clamp(1.45rem, 6vw, 1.9rem);
+}
+
+.print-result__header > p:last-child {
+  margin: 0.55rem 0 0;
+  color: #755e48;
+  font-size: 0.9rem;
+  line-height: 1.5;
+}
+
+.printer-stage {
+  position: relative;
+  height: 32rem;
+  margin: 0.6rem -1rem -1.7rem;
+  overflow: hidden;
+}
+
+.print-result--landscape-ticket .printer-stage {
+  height: 28rem;
+}
+
+.print-result--letter-sheet .printer-stage {
+  height: 29rem;
+}
+
+.printer-machine {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 1672 / 941;
+}
+
+.printer-device {
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  display: block;
+  width: 100%;
+  height: 100%;
+  filter: drop-shadow(0 0.4rem 0.45rem rgb(55 43 23 / 22%));
+  object-fit: contain;
+  pointer-events: none;
+}
+
+.printer-output-window {
+  position: absolute;
+  top: 50.2%;
+  left: 11.5%;
+  z-index: 4;
+  width: 77%;
+  height: 30rem;
+  overflow: hidden;
+  perspective: 1000px;
+}
+
+.printer-slot-lip {
+  position: absolute;
+  top: 47.45%;
+  left: 11.5%;
+  z-index: 5;
+  display: block;
+  width: 77%;
+  height: 3.9%;
+  border: 1px solid rgb(117 67 27 / 75%);
+  border-radius: 999px;
+  background: linear-gradient(to bottom, #241108 0%, #0f0805 52%, #2b160c 100%);
+  box-shadow:
+    inset 0 0.18rem 0.28rem rgb(0 0 0 / 72%),
+    0 0.14rem 0.14rem rgb(48 21 8 / 38%);
+  pointer-events: none;
+}
+
+.printer-paper {
+  position: relative;
+  margin: 0 auto;
+  transform-origin: 50% 0;
+  animation: card-print-out 4s cubic-bezier(0.18, 0.58, 0.22, 1) forwards;
+  filter: brightness(0.94);
+}
+
+.printer-paper__orientation {
+  position: relative;
+  width: 100%;
+  height: 100%;
+}
+
+.printer-paper--narrow-receipt {
+  width: 76%;
+  height: 21rem;
+}
+
+.printer-paper--landscape-ticket {
+  --ticket-long-edge: min(17.25rem, 72vw);
+  --ticket-short-edge: min(6.76rem, 28vw);
+  width: var(--ticket-short-edge);
+  height: var(--ticket-long-edge);
+  animation-name: ticket-card-print-out;
+}
+
+.printer-paper--landscape-ticket .printer-paper__orientation {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: var(--ticket-long-edge);
+  height: var(--ticket-short-edge);
+  transform: translate(-50%, -50%) rotate(90deg);
+  transform-origin: center;
+}
+
+.printer-paper--letter-sheet {
+  width: 92%;
+  height: 18rem;
+}
+
+.printed-card {
+  display: block;
+  width: 100%;
+  height: 100%;
+  padding: 0;
+  border: 0;
+  outline: 0;
+  background: transparent;
+  color: #362313;
+  cursor: pointer;
+  perspective: 1200px;
+  text-align: left;
+}
+
+.printed-card[aria-disabled="true"] {
+  cursor: wait;
+  opacity: 1;
+}
+
+.printed-card:focus-visible {
+  outline: 3px solid #9f6b32;
+  outline-offset: 4px;
+}
+
+.printed-card__flipper {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  transform-style: preserve-3d;
+  transition: transform 0.72s cubic-bezier(0.2, 0.72, 0.25, 1);
+}
+
+.printed-card__flipper--flipped {
+  transform: rotateY(180deg);
+}
+
+.printed-card__face {
+  position: absolute;
+  inset: 0;
+  display: block;
+  padding: 1.1rem;
+  overflow: auto;
+  border: 1px solid #e7ddcf;
+  background: #fff;
+  box-shadow: 0 0.8rem 1.4rem rgb(50 36 20 / 22%);
+  backface-visibility: hidden;
+  scrollbar-width: thin;
+}
+
+.printed-card__face--back {
+  transform: rotateY(180deg);
+}
+
+.printed-card__side-label {
+  display: inline-block;
+  margin-bottom: 0.4rem;
+  color: #9b6d3d;
+  font-size: 0.68rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+}
+
+.printed-card__face h2 {
+  margin: 0;
+  color: #362313;
+  font-size: clamp(1rem, 4.4vw, 1.28rem);
+  line-height: 1.25;
+}
+
+.printed-card__fields {
+  display: grid;
+  gap: 0.5rem;
+  margin: 0.85rem 0 0;
+}
+
+.printed-card__fields > div {
+  display: grid;
+  grid-template-columns: 4.3rem minmax(0, 1fr);
+  gap: 0.55rem;
+}
+
+.printed-card__fields dt,
+.printed-card__fields dd {
+  min-width: 0;
+  margin: 0;
+  font-size: 0.76rem;
+  line-height: 1.42;
+}
+
+.printed-card__fields dt {
+  color: #8a7763;
+}
+
+.printed-card__fields dd {
+  overflow-wrap: anywhere;
+  color: #3f2a19;
+  font-weight: 700;
+  white-space: pre-wrap;
+}
+
+.printed-card__answers {
+  display: grid;
+  gap: 0.45rem;
+  padding: 0;
+  margin: 0.75rem 0 0;
+  list-style: none;
+}
+
+.printed-card__answers li {
+  padding: 0.5rem;
+  border-radius: 0.45rem;
+  background: #f7f0e7;
+  font-size: 0.72rem;
+}
+
+.printed-card__answers p {
+  margin: 0.25rem 0 0;
+  line-height: 1.4;
+}
+
+.printer-paper--narrow-receipt .printed-card__face {
+  border-radius: 0.15rem;
+  background:
+    linear-gradient(90deg, rgb(141 111 76 / 3%) 1px, transparent 1px),
+    #fff;
+  background-size: 0.28rem 100%;
+}
+
+.printer-paper--narrow-receipt::after {
+  position: absolute;
+  right: 0;
+  bottom: -0.5rem;
+  left: 0;
+  z-index: 2;
+  height: 0.55rem;
+  background: #fff;
+  clip-path: polygon(0 0, 5% 100%, 10% 0, 15% 100%, 20% 0, 25% 100%, 30% 0, 35% 100%, 40% 0, 45% 100%, 50% 0, 55% 100%, 60% 0, 65% 100%, 70% 0, 75% 100%, 80% 0, 85% 100%, 90% 0, 95% 100%, 100% 0);
+  content: "";
+  pointer-events: none;
+}
+
+.printer-paper--landscape-ticket .printed-card__face {
+  display: flex;
+  padding: 0;
+  overflow: hidden;
+  border: 1px solid #3f3b36;
+  border-radius: 0.18rem;
+  background: #fff;
+}
+
+.printed-ticket__main {
+  box-sizing: border-box;
+  display: flex;
+  width: 77%;
+  min-width: 0;
+  flex-direction: column;
+  justify-content: center;
+  gap: 0.12rem;
+  padding: 5% 5% 5% 7%;
+}
+
+.printed-ticket__main strong,
+.printed-ticket__main > span {
+  overflow: hidden;
+  line-height: 1.2;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.printed-ticket__main strong {
+  color: #32251c;
+  font-family: "NanumGoDing", "Noto Sans KR", sans-serif;
+  font-size: clamp(0.68rem, 2.8vw, 0.88rem);
+}
+
+.printed-ticket__main > span {
+  color: #69625d;
+  font-size: clamp(0.43rem, 1.8vw, 0.57rem);
+}
+
+.printed-ticket__main .printed-ticket__eyebrow {
+  color: #846c56;
+  font-size: clamp(0.38rem, 1.55vw, 0.5rem);
+  font-weight: 800;
+  letter-spacing: 0.06em;
+}
+
+.printed-ticket__main .printed-ticket__memory {
+  display: -webkit-box;
+  line-height: 1.35;
+  white-space: normal;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+}
+
+.printed-ticket__stub {
+  position: relative;
+  display: grid;
+  width: 23%;
+  border-left: 1px dashed #8f8983;
+  place-items: center;
+}
+
+.printed-ticket__stub::before,
+.printed-ticket__stub::after {
+  position: absolute;
+  left: -0.22rem;
+  width: 0.4rem;
+  height: 0.4rem;
+  border: 1px solid #3f3b36;
+  border-radius: 50%;
+  background: #815119;
+  content: "";
+}
+
+.printed-ticket__stub::before {
+  top: -0.24rem;
+}
+
+.printed-ticket__stub::after {
+  bottom: -0.24rem;
+}
+
+.printed-ticket__barcode {
+  display: block;
+  width: 58%;
+  height: 68%;
+  background: repeating-linear-gradient(90deg, #26221f 0 2px, transparent 2px 4px, #26221f 4px 5px, transparent 5px 7px);
+}
+
+.printer-paper--letter-sheet .printed-card__face {
+  border-radius: 0.25rem;
+  background:
+    repeating-linear-gradient(to bottom, transparent 0, transparent 1.55rem, rgb(147 166 175 / 18%) 1.55rem, rgb(147 166 175 / 18%) 1.6rem),
+    #fff;
+}
+
+.print-result__status {
+  min-height: 1.4rem;
+  margin: 0 0 0.75rem;
+  color: #755e48;
+  font-size: 0.82rem;
+  line-height: 1.45;
+  text-align: center;
+}
+
+.print-result > .primary-button {
+  margin-top: 0;
+}
+
+@keyframes card-print-out {
+  0% {
+    transform: translateY(-108%) rotate(0.15deg);
+    filter: brightness(0.88);
+  }
+
+  18% {
+    transform: translateY(-89%) rotate(-0.12deg);
+  }
+
+  72% {
+    transform: translateY(-18%) rotate(0.18deg);
+    filter: brightness(0.96);
+  }
+
+  92% {
+    transform: translateY(-1%) rotate(0.22deg);
+  }
+
+  100% {
+    transform: translateY(1.5%) rotate(-0.55deg);
+    filter: brightness(1);
+  }
+}
+
+@keyframes ticket-card-print-out {
+  0% {
+    transform: translateY(-108%);
+    filter: brightness(0.88);
+  }
+
+  18% {
+    transform: translateY(-89%);
+  }
+
+  72% {
+    transform: translateY(-18%);
+    filter: brightness(0.96);
+  }
+
+  92% {
+    transform: translateY(-5%);
+  }
+
+  100% {
+    transform: translateY(-3%);
+    filter: brightness(1);
+  }
 }
 
 .card-save-form__header {
@@ -318,10 +748,16 @@
 
 .card-preview__grid {
   display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  min-width: 0;
+  max-width: 100%;
   gap: 1rem;
 }
 
 .card-preview__side {
+  box-sizing: border-box;
+  min-width: 0;
+  max-width: 100%;
   min-height: 15rem;
   padding: 1.25rem;
   border: 1px solid #eadfce;
@@ -340,13 +776,17 @@
 
 .card-preview__fields {
   display: grid;
+  min-width: 0;
+  max-width: 100%;
   gap: 0.625rem;
   margin: 1rem 0 0;
 }
 
 .card-preview__fields div {
   display: grid;
-  grid-template-columns: 5rem 1fr;
+  grid-template-columns: 5rem minmax(0, 1fr);
+  min-width: 0;
+  max-width: 100%;
   gap: 0.75rem;
 }
 
@@ -360,9 +800,72 @@
 }
 
 .card-preview__fields dd {
+  box-sizing: border-box;
+  width: 100%;
+  min-width: 0;
+  max-width: 100%;
+  max-height: calc(1.55em * 3);
+  padding-right: 0.4rem;
+  overflow-x: hidden;
+  overflow-y: auto;
   color: #362313;
   font-weight: 600;
+  line-height: 1.55;
+  overflow-wrap: anywhere;
+  overscroll-behavior-block: contain;
+  scrollbar-width: thin;
+  scrollbar-color: #999 transparent;
   white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.card-preview__fields dd::-webkit-scrollbar {
+  width: 0.35rem;
+}
+
+.card-preview__fields dd::-webkit-scrollbar-track,
+.card-preview__fields dd::-webkit-scrollbar-corner {
+  background: transparent;
+}
+
+.card-preview__fields dd::-webkit-scrollbar-thumb {
+  border-radius: 999px;
+  background: #999;
+}
+
+.card-preview__fields dd::-webkit-scrollbar-button {
+  display: none;
+  width: 0;
+  height: 0;
+}
+
+.card-preview__purchase-items dd,
+.card-preview__purchase-items ul {
+  min-width: 0;
+  padding: 0;
+  margin: 0;
+}
+
+.card-preview__purchase-items ul {
+  display: grid;
+  gap: 0.35rem;
+  list-style: none;
+}
+
+.card-preview__purchase-items li {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.75rem;
+  font-weight: 500;
+}
+
+.card-preview__purchase-items li span {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.card-preview__purchase-items li strong {
+  flex: none;
 }
 
 .card-preview__answers {
@@ -405,5 +908,15 @@
 @media (max-width: 23rem) {
   .field-grid {
     grid-template-columns: 1fr;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .printer-paper {
+    animation-duration: 1ms;
+  }
+
+  .printed-card__flipper {
+    transition-duration: 1ms;
   }
 }

@@ -14,13 +14,24 @@ const baseForm = {
     venue: "공연장",
     seat: "",
     ocrText: "편지 내용",
+    sender: " 엄마 ",
+    recipient: " 지은 ",
+    purchaseItems: [
+        { name: " 아이스 아메리카노 ", quantity: "2", selected: true },
+        { name: "치즈케이크", quantity: 1, selected: false },
+    ],
 };
 
 describe("API 5 type-specific payloads", () => {
     it("builds only the receipt fields", () => {
         assert.deepEqual(buildFrontPayload("RECEIPT", baseForm), {
             memoryDate: "2026-07-12",
-            front: { storeName: "상점" },
+            front: {
+                storeName: "상점",
+                purchaseItems: [
+                    { name: "아이스 아메리카노", quantity: 2 },
+                ],
+            },
         });
     });
 
@@ -40,7 +51,11 @@ describe("API 5 type-specific payloads", () => {
 
         assert.deepEqual(payload, {
             memoryDate: "2026-07-12",
-            front: { ocrText: "편지 내용" },
+            front: {
+                ocrText: "편지 내용",
+                sender: "엄마",
+                recipient: "지은",
+            },
         });
         assert.equal("frontImageMode" in payload.front, false);
     });
@@ -62,7 +77,24 @@ describe("API 4 candidate normalization", () => {
                 venue: "",
                 seat: "",
                 ocrText: "",
+                sender: "",
+                recipient: "",
+                purchaseItems: [],
             },
+        );
+    });
+
+    it("normalizes extracted receipt items as selected editable rows", () => {
+        assert.deepEqual(
+            createFrontForm({
+                purchaseItems: [
+                    { name: "아메리카노", quantity: 2 },
+                    null,
+                ],
+            }).purchaseItems,
+            [
+                { name: "아메리카노", quantity: 2, selected: true },
+            ],
         );
     });
 });
@@ -92,6 +124,43 @@ describe("API 5 required-field validation", () => {
         assert.equal(
             validateFrontForm("RECEIPT", { ...baseForm, storeName: "   " }),
             "상호명을 입력해주세요.",
+        );
+    });
+
+    it("allows an empty final receipt item selection", () => {
+        const form = {
+            ...baseForm,
+            purchaseItems: baseForm.purchaseItems.map((item) => ({
+                ...item,
+                selected: false,
+            })),
+        };
+
+        assert.equal(validateFrontForm("RECEIPT", form), null);
+        assert.deepEqual(buildFrontPayload("RECEIPT", form).front.purchaseItems, []);
+    });
+
+    it("rejects invalid selected receipt items but ignores unselected rows", () => {
+        assert.equal(
+            validateFrontForm("RECEIPT", {
+                ...baseForm,
+                purchaseItems: [{ name: " ", quantity: 1, selected: true }],
+            }),
+            "선택한 구매 항목의 이름을 입력해주세요.",
+        );
+        assert.equal(
+            validateFrontForm("RECEIPT", {
+                ...baseForm,
+                purchaseItems: [{ name: "커피", quantity: 0, selected: true }],
+            }),
+            "구매 항목 수량은 1 이상의 정수로 입력해주세요.",
+        );
+        assert.equal(
+            validateFrontForm("RECEIPT", {
+                ...baseForm,
+                purchaseItems: [{ name: "", quantity: 0, selected: false }],
+            }),
+            null,
         );
     });
 

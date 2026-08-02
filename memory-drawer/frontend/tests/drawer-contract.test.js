@@ -33,7 +33,14 @@ const {
 } = await import("../src/features/drawer/drawerApi.js");
 const { setAccessToken } = await import("../src/utils/tokenStorage.js");
 const { resolveApiUrl } = await import("../src/api/http.js");
-const { getFrontImageUrl, getImageUrl } = await import("../src/features/drawer/drawerViewUtils.js");
+const {
+    createDrawerLayout,
+    formatRelativeMemoryDate,
+    getCardTitle,
+    getDaysAgo,
+    getFrontImageUrl,
+    getImageUrl,
+} = await import("../src/features/drawer/drawerViewUtils.js");
 
 const successResponse = (data) => ({
     ok: true,
@@ -78,7 +85,8 @@ describe("API 8 drawer read contracts", () => {
                     cardId: "card-1",
                     documentType: "TICKET",
                     memoryDate: "2026-07-25",
-                    front: { eventName: "공연", frontImageUrl: "/files/cards/card-1/front" },
+                    layoutSeed: 12345,
+                    front: { eventName: "공연", venue: "공연장", seat: null },
                 },
             ],
         };
@@ -175,5 +183,69 @@ describe("API 8 drawer read contracts", () => {
             () => fetchDrawers({ signal: new AbortController().signal }),
             (error) => error?.name === "AbortError",
         );
+    });
+});
+
+describe("memory date relative labels", () => {
+    const augustFirst = new Date(2026, 7, 1, 12, 0, 0);
+
+    it("calculates past and same-day memories from the device date", () => {
+        assert.equal(getDaysAgo("2026-07-25", augustFirst), 7);
+        assert.equal(getDaysAgo("2026-08-01", augustFirst), 0);
+    });
+
+    it("returns a negative value for a future memory and rejects invalid dates", () => {
+        assert.equal(getDaysAgo("2026-08-03", augustFirst), -2);
+        assert.equal(getDaysAgo("2026-02-30", augustFirst), null);
+        assert.equal(getDaysAgo("not-a-date", augustFirst), null);
+    });
+
+    it("formats periods of at least 365 days as years and remaining days", () => {
+        assert.equal(formatRelativeMemoryDate(334), "오늘로부터 334일 전");
+        assert.equal(formatRelativeMemoryDate(365), "오늘로부터 1년 전");
+        assert.equal(formatRelativeMemoryDate(399), "오늘로부터 1년 34일 전");
+        assert.equal(formatRelativeMemoryDate(730), "오늘로부터 2년 전");
+        assert.equal(formatRelativeMemoryDate(-399), "오늘로부터 1년 34일 후");
+    });
+});
+
+describe("letter drawer text previews", () => {
+    it("uses the normalized OCR text instead of an image title", () => {
+        assert.equal(
+            getCardTitle({
+                documentType: "LETTER",
+                front: { ocrText: "  사랑하는 어머니께\n오늘도 감사합니다.  " },
+            }),
+            "사랑하는 어머니께 오늘도 감사합니다.",
+        );
+    });
+});
+
+describe("open drawer paper layout", () => {
+    it("uses the backend seed for a stable collision-free placement", () => {
+        const cards = [
+            { cardId: "card-1", layoutSeed: 4 },
+            { cardId: "card-2", layoutSeed: 4 },
+            { cardId: "card-3", layoutSeed: 9 },
+        ];
+
+        const firstLayout = createDrawerLayout(cards);
+        const secondLayout = createDrawerLayout(cards);
+
+        assert.deepEqual(firstLayout, secondLayout);
+        assert.equal(new Set(firstLayout.map(({ placement }) => `${placement.x}-${placement.y}`)).size, 3);
+    });
+
+    it("shows only the most recent ten cards while preserving their API order", () => {
+        const cards = Array.from({ length: 12 }, (_, index) => ({
+            cardId: `card-${index + 1}`,
+            layoutSeed: index,
+        }));
+
+        const layout = createDrawerLayout(cards);
+
+        assert.equal(layout.length, 10);
+        assert.equal(layout[0].card.cardId, "card-3");
+        assert.equal(layout.at(-1).card.cardId, "card-12");
     });
 });

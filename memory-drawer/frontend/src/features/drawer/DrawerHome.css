@@ -199,20 +199,22 @@
 
 .memory-create-button {
   position: fixed;
+  z-index: 3;
   right: max(1rem, calc((100vw - var(--app-max-width)) / 2 + 1rem));
-  top: calc(1rem + env(safe-area-inset-top));
+  top: calc(6.75rem + env(safe-area-inset-top));
   bottom: auto;
-  padding: 1rem 1.25rem;
+  padding: 0.45rem 0.85rem;
   border: 0;
   border-radius: 999px;
   background: #5e3521;
   box-shadow: 0 0.35rem 1rem rgb(68 39 23 / 28%);
   color: #fff;
   font: inherit;
+  font-size: 0.82rem;
   font-weight: 800;
 }
 
 .memory-create-button span {
   margin-right: 0.25rem;
-  font-size: 1.1rem;
+  font-size: 0.92rem;
 }

@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { deleteCard, fetchCardDetail, updateCard } from './drawerApi'
 import AuthorizedImage from './AuthorizedImage'
-import { DOCUMENT_LABELS, formatMemoryDate, getFrontImageUrl, getImageUrl } from './drawerViewUtils'
+import { DOCUMENT_LABELS, formatMemoryDate, formatRelativeMemoryDate, getDaysAgo, getFrontImageUrl, getImageUrl } from './drawerViewUtils'
 import './CardDetail.css'
 
 function getTicketTextDensity(front) {
@@ -22,6 +22,7 @@ function CardDetail({ cardId, cardsInYear, onBack, onSelectCard }) {
   const [isLoading, setIsLoading] = useState(true)
   const [errorMessage, setErrorMessage] = useState('')
   const [reloadKey, setReloadKey] = useState(0)
+  const [now, setNow] = useState(() => new Date())
   const [isEditing, setIsEditing] = useState(false)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [actionMessage, setActionMessage] = useState('')
@@ -61,6 +62,25 @@ function CardDetail({ cardId, cardsInYear, onBack, onSelectCard }) {
     loadCard()
     return () => controller.abort()
   }, [cardId, reloadKey])
+
+  useEffect(() => {
+    const refreshNow = () => setNow(new Date())
+    const timer = window.setInterval(refreshNow, 60_000)
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'visible') refreshNow()
+    }
+
+    document.addEventListener('visibilitychange', handleVisibilityChange)
+    window.addEventListener('focus', refreshNow)
+
+    return () => {
+      window.clearInterval(timer)
+      document.removeEventListener('visibilitychange', handleVisibilityChange)
+      window.removeEventListener('focus', refreshNow)
+    }
+  }, [])
+
+  const daysAgo = card ? getDaysAgo(card.memoryDate, now) : null
 
   async function handleUpdate(payload) {
     setIsSubmitting(true)
@@ -117,6 +137,11 @@ function CardDetail({ cardId, cardsInYear, onBack, onSelectCard }) {
             </div>
 
             {isFront ? <CardFront card={card} /> : <CardBack card={card} />}
+            {daysAgo !== null && (
+              <p className="days-ago" aria-live="polite">
+                {formatRelativeMemoryDate(daysAgo)}
+              </p>
+            )}
           </section>
 
           <nav className="card-navigation" aria-label="같은 연도의 다른 카드">
@@ -157,7 +182,12 @@ function getInitialForm(card) {
     weather: card.back?.weather || '',
     mood: card.back?.mood || '',
     storeName: card.front?.storeName || '',
+    purchaseItems: Array.isArray(card.front?.purchaseItems)
+      ? card.front.purchaseItems.map(({ name, quantity }) => ({ name, quantity }))
+      : [],
     ocrText: card.front?.ocrText || '',
+    sender: card.front?.sender || '',
+    recipient: card.front?.recipient || '',
     eventName: card.front?.eventName || '',
     venue: card.front?.venue || '',
     seat: card.front?.seat || '',
@@ -174,6 +204,7 @@ function CardEditForm({ card, isSubmitting, onCancel, onSubmit }) {
   const [form, setForm] = useState(() => getInitialForm(card))
   const [validationMessage, setValidationMessage] = useState('')
   const isTicket = card.documentType === 'TICKET'
+  const isLetter = card.documentType === 'LETTER'
   const isRecall = isTicket && card.back?.writingMode === 'AI_RECALL'
 
   function changeField(name, value) {
@@ -189,8 +220,31 @@ function CardEditForm({ card, isSubmitting, onCancel, onSubmit }) {
     }))
   }
 
+  function changePurchaseItem(index, field, value) {
+    setForm((current) => ({
+      ...current,
+      purchaseItems: current.purchaseItems.map((item, itemIndex) => (
+        itemIndex === index ? { ...item, [field]: value } : item
+      )),
+    }))
+  }
+
+  function addPurchaseItem() {
+    setForm((current) => ({
+      ...current,
+      purchaseItems: [...current.purchaseItems, { name: '', quantity: 1 }],
+    }))
+  }
+
+  function removePurchaseItem(index) {
+    setForm((current) => ({
+      ...current,
+      purchaseItems: current.purchaseItems.filter((_, itemIndex) => itemIndex !== index),
+    }))
+  }
+
   function buildPayload() {
-    const companions = form.companions
+    const companions = isLetter ? [] : form.companions
       .split(',')
       .map((name) => name.trim())
       .filter(Boolean)
@@ -202,10 +256,20 @@ function CardEditForm({ card, isSubmitting, onCancel, onSubmit }) {
     let front
 
     if (card.documentType === 'RECEIPT') {
-      front = { storeName: form.storeName.trim() }
+      front = {
+        storeName: form.storeName.trim(),
+        purchaseItems: form.purchaseItems.map(({ name, quantity }) => ({
+          name: name.trim(),
+          quantity: Number(quantity),
+        })),
+      }
       back.diaryText = form.diaryText.trim() || null
     } else if (card.documentType === 'LETTER') {
-      front = { ocrText: form.ocrText.trim() }
+      front = {
+        ocrText: form.ocrText.trim(),
+        sender: form.sender.trim() || null,
+        recipient: form.recipient.trim() || null,
+      }
       back.diaryText = form.diaryText.trim() || null
     } else {
       front = {
@@ -241,6 +305,12 @@ function CardEditForm({ card, isSubmitting, onCancel, onSubmit }) {
       setValidationMessage('영수증의 장소를 입력해주세요.')
       return
     }
+    if (card.documentType === 'RECEIPT' && payload.front.purchaseItems.some(({ name, quantity }) => (
+      !name || !Number.isInteger(quantity) || quantity < 1
+    ))) {
+      setValidationMessage('구매 항목의 이름과 1 이상의 정수 수량을 확인해주세요.')
+      return
+    }
     if (card.documentType === 'LETTER' && !payload.front.ocrText) {
       setValidationMessage('손쪽지 내용을 입력해주세요.')
       return
@@ -269,7 +339,7 @@ function CardEditForm({ card, isSubmitting, onCancel, onSubmit }) {
       <form onSubmit={handleSubmit}>
         <div className="card-edit-form__grid">
           <label>추억 날짜<input type="date" value={form.memoryDate} onChange={(event) => changeField('memoryDate', event.target.value)} required /></label>
-          <label>함께한 사람<input value={form.companions} onChange={(event) => changeField('companions', event.target.value)} placeholder="쉼표로 구분, 혼자면 비워두세요" /></label>
+          {!isLetter && <label>함께한 사람<input value={form.companions} onChange={(event) => changeField('companions', event.target.value)} placeholder="쉼표로 구분, 혼자면 비워두세요" /></label>}
           <label>날씨<input value={form.weather} onChange={(event) => changeField('weather', event.target.value)} required /></label>
           <label>기분<input value={form.mood} onChange={(event) => changeField('mood', event.target.value)} required /></label>
         </div>
@@ -277,12 +347,55 @@ function CardEditForm({ card, isSubmitting, onCancel, onSubmit }) {
         {card.documentType === 'RECEIPT' && (
           <>
             <label>장소<input value={form.storeName} onChange={(event) => changeField('storeName', event.target.value)} required /></label>
+            <section className="purchase-items-editor" aria-labelledby="saved-purchase-items-title">
+              <div className="purchase-items-editor__header">
+                <div>
+                  <h3 id="saved-purchase-items-title">구매 항목</h3>
+                  <p>카드 앞면에 표시할 메뉴나 상품을 수정할 수 있어요.</p>
+                </div>
+                <button type="button" onClick={addPurchaseItem}>항목 추가</button>
+              </div>
+              {form.purchaseItems.length > 0 ? (
+                <ul className="purchase-item-list">
+                  {form.purchaseItems.map((item, index) => (
+                    <li key={index}>
+                      <div className="purchase-item__fields">
+                        <label>
+                          <span>항목명</span>
+                          <input
+                            value={item.name}
+                            onChange={(event) => changePurchaseItem(index, 'name', event.target.value)}
+                            required
+                          />
+                        </label>
+                        <label>
+                          <span>수량</span>
+                          <input
+                            type="number"
+                            min="1"
+                            step="1"
+                            value={item.quantity}
+                            onChange={(event) => changePurchaseItem(index, 'quantity', event.target.value)}
+                            required
+                          />
+                        </label>
+                      </div>
+                      <button className="purchase-item__remove" type="button" onClick={() => removePurchaseItem(index)}>삭제</button>
+                    </li>
+                  ))}
+                </ul>
+              ) : (
+                <p className="purchase-items-editor__empty">구매 항목 없이 저장돼요.</p>
+              )}
+            </section>
             <label>자유 기록<textarea value={form.diaryText} onChange={(event) => changeField('diaryText', event.target.value)} rows="5" /></label>
           </>
         )}
 
         {card.documentType === 'LETTER' && (
           <>
+            <label>쓴 사람<input value={form.sender} onChange={(event) => changeField('sender', event.target.value)} placeholder="확인되지 않으면 비워두세요" /></label>
+            <label>받는 사람<input value={form.recipient} onChange={(event) => changeField('recipient', event.target.value)} placeholder="확인되지 않으면 비워두세요" /></label>
             <label>손쪽지 내용<textarea value={form.ocrText} onChange={(event) => changeField('ocrText', event.target.value)} rows="6" required /></label>
             <label>자유 기록<textarea value={form.diaryText} onChange={(event) => changeField('diaryText', event.target.value)} rows="5" /></label>
           </>
@@ -322,6 +435,16 @@ function CardFront({ card }) {
       {!isTicket && <p className="memory-card__date">{formatMemoryDate(card.memoryDate)}</p>}
       {imageUrl && <AuthorizedImage className="memory-card__front-image" imageUrl={imageUrl} alt="배경을 제거한 손편지" />}
       {isReceipt && <h1>{card.front.storeName}</h1>}
+      {isReceipt && Array.isArray(card.front.purchaseItems) && card.front.purchaseItems.length > 0 && (
+        <ul className="memory-card__purchase-items" aria-label="구매 항목">
+          {card.front.purchaseItems.map((item, index) => (
+            <li key={`${item.name}-${index}`}>
+              <span>{item.name}</span>
+              <strong>× {item.quantity}</strong>
+            </li>
+          ))}
+        </ul>
+      )}
       {isTicket && (
         <div className={`memory-card__front-fields memory-card__front-fields--${ticketTextDensity}`}>
           <h1>{card.front.eventName}</h1>
@@ -330,73 +453,64 @@ function CardFront({ card }) {
           {card.front.seat && <p>좌석 · {card.front.seat}</p>}
         </div>
       )}
-      {isLetter && <p className="memory-card__letter-text">{card.front.ocrText}</p>}
+      {isLetter && (
+        <>
+          {(card.front.sender || card.front.recipient) && (
+            <p className="memory-card__letter-correspondents">
+              {card.front.sender || '쓴 사람 미확인'} → {card.front.recipient || '받는 사람 미확인'}
+            </p>
+          )}
+          <p className="memory-card__letter-text">{card.front.ocrText}</p>
+        </>
+      )}
     </article>
   )
 }
 
-function splitTicketAnswer(answer) {
-  const characters = Array.from((answer || '답변을 남기지 않았어요.').trim())
-  const pages = []
+function createTicketPages(answers) {
+  return answers.map(({ question, answer }, questionIndex) => {
+    const questionText = question?.trim() || '추억에 관한 질문을 확인해 보세요.'
+    const answerText = answer?.trim() || '답변을 남기지 않았어요.'
 
-  while (characters.length > 0) {
-    pages.push(characters.splice(0, 36).join(''))
-  }
-
-  return pages.length > 0 ? pages : ['답변을 남기지 않았어요.']
-}
-
-function getTicketAnswerDensity(question, answer) {
-  const length = `${question || ''}${answer || ''}`.replace(/\s/g, '').length
-
-  if (length <= 42) return 'spacious'
-  if (length <= 76) return 'standard'
-  if (length <= 120) return 'compact'
-  return 'dense'
+    return {
+      type: 'question',
+      heading: `질문 ${questionIndex + 1}. ${questionText}`,
+      answer: answerText,
+    }
+  })
 }
 
 function TicketBackContent({ back }) {
-  const isDirect = back.writingMode === 'DIRECT'
-  const answers = Array.isArray(back.answers) && back.answers.length > 0
-    ? back.answers
-    : [{ question: '추억 기록', answer: back.memoryText }]
-  const pages = answers.flatMap(({ question, answer }, questionIndex) => (
-    splitTicketAnswer(answer).map((answerPart, answerPageIndex) => ({
-      question,
-      answer: answerPart,
-      questionIndex,
-      isContinuation: answerPageIndex > 0,
-    }))
-  ))
+  const hasRecallAnswers = Array.isArray(back.answers) && back.answers.length > 0
+  const pages = hasRecallAnswers
+    ? [{ type: 'summary' }, ...createTicketPages(back.answers)]
+    : [{ type: 'direct', heading: null, answer: back.memoryText }]
   const [selectedPage, setSelectedPage] = useState(0)
   const currentPage = Math.min(selectedPage, pages.length - 1)
   const page = pages[currentPage]
   const companions = back.companions?.length ? back.companions.join(', ') : '혼자'
-  const answerDensity = getTicketAnswerDensity(page.question, page.answer)
+  const showSummary = !hasRecallAnswers || page.type === 'summary'
 
   return (
-    <section className={`memory-card__ticket-back-content memory-card__ticket-back-content--${answerDensity}`} aria-label="티켓 뒷면 회상 기록">
-      <h1 title={back.title}>{back.title || '나의 추억'}</h1>
-      <p className="memory-card__ticket-summary">
-        <span>동행: {companions}</span>
-        <span aria-hidden="true">|</span>
-        <span>날씨: {back.weather || '-'}</span>
-        <span aria-hidden="true">|</span>
-        <span>기분: {back.mood || '-'}</span>
-      </p>
+    <section className="memory-card__ticket-back-content memory-card__ticket-back-content--spacious" aria-label="티켓 뒷면 회상 기록">
+      <section className={`memory-card__ticket-page memory-card__ticket-page--${page.type}`} aria-live="polite">
+        {showSummary && (
+          <>
+            <h1 title={back.title}>{back.title || '나의 추억'}</h1>
+            <p className="memory-card__ticket-summary">
+              <span>동행: {companions}</span>
+              <span aria-hidden="true">|</span>
+              <span>날씨: {back.weather || '-'}</span>
+              <span aria-hidden="true">|</span>
+              <span>기분: {back.mood || '-'}</span>
+            </p>
+          </>
+        )}
+        {page.heading && <h2>{page.heading}</h2>}
+        {page.answer && <p className="memory-card__ticket-answer">{page.answer}</p>}
+      </section>
 
-      {isDirect ? (
-        <section className="memory-card__ticket-page memory-card__ticket-page--direct" aria-label="직접 작성한 추억">
-          <p>{back.memoryText || '기록한 추억이 없어요.'}</p>
-        </section>
-      ) : (
-        <section className="memory-card__ticket-page" aria-live="polite">
-          <h2>질문 {page.questionIndex + 1}{page.isContinuation ? ' (계속)' : ''}. {page.question || '추억을 떠올려보세요.'}</h2>
-          <p>{page.answer}</p>
-        </section>
-      )}
-
-      {!isDirect && pages.length > 1 && (
+      {pages.length > 1 && (
         <nav className="memory-card__ticket-page-navigation" aria-label="회상 질문 페이지 이동">
           <button type="button" onClick={() => setSelectedPage((index) => Math.max(0, index - 1))} disabled={currentPage === 0} aria-label="이전 질문">‹</button>
           <span>{currentPage + 1} / {pages.length}</span>
@@ -421,7 +535,12 @@ function CardBack({ card }) {
   return (
     <article className={`memory-card memory-card--back${isLetter ? ' memory-card--letter' : ''}${isTicket ? ' memory-card--ticket' : ''}${isReceipt ? ' memory-card--receipt' : ''}`}>
       <dl className="memory-card__metadata">
-        <div><dt>함께한 사람</dt><dd>{back.companions?.length ? back.companions.join(', ') : '혼자'}</dd></div>
+        {isLetter ? (
+          <>
+            <div><dt>쓴 사람</dt><dd>{card.front.sender || '확인되지 않음'}</dd></div>
+            <div><dt>받는 사람</dt><dd>{card.front.recipient || '확인되지 않음'}</dd></div>
+          </>
+        ) : <div><dt>함께한 사람</dt><dd>{back.companions?.length ? back.companions.join(', ') : '혼자'}</dd></div>}
         <div><dt>날씨</dt><dd>{back.weather}</dd></div>
         <div><dt>기분</dt><dd>{back.mood}</dd></div>
       </dl>
@@ -429,7 +548,10 @@ function CardBack({ card }) {
       {isTicket && <TicketBackContent back={back} />}
 
       {isReceipt && (back.diaryText || photoUrls.length > 0) && (
-        <section className="memory-card__receipt-content" aria-label="영수증 뒷면 기록">
+        <section
+          className={`memory-card__receipt-content${photoUrls.length > 0 ? ' memory-card__receipt-content--with-photos' : ''}`}
+          aria-label="영수증 뒷면 기록"
+        >
           {back.diaryText && <p className="memory-card__diary">{back.diaryText}</p>}
           {photoUrls.length > 0 && (
             <div className="memory-card__photos" aria-label="추가 사진">
