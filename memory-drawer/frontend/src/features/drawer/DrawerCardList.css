@@ -284,8 +284,13 @@
 }
 
 .drawer-paper__ticket-main strong {
+  overflow: visible;
   font-family: "NanumGoDing", "Noto Sans KR", sans-serif;
-  font-size: clamp(0.36rem, 1.65vw, 0.84rem);
+  font-size: clamp(0.34rem, 1.45vw, 0.72rem);
+  line-height: 1.15;
+  overflow-wrap: anywhere;
+  text-overflow: clip;
+  white-space: normal;
 }
 
 .drawer-paper__ticket-main span {

@@ -226,7 +226,7 @@
   overflow: hidden;
 }
 
-.memory-card--ticket.memory-card--back .memory-card__ticket-back-content > h1 {
+.memory-card--ticket.memory-card--back .memory-card__ticket-page > h1 {
   flex: 0 0 auto;
   margin: 0;
   color: #2d2d2d;
@@ -256,6 +256,21 @@
   overflow: hidden;
 }
 
+.memory-card--ticket.memory-card--back .memory-card__ticket-page--summary,
+.memory-card--ticket.memory-card--back .memory-card__ticket-page--question {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+}
+
+.memory-card--ticket.memory-card--back .memory-card__ticket-page--question h2,
+.memory-card--ticket.memory-card--back .memory-card__ticket-page--question .memory-card__ticket-answer {
+  width: 100%;
+  text-align: center;
+}
+
 .memory-card--ticket.memory-card--back .memory-card__ticket-page h2 {
   margin: 0;
   color: #2d2d2d;
@@ -277,13 +292,12 @@
   margin-top: 0.35rem;
 }
 
-.memory-card--ticket.memory-card--back .memory-card__ticket-page--continuation .memory-card__ticket-answer {
-  margin-top: 0;
-}
-
 .memory-card--ticket.memory-card--back .memory-card__ticket-back-content--spacious .memory-card__ticket-page h2 {
-  font-size: clamp(0.82rem, 3.7vw, 1.1rem);
-  line-height: 1.38;
+  max-width: 100%;
+  font-size: clamp(0.48rem, 1.8vw, 0.7rem);
+  line-height: 1.2;
+  letter-spacing: -0.02em;
+  white-space: nowrap;
 }
 
 .memory-card--ticket.memory-card--back .memory-card__ticket-back-content--spacious .memory-card__ticket-page p {
@@ -492,16 +506,55 @@
   display: flex;
   flex: 1 1 auto;
   flex-direction: column;
+  width: 100%;
   min-height: 0;
+  min-width: 0;
+  max-width: 100%;
   margin-top: 0.75rem;
-  overflow-y: auto;
+  overflow-x: hidden;
+  overflow-y: hidden;
 }
 
 .memory-card--receipt.memory-card--back .memory-card__receipt-content .memory-card__diary {
   flex: 0 0 auto;
-  min-height: auto;
+  width: 100%;
+  min-width: 0;
+  max-width: 100%;
   margin: 0;
-  overflow: visible;
+  padding-right: 0;
+  overflow-x: hidden;
+  overflow-y: visible;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+
+.memory-card--receipt.memory-card--back .memory-card__receipt-content--with-photos .memory-card__diary {
+  max-height: calc(1.8em * 3);
+  padding-right: 0.4rem;
+  overflow-y: auto;
+  overscroll-behavior-block: contain;
+  scrollbar-color: #999 transparent;
+  scrollbar-width: thin;
+}
+
+.memory-card--receipt.memory-card--back .memory-card__receipt-content--with-photos .memory-card__diary::-webkit-scrollbar {
+  width: 0.35rem;
+}
+
+.memory-card--receipt.memory-card--back .memory-card__receipt-content--with-photos .memory-card__diary::-webkit-scrollbar-track,
+.memory-card--receipt.memory-card--back .memory-card__receipt-content--with-photos .memory-card__diary::-webkit-scrollbar-corner {
+  background: transparent;
+}
+
+.memory-card--receipt.memory-card--back .memory-card__receipt-content--with-photos .memory-card__diary::-webkit-scrollbar-thumb {
+  border-radius: 999px;
+  background: #999;
+}
+
+.memory-card--receipt.memory-card--back .memory-card__receipt-content--with-photos .memory-card__diary::-webkit-scrollbar-button {
+  display: none;
+  width: 0;
+  height: 0;
 }
 
 .memory-card--receipt.memory-card--back .memory-card__receipt-content .memory-card__photos {

@@ -1,6 +1,8 @@
 .card-save-page {
   box-sizing: border-box;
   width: min(100%, var(--app-max-width));
+  max-width: 100%;
+  overflow-x: hidden;
   min-height: 100dvh;
   margin: 0 auto;
   padding: calc(1.25rem + env(safe-area-inset-top)) max(1rem, env(safe-area-inset-right)) calc(2rem + env(safe-area-inset-bottom)) max(1rem, env(safe-area-inset-left));
@@ -746,10 +748,16 @@
 
 .card-preview__grid {
   display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  min-width: 0;
+  max-width: 100%;
   gap: 1rem;
 }
 
 .card-preview__side {
+  box-sizing: border-box;
+  min-width: 0;
+  max-width: 100%;
   min-height: 15rem;
   padding: 1.25rem;
   border: 1px solid #eadfce;
@@ -768,13 +776,17 @@
 
 .card-preview__fields {
   display: grid;
+  min-width: 0;
+  max-width: 100%;
   gap: 0.625rem;
   margin: 1rem 0 0;
 }
 
 .card-preview__fields div {
   display: grid;
-  grid-template-columns: 5rem 1fr;
+  grid-template-columns: 5rem minmax(0, 1fr);
+  min-width: 0;
+  max-width: 100%;
   gap: 0.75rem;
 }
 
@@ -788,9 +800,43 @@
 }
 
 .card-preview__fields dd {
+  box-sizing: border-box;
+  width: 100%;
+  min-width: 0;
+  max-width: 100%;
+  max-height: calc(1.55em * 3);
+  padding-right: 0.4rem;
+  overflow-x: hidden;
+  overflow-y: auto;
   color: #362313;
   font-weight: 600;
+  line-height: 1.55;
+  overflow-wrap: anywhere;
+  overscroll-behavior-block: contain;
+  scrollbar-width: thin;
+  scrollbar-color: #999 transparent;
   white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.card-preview__fields dd::-webkit-scrollbar {
+  width: 0.35rem;
+}
+
+.card-preview__fields dd::-webkit-scrollbar-track,
+.card-preview__fields dd::-webkit-scrollbar-corner {
+  background: transparent;
+}
+
+.card-preview__fields dd::-webkit-scrollbar-thumb {
+  border-radius: 999px;
+  background: #999;
+}
+
+.card-preview__fields dd::-webkit-scrollbar-button {
+  display: none;
+  width: 0;
+  height: 0;
 }
 
 .card-preview__purchase-items dd,
