@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { fetchCardDetail } from './drawerApi'
 import AuthorizedImage from './AuthorizedImage'
-import { DOCUMENT_LABELS, formatMemoryDate, getImageUrl } from './drawerViewUtils'
+import { DOCUMENT_LABELS, formatMemoryDate, getFrontImageUrl, getImageUrl } from './drawerViewUtils'
 import './CardDetail.css'
 
 function CardDetail({ cardId, cardsInYear, onBack, onSelectCard }) {
@@ -85,16 +85,15 @@ function CardDetail({ cardId, cardsInYear, onBack, onSelectCard }) {
 }
 
 function CardFront({ card }) {
-  const imageUrl = card.documentType === 'LETTER'
-    ? getImageUrl(card.front?.frontImageUrl)
-    : ''
+  const imageUrl = getFrontImageUrl(card)
   const isTicket = card.documentType === 'TICKET'
   const isReceipt = card.documentType === 'RECEIPT'
+  const isLetter = card.documentType === 'LETTER'
 
   return (
     <article className={`memory-card memory-card--front${card.documentType === 'LETTER' ? ' memory-card--letter' : ''}${card.documentType === 'TICKET' ? ' memory-card--ticket' : ''}${card.documentType === 'RECEIPT' ? ' memory-card--receipt' : ''}`}>
       {!isTicket && <p className="memory-card__date">{formatMemoryDate(card.memoryDate)}</p>}
-      {imageUrl && <AuthorizedImage className="memory-card__front-image" imageUrl={imageUrl} alt="저장한 원본 종이 기록" />}
+      {imageUrl && <AuthorizedImage className="memory-card__front-image" imageUrl={imageUrl} alt="배경을 제거한 손편지" />}
       {isReceipt && <h1>{card.front.storeName}</h1>}
       {isTicket && (
         <div className="memory-card__front-fields">
@@ -104,7 +103,7 @@ function CardFront({ card }) {
           {card.front.seat && <p>좌석 · {card.front.seat}</p>}
         </div>
       )}
-      {card.documentType === 'LETTER' && <p className="memory-card__letter-text">{card.front.ocrText}</p>}
+      {isLetter && <p className="memory-card__letter-text">{card.front.ocrText}</p>}
     </article>
   )
 }

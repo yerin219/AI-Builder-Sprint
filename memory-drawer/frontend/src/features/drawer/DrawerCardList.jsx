@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { fetchCardsByYear } from './drawerApi'
 import AuthorizedImage from './AuthorizedImage'
-import { DOCUMENT_LABELS, formatMemoryDate, getCardTitle, getImageUrl } from './drawerViewUtils'
+import { DOCUMENT_LABELS, formatMemoryDate, getCardTitle, getFrontImageUrl } from './drawerViewUtils'
 import './DrawerCardList.css'
 
 function DrawerCardList({ year, onBack, onCardsLoaded, onSelectCard }) {
@@ -64,9 +64,7 @@ function DrawerCardList({ year, onBack, onCardsLoaded, onSelectCard }) {
       {!isLoading && !errorMessage && cards.length > 0 && (
         <ul className="memory-card-list" aria-label={`${year}년 카드 목록`}>
           {cards.map((card) => {
-            const imageUrl = card.documentType === 'LETTER'
-              ? getImageUrl(card.front?.frontImageUrl)
-              : ''
+            const imageUrl = getFrontImageUrl(card)
 
             return (
               <li key={card.cardId}>

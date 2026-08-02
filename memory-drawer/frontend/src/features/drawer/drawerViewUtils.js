@@ -25,3 +25,10 @@ export function getImageUrl(imageUrl) {
   const normalizedUrl = imageUrl.trim()
   return normalizedUrl.startsWith('/files/cards/') ? normalizedUrl : null
 }
+
+export function getFrontImageUrl(card) {
+  if (card?.documentType !== 'LETTER') return null
+  if (card.front?.frontImageMode !== 'BACKGROUND_REMOVED') return null
+
+  return getImageUrl(card.front?.frontImageUrl)
+}
