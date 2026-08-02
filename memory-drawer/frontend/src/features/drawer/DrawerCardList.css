@@ -271,8 +271,8 @@
   min-width: 0;
   flex-direction: column;
   justify-content: center;
-  gap: 0.08rem;
-  padding: 6% 5% 6% 8%;
+  gap: 0.04rem;
+  padding: 4% 4% 4% 7%;
 }
 
 .drawer-paper__ticket-main strong,
@@ -284,18 +284,21 @@
 }
 
 .drawer-paper__ticket-main strong {
-  overflow: visible;
+  display: -webkit-box;
+  overflow: hidden;
   font-family: "NanumGoDing", "Noto Sans KR", sans-serif;
-  font-size: clamp(0.34rem, 1.45vw, 0.72rem);
-  line-height: 1.15;
+  font-size: clamp(0.24rem, 1vw, 0.5rem);
+  line-height: 1.1;
   overflow-wrap: anywhere;
   text-overflow: clip;
   white-space: normal;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
 }
 
 .drawer-paper__ticket-main span {
   color: #69625d;
-  font-size: clamp(0.24rem, 1.05vw, 0.54rem);
+  font-size: clamp(0.18rem, 0.78vw, 0.4rem);
 }
 
 .drawer-paper__ticket-stub {
