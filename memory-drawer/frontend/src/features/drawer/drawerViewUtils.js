@@ -135,6 +135,26 @@ export function getDaysAgo(memoryDate, now = new Date()) {
   return Math.floor((today - memory) / (1000 * 60 * 60 * 24))
 }
 
+export function formatRelativeMemoryDate(daysAgo) {
+  if (!Number.isInteger(daysAgo)) return ''
+  if (daysAgo === 0) return '오늘의 기억'
+
+  const totalDays = Math.abs(daysAgo)
+  const direction = daysAgo > 0 ? '전' : '후'
+
+  if (totalDays < 365) {
+    return `오늘로부터 ${totalDays}일 ${direction}`
+  }
+
+  const years = Math.floor(totalDays / 365)
+  const remainingDays = totalDays % 365
+  const duration = remainingDays === 0
+    ? `${years}년`
+    : `${years}년 ${remainingDays}일`
+
+  return `오늘로부터 ${duration} ${direction}`
+}
+
 export function getCardTitle(card) {
   if (card.documentType === 'RECEIPT') return card.front?.storeName || '이름 없는 영수증'
   if (card.documentType === 'TICKET') return card.front?.eventName || '이름 없는 티켓'

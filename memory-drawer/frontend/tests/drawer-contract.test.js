@@ -33,7 +33,13 @@ const {
 } = await import("../src/features/drawer/drawerApi.js");
 const { setAccessToken } = await import("../src/utils/tokenStorage.js");
 const { resolveApiUrl } = await import("../src/api/http.js");
-const { createDrawerLayout, getCardTitle, getDaysAgo, getImageUrl } = await import("../src/features/drawer/drawerViewUtils.js");
+const {
+    createDrawerLayout,
+    formatRelativeMemoryDate,
+    getCardTitle,
+    getDaysAgo,
+    getImageUrl,
+} = await import("../src/features/drawer/drawerViewUtils.js");
 
 const successResponse = (data) => ({
     ok: true,
@@ -153,6 +159,14 @@ describe("memory date relative labels", () => {
         assert.equal(getDaysAgo("2026-08-03", augustFirst), -2);
         assert.equal(getDaysAgo("2026-02-30", augustFirst), null);
         assert.equal(getDaysAgo("not-a-date", augustFirst), null);
+    });
+
+    it("formats periods of at least 365 days as years and remaining days", () => {
+        assert.equal(formatRelativeMemoryDate(334), "오늘로부터 334일 전");
+        assert.equal(formatRelativeMemoryDate(365), "오늘로부터 1년 전");
+        assert.equal(formatRelativeMemoryDate(399), "오늘로부터 1년 34일 전");
+        assert.equal(formatRelativeMemoryDate(730), "오늘로부터 2년 전");
+        assert.equal(formatRelativeMemoryDate(-399), "오늘로부터 1년 34일 후");
     });
 });
 
