@@ -133,3 +133,17 @@ Document Parse는 한 이미지에 한 번만 호출해야 하므로 서버에�
 - 실행한 테스트: 관련 `CardCreateServiceTest`, `GlobalExceptionHandlerTest`, 전체 `gradlew.bat test`, `git diff --check`.
 - 팀 결정이 필요한 입력 길이·사진 개수·토큰 만료·이미지 URL 장기 정책은 기존 TODO로 유지함.
 - 관련 브랜치: `feature/be-api6-8-fixes`.
+
+## 2026-08-01
+
+### 손편지 OCR 유지와 조건부 배경 제거
+
+- 사용 모델·도구: Codex, Java 표준 ImageIO, Gradle, Node.js 테스트·lint·Vite build. Upstage API는 실제 호출하지 않았고 기존 Document Parse 결과 재사용 계약을 유지함.
+- 작업 목적: 손편지 앞면에서 OCR 본문을 항상 보존하면서, 단순한 배경의 사진만 누끼 처리하고 품질이 낮거나 안전하게 처리할 수 없으면 사진 없이 텍스트만 표시하도록 백엔드·프론트 계약을 일치시킴.
+- 사용한 프롬프트 요약: 최신 코드를 먼저 pull한 뒤 손편지는 원본 사진을 카드에 넣지 말고 텍스트를 추출해 표시하며, 배경이 단순하면 누끼를 시도하고 실패하면 영수증·티켓처럼 텍스트만 사용하도록 요청함.
+- AI가 제안·수정한 내용: 밝고 균일한 테두리, 투명 영역과 전경 보존 비율을 검사하는 보수적 품질 게이트를 추가하고, 성공 결과만 10MiB 이하 투명 PNG로 원자 저장함. WebP·손상 파일·복잡한 배경·과대 이미지·회전 보정이 필요한 JPEG EXIF는 `TEXT_ONLY`로 전환함. 카드 이미지 조회는 배경 제거 성공본만 제공하고 원본은 제공하지 않으며, 만료된 미저장 draft의 파생 이미지도 정리함. 프론트엔드는 `BACKGROUND_REMOVED` 손편지만 이미지를 렌더링하고 OCR 본문은 이미지 로딩과 관계없이 항상 표시하도록 보완함.
+- 사용자가 직접 결정·수정한 내용: 단순 배경이면 누끼를 시도하되, 품질이 낮으면 원본 사진이 아니라 OCR 텍스트만 카드 앞면에 넣는 정책을 최종 확정함.
+- 실행한 테스트: 백엔드 전체 `gradlew.bat test --console=plain`, 프론트엔드 `npm.cmd test`, `npm.cmd run lint`, `npm.cmd run build`, 양쪽 `git diff --check`.
+- 테스트 결과: 백엔드 전체 테스트 성공, 프론트엔드 28개 테스트 성공, lint와 production build 성공. 합성 JPEG·PNG의 누끼 성공, 빈·복잡 배경과 WebP·손상·회전 EXIF 폴백, 저장·조회·만료 정리 및 영수증·티켓 앞면 이미지 차단을 검증함.
+- 발생한 문제와 해결: Java ImageIO가 휴대폰 JPEG의 EXIF 회전을 자동 적용하지 않아 누끼 PNG가 잘못 회전될 수 있는 위험을 확인함. EXIF orientation이 2~8이거나 메타데이터가 손상된 사진은 이미지 없이 OCR 본문만 사용하는 `TEXT_ONLY`로 전환하도록 보수적으로 처리함.
+- 관련 브랜치: 백엔드 `codex/fix-letter-text-front-backend`, 프론트엔드 `codex/fix-letter-text-front-frontend`. 커밋·push·PR은 진행하지 않음.

@@ -33,6 +33,7 @@ import com.memorydrawer.memorydraft.domain.DocumentType;
 import com.memorydrawer.memorydraft.domain.DraftStatus;
 import com.memorydrawer.memorydraft.domain.MemoryDraft;
 import com.memorydrawer.memorydraft.domain.ParsedContent;
+import com.memorydrawer.memorydraft.image.LetterFrontImageService;
 import com.memorydrawer.memorydraft.repository.MemoryDraftRepository;
 
 @ExtendWith(MockitoExtension.class)
@@ -40,6 +41,8 @@ class MemoryDraftFrontServiceTests {
 
 	@Mock
 	private MemoryDraftRepository memoryDraftRepository;
+	@Mock
+	private LetterFrontImageService letterFrontImageService;
 
 	private ObjectMapper objectMapper;
 	private MemoryDraftFrontService service;
@@ -49,7 +52,11 @@ class MemoryDraftFrontServiceTests {
 		objectMapper = new ObjectMapper()
 			.findAndRegisterModules()
 			.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
-		service = new MemoryDraftFrontService(memoryDraftRepository, objectMapper);
+		service = new MemoryDraftFrontService(
+			memoryDraftRepository,
+			letterFrontImageService,
+			objectMapper
+		);
 	}
 
 	@Test
@@ -154,7 +161,7 @@ class MemoryDraftFrontServiceTests {
 	}
 
 	@Test
-	void confirmsLetterFrontWithOriginalImageFallback() throws Exception {
+	void confirmsLetterFrontWithTextOnlyFallback() throws Exception {
 		UUID ownerId = UUID.randomUUID();
 		MemoryDraft draft = frontPendingDraft(ownerId, DocumentType.LETTER);
 		when(memoryDraftRepository.findById(draft.getId())).thenReturn(Optional.of(draft));
@@ -175,11 +182,43 @@ class MemoryDraftFrontServiceTests {
 		assertThat(response.front()).isEqualTo(
 			new LetterConfirmedFront(
 				"오늘 함께해 줘서 정말 고마워.",
-				FrontImageMode.ORIGINAL
+				FrontImageMode.TEXT_ONLY
 			)
 		);
-		assertThat(draft.getFrontCandidate()).contains("\"frontImageMode\":\"ORIGINAL\"");
+		assertThat(draft.getFrontCandidate()).contains("\"frontImageMode\":\"TEXT_ONLY\"");
 		assertThat(draft.getDraftStatus()).isEqualTo(DraftStatus.FRONT_CONFIRMED);
+		verify(letterFrontImageService).prepareBackgroundRemoved(draft);
+	}
+
+	@Test
+	void confirmsLetterFrontWithStoredBackgroundRemovedImage() throws Exception {
+		UUID ownerId = UUID.randomUUID();
+		MemoryDraft draft = frontPendingDraft(ownerId, DocumentType.LETTER);
+		when(memoryDraftRepository.findById(draft.getId())).thenReturn(Optional.of(draft));
+		when(letterFrontImageService.prepareBackgroundRemoved(draft)).thenReturn(true);
+
+		var response = service.confirm(
+			ownerId,
+			draft.getId(),
+			request(
+				LocalDate.of(2026, 3, 18),
+				"""
+					{
+					  "ocrText": "오늘 함께해 줘서 정말 고마워."
+					}
+					"""
+			)
+		);
+
+		assertThat(response.front()).isEqualTo(
+			new LetterConfirmedFront(
+				"오늘 함께해 줘서 정말 고마워.",
+				FrontImageMode.BACKGROUND_REMOVED
+			)
+		);
+		assertThat(draft.getFrontCandidate())
+			.contains("\"ocrText\":\"오늘 함께해 줘서 정말 고마워.\"")
+			.contains("\"frontImageMode\":\"BACKGROUND_REMOVED\"");
 	}
 
 	@Test
@@ -199,6 +238,7 @@ class MemoryDraftFrontServiceTests {
 
 		assertThat(draft.getDraftStatus()).isEqualTo(DraftStatus.FRONT_PENDING);
 		verify(memoryDraftRepository, never()).saveAndFlush(draft);
+		verify(letterFrontImageService, never()).prepareBackgroundRemoved(draft);
 	}
 
 	@Test
@@ -226,6 +266,7 @@ class MemoryDraftFrontServiceTests {
 
 		assertThat(draft.getDraftStatus()).isEqualTo(DraftStatus.FRONT_PENDING);
 		verify(memoryDraftRepository, never()).saveAndFlush(draft);
+		verify(letterFrontImageService, never()).prepareBackgroundRemoved(draft);
 	}
 
 	@Test

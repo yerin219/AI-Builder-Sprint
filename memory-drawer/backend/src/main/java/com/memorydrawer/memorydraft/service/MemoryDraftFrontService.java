@@ -20,9 +20,9 @@ import com.memorydrawer.memorydraft.api.FrontImageMode;
 import com.memorydrawer.memorydraft.api.LetterConfirmedFront;
 import com.memorydrawer.memorydraft.api.ReceiptConfirmedFront;
 import com.memorydrawer.memorydraft.api.TicketConfirmedFront;
-import com.memorydrawer.memorydraft.domain.DocumentType;
 import com.memorydrawer.memorydraft.domain.DraftStatus;
 import com.memorydrawer.memorydraft.domain.MemoryDraft;
+import com.memorydrawer.memorydraft.image.LetterFrontImageService;
 import com.memorydrawer.memorydraft.repository.MemoryDraftRepository;
 
 @Service
@@ -38,13 +38,16 @@ public class MemoryDraftFrontService {
 	private static final Set<String> LETTER_FIELDS = Set.of("ocrText");
 
 	private final MemoryDraftRepository memoryDraftRepository;
+	private final LetterFrontImageService letterFrontImageService;
 	private final ObjectMapper objectMapper;
 
 	public MemoryDraftFrontService(
 		MemoryDraftRepository memoryDraftRepository,
+		LetterFrontImageService letterFrontImageService,
 		ObjectMapper objectMapper
 	) {
 		this.memoryDraftRepository = memoryDraftRepository;
+		this.letterFrontImageService = letterFrontImageService;
 		this.objectMapper = objectMapper;
 	}
 
@@ -65,7 +68,7 @@ public class MemoryDraftFrontService {
 		}
 
 		ConfirmedFront confirmedFront = validateFront(
-			draft.getDocumentType(),
+			draft,
 			request.front()
 		);
 		ConfirmedFrontSnapshot snapshot = new ConfirmedFrontSnapshot(
@@ -95,17 +98,17 @@ public class MemoryDraftFrontService {
 	}
 
 	private ConfirmedFront validateFront(
-		DocumentType documentType,
+		MemoryDraft draft,
 		JsonNode front
 	) {
 		if (front == null || !front.isObject()) {
 			throw new ApiException(ErrorCode.VALIDATION_001);
 		}
 
-		return switch (documentType) {
+		return switch (draft.getDocumentType()) {
 			case RECEIPT -> receiptFront(front);
 			case TICKET -> ticketFront(front);
-			case LETTER -> letterFront(front);
+			case LETTER -> letterFront(draft, front);
 		};
 	}
 
@@ -123,11 +126,15 @@ public class MemoryDraftFrontService {
 		);
 	}
 
-	private LetterConfirmedFront letterFront(JsonNode front) {
+	private LetterConfirmedFront letterFront(MemoryDraft draft, JsonNode front) {
 		validateAllowedFields(front, LETTER_FIELDS);
+		String ocrText = requiredText(front, "ocrText");
+		FrontImageMode imageMode = letterFrontImageService.prepareBackgroundRemoved(draft)
+			? FrontImageMode.BACKGROUND_REMOVED
+			: FrontImageMode.TEXT_ONLY;
 		return new LetterConfirmedFront(
-			requiredText(front, "ocrText"),
-			FrontImageMode.ORIGINAL
+			ocrText,
+			imageMode
 		);
 	}
 

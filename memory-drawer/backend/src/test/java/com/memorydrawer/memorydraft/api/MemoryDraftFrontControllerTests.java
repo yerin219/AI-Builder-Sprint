@@ -204,7 +204,7 @@ class MemoryDraftFrontControllerTests {
 			.andExpect(jsonPath("$.data.memoryDate").value("2026-03-18"))
 			.andExpect(jsonPath("$.data.front.ocrText")
 				.value("오늘 함께해 줘서 정말 고마워."))
-			.andExpect(jsonPath("$.data.front.frontImageMode").value("ORIGINAL"))
+			.andExpect(jsonPath("$.data.front.frontImageMode").value("TEXT_ONLY"))
 			.andExpect(jsonPath("$.data.draftStatus").value("FRONT_CONFIRMED"));
 	}
 

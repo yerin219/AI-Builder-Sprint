@@ -9,6 +9,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.memorydrawer.memorydraft.domain.DraftStatus;
 import com.memorydrawer.memorydraft.domain.MemoryDraft;
+import com.memorydrawer.memorydraft.image.LetterFrontImageStorage;
 import com.memorydrawer.memorydraft.image.OriginalImageStorage;
 import com.memorydrawer.memorydraft.repository.MemoryDraftRepository;
 
@@ -17,13 +18,16 @@ public class ExpiredMemoryDraftCleaner {
 
 	private final MemoryDraftRepository memoryDraftRepository;
 	private final OriginalImageStorage originalImageStorage;
+	private final LetterFrontImageStorage letterFrontImageStorage;
 
 	public ExpiredMemoryDraftCleaner(
 		MemoryDraftRepository memoryDraftRepository,
-		OriginalImageStorage originalImageStorage
+		OriginalImageStorage originalImageStorage,
+		LetterFrontImageStorage letterFrontImageStorage
 	) {
 		this.memoryDraftRepository = memoryDraftRepository;
 		this.originalImageStorage = originalImageStorage;
+		this.letterFrontImageStorage = letterFrontImageStorage;
 	}
 
 	@Transactional
@@ -35,6 +39,7 @@ public class ExpiredMemoryDraftCleaner {
 		List<MemoryDraft> expiredDrafts = memoryDraftRepository
 			.findAllByExpiresAtBeforeAndDraftStatusNot(Instant.now(), DraftStatus.SAVED);
 		for (MemoryDraft draft : expiredDrafts) {
+			letterFrontImageStorage.delete(draft.getOwnerId(), draft.getId());
 			originalImageStorage.delete(draft.getOriginalImageKey());
 			memoryDraftRepository.delete(draft);
 		}

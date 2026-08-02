@@ -81,11 +81,14 @@ public class JpaCardQuerySource implements CardQuerySource {
 					requiredText(front, "venue"),
 					optionalText(front, "seat")
 				);
-				case LETTER -> new YearCardListResponse.LetterFront(
-					requiredText(front, "ocrText"),
-					requiredText(front, "frontImageMode"),
-					frontImageUrl(card)
-				);
+				case LETTER -> {
+					FrontImageMode imageMode = normalizedLetterImageMode(front);
+					yield new YearCardListResponse.LetterFront(
+						requiredText(front, "ocrText"),
+						imageMode,
+						letterFrontImageUrl(card, imageMode)
+					);
+				}
 			}
 		);
 	}
@@ -112,11 +115,14 @@ public class JpaCardQuerySource implements CardQuerySource {
 				requiredText(front, "venue"),
 				optionalText(front, "seat")
 			);
-			case LETTER -> new CardDetailResponse.LetterFront(
-				requiredText(front, "ocrText"),
-				FrontImageMode.valueOf(requiredText(front, "frontImageMode")),
-				frontImageUrl(card)
-			);
+			case LETTER -> {
+				FrontImageMode imageMode = normalizedLetterImageMode(front);
+				yield new CardDetailResponse.LetterFront(
+					requiredText(front, "ocrText"),
+					imageMode,
+					letterFrontImageUrl(card, imageMode)
+				);
+			}
 		};
 	}
 
@@ -202,8 +208,21 @@ public class JpaCardQuerySource implements CardQuerySource {
 		return normalized.isBlank() ? null : normalized;
 	}
 
-	private String frontImageUrl(MemoryCard card) {
-		return "/files/cards/%s/front".formatted(card.getId());
+	private FrontImageMode normalizedLetterImageMode(JsonNode front) {
+		try {
+			String storedMode = requiredText(front, "frontImageMode");
+			return "ORIGINAL".equals(storedMode)
+				? FrontImageMode.TEXT_ONLY
+				: FrontImageMode.valueOf(storedMode);
+		} catch (IllegalArgumentException exception) {
+			throw new ApiException(ErrorCode.CARD_003, exception);
+		}
+	}
+
+	private String letterFrontImageUrl(MemoryCard card, FrontImageMode imageMode) {
+		return imageMode == FrontImageMode.BACKGROUND_REMOVED
+			? "/files/cards/%s/front".formatted(card.getId())
+			: null;
 	}
 
 	private List<String> backPhotoUrls(MemoryCard card) {

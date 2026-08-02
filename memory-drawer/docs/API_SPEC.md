@@ -135,8 +135,10 @@ Authorization: Bearer {accessToken}
 
 | 값 | 의미 |
 |---|---|
-| `ORIGINAL` | 원본 이미지 사용 |
-| `BACKGROUND_REMOVED` | 단순 배경 제거 결과 사용 |
+| `TEXT_ONLY` | 사진 없이 사용자가 확인한 OCR 본문만 사용 |
+| `BACKGROUND_REMOVED` | 단순 배경으로 판정되어 품질 검사를 통과한 투명 PNG 사용 |
+
+과거 저장 데이터의 `ORIGINAL` 값은 조회 시 `TEXT_ONLY`로 정규화하며 원본 이미지를 반환하지 않습니다.
 
 #### 임시 기록 상태 `draftStatus`
 
@@ -157,14 +159,14 @@ Authorization: Bearer {accessToken}
 
 - 영수증·티켓·손편지 카드의 배경은 모두 흰색으로 통일합니다.
 - 영수증과 티켓 앞면에는 사용자가 확인한 Upstage 추출값만 표시하고, 분석에 사용한 원본 이미지는 표시하지 않습니다.
-- 손편지는 `frontImageMode`에 따라 글씨 분리 결과 또는 원본 이미지를 표시할 수 있습니다.
+- 손편지는 확정된 `ocrText`를 항상 표시하고, `BACKGROUND_REMOVED`일 때만 품질을 통과한 글씨 분리 결과를 함께 표시합니다. `TEXT_ONLY`일 때는 원본 사진 없이 OCR 본문만 표시합니다.
 - 카드 배경색 선택·변경 기능을 제공하지 않습니다.
 - 카드 배경색과 관련된 필드를 요청·응답에 포함하지 않습니다.
 - 흰색 배경은 프론트엔드 표시 규칙이며 백엔드가 별도 값으로 저장하거나 반환하지 않습니다.
 
 ### 2.9 보호된 카드 이미지 URL
 
-손편지 카드의 `frontImageUrl`과 영수증·손편지 카드의 `backPhotoUrls`는 Base URL 아래에서 조회하는 상대 API 경로입니다. 영수증·티켓의 앞면 응답에는 `frontImageUrl`이 포함되지 않습니다.
+`BACKGROUND_REMOVED` 손편지 카드의 `frontImageUrl`과 영수증·손편지 카드의 `backPhotoUrls`는 Base URL 아래에서 조회하는 상대 API 경로입니다. `TEXT_ONLY` 및 과거 `ORIGINAL`을 정규화한 손편지는 `frontImageUrl: null`이며, 영수증·티켓의 앞면 응답에는 `frontImageUrl`이 포함되지 않습니다.
 
 ```http
 GET /files/cards/{cardId}/front
@@ -172,8 +174,10 @@ GET /files/cards/{cardId}/back/{index}
 Authorization: Bearer {accessToken}
 ```
 
-- 프론트엔드는 손편지 앞면에 한해 `/files/cards/{cardId}/front`를 `{Base URL}/files/cards/{cardId}/front`로 요청합니다.
-- 영수증·티켓 카드의 앞면 이미지 경로를 직접 요청하면 `404 CARD_002`를 반환합니다.
+- 프론트엔드는 손편지의 `frontImageMode`가 `BACKGROUND_REMOVED`이고 `frontImageUrl`이 있을 때만 `/files/cards/{cardId}/front`를 `{Base URL}/files/cards/{cardId}/front`로 요청합니다.
+- 이 경로는 배경 제거된 투명 PNG만 반환하며 원본 이미지는 반환하지 않습니다.
+- `TEXT_ONLY` 손편지의 조회 응답은 `frontImageUrl: null`입니다.
+- `TEXT_ONLY` 손편지와 과거 `ORIGINAL` 손편지, 영수증·티켓 카드의 앞면 이미지 경로를 직접 요청하면 `404 CARD_002`를 반환합니다.
 - `index`는 `1`부터 시작하며 상세 응답의 `backPhotoUrls` 순서를 따릅니다.
 - 성공 응답은 공통 JSON envelope가 아닌 저장된 이미지 binary이며 `Content-Type`은 `image/jpeg`, `image/png`, `image/webp` 중 하나입니다.
 - 성공 응답은 `Cache-Control: no-store`를 사용합니다.
@@ -585,8 +589,8 @@ AI의 판단이 맞으면 제안된 유형을, 틀리면 사용자가 직접 선
 }
 ```
 
-배경 제거 결과의 품질이 낮으면 백엔드는 `frontImageMode`를 `ORIGINAL`로 반환합니다.
-`frontImageMode`는 사용자가 보내거나 수정하는 필드가 아닙니다. 별도 배경 제거 산출물이 준비되지 않은 경우에도 안전한 폴백으로 `ORIGINAL`을 사용합니다.
+백엔드는 테두리가 밝고 균일한 JPEG·PNG에만 배경 제거를 시도하고, 배경 균일성과 전경 보존 비율을 검사한 결과가 기준을 통과할 때만 `BACKGROUND_REMOVED`를 확정합니다. 품질이 낮거나 디코딩을 지원하지 않는 형식, 회전 보정이 필요한 JPEG EXIF 방향값은 `TEXT_ONLY`로 전환하며 원본 사진을 카드 앞면에 사용하지 않습니다.
+`frontImageMode`는 사용자가 보내거나 수정하는 필드가 아닙니다. 어느 모드에서도 사용자가 확인한 `ocrText`는 저장·조회 응답에 유지되며 카드 앞면에 항상 표시합니다.
 
 #### 주요 오류
 
@@ -1126,7 +1130,7 @@ Solar 호출이 실패하면 사용자의 답변을 그대로 유지하고 제�
 | 영수증 | `storeName` | `companions`, `weather`, `mood`, `diaryText`, `backPhotoUrls` |
 | 티켓 직접 기록 | `eventName`, `venue`, `seat` | 공통 정보, `writingMode`, `title`, `memoryText` |
 | 티켓 AI 질문 | 티켓 직접 기록과 동일 | 공통 정보, `writingMode`, `ticketSubtype`, `title`, `answers` |
-| 손편지 | `ocrText`, `frontImageMode`, `frontImageUrl` | `companions`, `weather`, `mood`, `diaryText`, `backPhotoUrls` |
+| 손편지 | `ocrText`, `frontImageMode`, `frontImageUrl`(배경 제거 성공 시에만) | `companions`, `weather`, `mood`, `diaryText`, `backPhotoUrls` |
 
 #### 주요 오류
 
