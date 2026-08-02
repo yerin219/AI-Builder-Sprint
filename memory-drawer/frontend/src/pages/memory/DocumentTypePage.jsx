@@ -107,7 +107,7 @@ export default function DocumentTypePage() {
 
     // AI가 판단하지 못했거나 “아니에요”를 누른 경우
     return (
-        <main className="mobile-page">
+        <main className="mobile-page document-type-selection-page">
             <button className="page-back-button" onClick={() => navigate(-1)}>←</button>
             <h1>문서 유형 선택</h1>
             <p>문서 유형을 선택해주세요.</p>

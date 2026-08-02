@@ -208,6 +208,40 @@ button {
   opacity: 0.6;
 }
 
+.document-type-selection-page .document-type-list {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.75rem;
+  margin-top: 1.25rem;
+}
+
+.document-type-selection-page .document-type-card {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  min-width: 7.5rem;
+  min-height: 2.85rem;
+  padding: 0.6rem 1rem;
+  border: 1px solid #4e2d14;
+  border-radius: 999px;
+  background: #5e3521;
+  box-shadow: 0 0.2rem 0.5rem rgb(68 39 23 / 20%);
+  color: #fff7ea;
+  font: inherit;
+  font-weight: 700;
+}
+
+.document-type-selection-page .document-type-card:hover {
+  background: #75462c;
+}
+
+.document-type-selection-page .document-type-card:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
 .mobile-page:not(.drawer-home):not(.auth-page) > form {
   display: grid;
   gap: 1rem;
