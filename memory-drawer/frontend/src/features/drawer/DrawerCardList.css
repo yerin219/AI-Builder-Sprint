@@ -340,6 +340,12 @@
   font-size: clamp(0.34rem, 1.4vw, 0.72rem);
 }
 
+.drawer-paper__letter-image {
+  width: 100%;
+  max-height: 32%;
+  object-fit: contain;
+}
+
 .drawer-paper__letter-text {
   display: -webkit-box;
   overflow: hidden;

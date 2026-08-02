@@ -20,6 +20,7 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
 import com.memorydrawer.auth.AuthenticatedUserIdResolver;
 import com.memorydrawer.card.query.CardAccessDeniedException;
+import com.memorydrawer.card.query.CardNotFoundException;
 import com.memorydrawer.common.error.GlobalExceptionHandler;
 
 class CardImageControllerTest {
@@ -65,6 +66,18 @@ class CardImageControllerTest {
 			.andExpect(status().isForbidden())
 			.andExpect(jsonPath("$.success").value(false))
 			.andExpect(jsonPath("$.code").value("CARD_001"))
+			.andExpect(jsonPath("$.data").doesNotExist());
+	}
+
+	@Test
+	void returnsNotFoundWhenLetterFrontHasNoBackgroundRemovedImage() throws Exception {
+		when(cardImageService.front(OWNER_ID, CARD_ID))
+			.thenThrow(new CardNotFoundException());
+
+		mockMvc.perform(get("/files/cards/{cardId}/front", CARD_ID).principal(principal))
+			.andExpect(status().isNotFound())
+			.andExpect(jsonPath("$.success").value(false))
+			.andExpect(jsonPath("$.code").value("CARD_002"))
 			.andExpect(jsonPath("$.data").doesNotExist());
 	}
 }

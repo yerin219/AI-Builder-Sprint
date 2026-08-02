@@ -93,6 +93,13 @@
   margin-left: clamp(3.5rem, 10vw, 5.25rem);
 }
 
+.memory-card--letter.memory-card--front .memory-card__front-image {
+  width: 100%;
+  max-height: 38%;
+  margin: 0.35rem 0;
+  object-fit: contain;
+}
+
 .memory-card--letter .memory-card__letter-correspondents {
   margin: 0 0 0.5rem clamp(3.5rem, 10vw, 5.25rem);
   color: #766c61;

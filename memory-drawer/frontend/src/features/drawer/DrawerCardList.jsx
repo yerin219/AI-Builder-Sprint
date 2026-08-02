@@ -1,7 +1,8 @@
 import { useEffect, useMemo, useState } from 'react'
 import openDrawerInterior from '../../assets/open-drawer-interior.png'
 import { fetchCardsByYear } from './drawerApi'
-import { createDrawerLayout, formatMemoryDate, getCardTitle } from './drawerViewUtils'
+import AuthorizedImage from './AuthorizedImage'
+import { createDrawerLayout, formatMemoryDate, getCardTitle, getFrontImageUrl } from './drawerViewUtils'
 import './DrawerCardList.css'
 
 function DrawerCardList({ year, onBack, onCardsLoaded, onSelectCard }) {
@@ -178,11 +179,13 @@ function TicketPaper({ card }) {
 
 function LetterPaper({ card }) {
   const text = getCardTitle(card)
+  const imageUrl = getFrontImageUrl(card)
 
   return (
     <span className="drawer-paper__content drawer-paper__content--letter">
       <span className="drawer-paper__date">{formatMemoryDate(card.memoryDate)}</span>
       <strong>소중한 편지</strong>
+      {imageUrl && <AuthorizedImage className="drawer-paper__letter-image" imageUrl={imageUrl} alt="" />}
       <span className="drawer-paper__letter-text">{text}</span>
     </span>
   )
