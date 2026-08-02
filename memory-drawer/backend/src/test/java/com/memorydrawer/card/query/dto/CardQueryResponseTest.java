@@ -79,13 +79,13 @@ class CardQueryResponseTest {
 	}
 
 	@Test
-	void letterDetailContainsImageModeAndBackPhotoUrls() throws Exception {
+	void textOnlyLetterDetailContainsNoFrontImageUrl() throws Exception {
 		CardDetailResponse response = new CardDetailResponse(
 			UUID.fromString("e89ed42d-1a89-4eea-8ddc-dca90a5c78c4"),
 			DocumentType.LETTER,
 			LocalDate.of(2026, 3, 1),
 			new CardDetailResponse.LetterFront(
-				"편지 본문", com.memorydrawer.card.FrontImageMode.ORIGINAL, "/files/cards/front"
+				"편지 본문", com.memorydrawer.card.FrontImageMode.TEXT_ONLY, null
 			),
 			new CardDetailResponse.DiaryBack(
 				List.of(), "흐림", "감동", "다시 읽어 보았다.", List.of("/files/cards/back/1")
@@ -94,7 +94,8 @@ class CardQueryResponseTest {
 
 		JsonNode json = objectMapper.valueToTree(response);
 
-		assertThat(json.at("/front/frontImageMode").asText()).isEqualTo("ORIGINAL");
+		assertThat(json.at("/front/frontImageMode").asText()).isEqualTo("TEXT_ONLY");
+		assertThat(json.at("/front/frontImageUrl").isNull()).isTrue();
 		assertThat(json.at("/back/backPhotoUrls/0").asText()).isEqualTo("/files/cards/back/1");
 	}
 }

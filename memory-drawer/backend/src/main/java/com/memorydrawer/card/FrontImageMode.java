@@ -1,6 +1,6 @@
 package com.memorydrawer.card;
 
 public enum FrontImageMode {
-	ORIGINAL,
-	BACKGROUND_REMOVED
+	BACKGROUND_REMOVED,
+	TEXT_ONLY
 }

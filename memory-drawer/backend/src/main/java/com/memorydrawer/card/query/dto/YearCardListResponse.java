@@ -6,6 +6,7 @@ import java.util.UUID;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.memorydrawer.card.DocumentType;
+import com.memorydrawer.card.FrontImageMode;
 
 public record YearCardListResponse(int year, List<CardItem> cards) {
 
@@ -37,7 +38,7 @@ public record YearCardListResponse(int year, List<CardItem> cards) {
 
 	public record LetterFront(
 		String ocrText,
-		String frontImageMode,
+		FrontImageMode frontImageMode,
 		String frontImageUrl
 	) implements CardFront {
 	}
