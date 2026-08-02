@@ -114,6 +114,30 @@
   border-color: rgb(123 111 96 / 28%);
 }
 
+.memory-card--letter.memory-card--back .memory-card__metadata {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  flex: 0 0 auto;
+}
+
+.memory-card--letter.memory-card--back .memory-card__metadata div {
+  grid-template-columns: minmax(3.1rem, auto) minmax(0, 1fr);
+  gap: 0.35rem;
+  min-width: 0;
+  padding: 0.42rem 0.35rem;
+}
+
+.memory-card--letter.memory-card--back .memory-card__metadata div:nth-child(odd) {
+  border-right: 1px solid rgb(123 111 96 / 28%);
+}
+
+.memory-card--letter.memory-card--back .memory-card__metadata dt,
+.memory-card--letter.memory-card--back .memory-card__metadata dd {
+  overflow: hidden;
+  font-size: clamp(0.68rem, 2.4vw, 0.82rem);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 .memory-card--ticket {
   aspect-ratio: 1061 / 425;
   width: calc(100% + 2rem);
@@ -680,7 +704,7 @@
   grid-template-columns: 1fr;
   flex: 1 1 auto;
   min-height: 0;
-  margin-top: 0.75rem;
+  margin-top: 0.35rem;
   padding-right: 0.25rem;
   overflow-y: auto;
 }
