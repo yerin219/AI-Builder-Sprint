@@ -270,6 +270,10 @@
   margin-top: 0.35rem;
 }
 
+.memory-card--ticket.memory-card--back .memory-card__ticket-page--continuation .memory-card__ticket-answer {
+  margin-top: 0;
+}
+
 .memory-card--ticket.memory-card--back .memory-card__ticket-back-content--spacious .memory-card__ticket-page h2 {
   font-size: clamp(0.82rem, 3.7vw, 1.1rem);
   line-height: 1.38;
