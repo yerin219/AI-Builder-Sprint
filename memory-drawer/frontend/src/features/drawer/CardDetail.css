@@ -226,7 +226,7 @@
   overflow: hidden;
 }
 
-.memory-card--ticket.memory-card--back .memory-card__ticket-back-content > h1 {
+.memory-card--ticket.memory-card--back .memory-card__ticket-page > h1 {
   flex: 0 0 auto;
   margin: 0;
   color: #2d2d2d;
@@ -256,6 +256,21 @@
   overflow: hidden;
 }
 
+.memory-card--ticket.memory-card--back .memory-card__ticket-page--summary,
+.memory-card--ticket.memory-card--back .memory-card__ticket-page--question {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+}
+
+.memory-card--ticket.memory-card--back .memory-card__ticket-page--question h2,
+.memory-card--ticket.memory-card--back .memory-card__ticket-page--question .memory-card__ticket-answer {
+  width: 100%;
+  text-align: center;
+}
+
 .memory-card--ticket.memory-card--back .memory-card__ticket-page h2 {
   margin: 0;
   color: #2d2d2d;
@@ -275,10 +290,6 @@
 
 .memory-card--ticket.memory-card--back .memory-card__ticket-page .memory-card__ticket-answer {
   margin-top: 0.35rem;
-}
-
-.memory-card--ticket.memory-card--back .memory-card__ticket-page--continuation .memory-card__ticket-answer {
-  margin-top: 0;
 }
 
 .memory-card--ticket.memory-card--back .memory-card__ticket-back-content--spacious .memory-card__ticket-page h2 {
