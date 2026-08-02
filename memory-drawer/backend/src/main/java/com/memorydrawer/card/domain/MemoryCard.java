@@ -151,4 +151,14 @@ public class MemoryCard {
 	public Instant getCreatedAt() {
 		return createdAt;
 	}
+
+	public void update(
+		LocalDate memoryDate,
+		String frontData,
+		String backData
+	) {
+		this.memoryDate = memoryDate;
+		this.frontData = frontData;
+		this.backData = backData;
+	}
 }
