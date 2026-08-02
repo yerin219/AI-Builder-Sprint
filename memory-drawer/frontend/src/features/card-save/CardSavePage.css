@@ -804,14 +804,39 @@
   width: 100%;
   min-width: 0;
   max-width: 100%;
-  padding-bottom: 0.25rem;
-  overflow-x: auto;
-  overflow-y: hidden;
+  max-height: calc(1.55em * 3);
+  padding-right: 0.4rem;
+  overflow-x: hidden;
+  overflow-y: auto;
   color: #362313;
   font-weight: 600;
-  overscroll-behavior-inline: contain;
+  line-height: 1.55;
+  overflow-wrap: anywhere;
+  overscroll-behavior-block: contain;
   scrollbar-width: thin;
+  scrollbar-color: #999 transparent;
   white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.card-preview__fields dd::-webkit-scrollbar {
+  width: 0.35rem;
+}
+
+.card-preview__fields dd::-webkit-scrollbar-track,
+.card-preview__fields dd::-webkit-scrollbar-corner {
+  background: transparent;
+}
+
+.card-preview__fields dd::-webkit-scrollbar-thumb {
+  border-radius: 999px;
+  background: #999;
+}
+
+.card-preview__fields dd::-webkit-scrollbar-button {
+  display: none;
+  width: 0;
+  height: 0;
 }
 
 .card-preview__purchase-items dd,
