@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { deleteCard, fetchCardDetail, updateCard } from './drawerApi'
 import AuthorizedImage from './AuthorizedImage'
-import { DOCUMENT_LABELS, formatMemoryDate, formatRelativeMemoryDate, getDaysAgo, getImageUrl } from './drawerViewUtils'
+import { DOCUMENT_LABELS, formatMemoryDate, formatRelativeMemoryDate, getDaysAgo, getFrontImageUrl, getImageUrl } from './drawerViewUtils'
 import './CardDetail.css'
 
 function getTicketTextDensity(front) {
@@ -424,13 +424,16 @@ function CardEditForm({ card, isSubmitting, onCancel, onSubmit }) {
 }
 
 function CardFront({ card }) {
+  const imageUrl = getFrontImageUrl(card)
   const isTicket = card.documentType === 'TICKET'
   const isReceipt = card.documentType === 'RECEIPT'
+  const isLetter = card.documentType === 'LETTER'
   const ticketTextDensity = isTicket ? getTicketTextDensity(card.front) : ''
 
   return (
     <article className={`memory-card memory-card--front${card.documentType === 'LETTER' ? ' memory-card--letter' : ''}${card.documentType === 'TICKET' ? ' memory-card--ticket' : ''}${card.documentType === 'RECEIPT' ? ' memory-card--receipt' : ''}`}>
       {!isTicket && <p className="memory-card__date">{formatMemoryDate(card.memoryDate)}</p>}
+      {imageUrl && <AuthorizedImage className="memory-card__front-image" imageUrl={imageUrl} alt="배경을 제거한 손편지" />}
       {isReceipt && <h1>{card.front.storeName}</h1>}
       {isReceipt && Array.isArray(card.front.purchaseItems) && card.front.purchaseItems.length > 0 && (
         <ul className="memory-card__purchase-items" aria-label="구매 항목">
@@ -450,7 +453,7 @@ function CardFront({ card }) {
           {card.front.seat && <p>좌석 · {card.front.seat}</p>}
         </div>
       )}
-      {card.documentType === 'LETTER' && (
+      {isLetter && (
         <>
           {(card.front.sender || card.front.recipient) && (
             <p className="memory-card__letter-correspondents">
