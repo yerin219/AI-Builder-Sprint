@@ -31,7 +31,7 @@ export default function ImageSelectPage() {
 
             <label className="select-box">
                 <span>📷</span>
-                <strong>카메라로 촬영</strong>
+                <strong>사진 촬영 (모바일)</strong>
                 <input
                     hidden
                     type="file"
@@ -41,9 +41,13 @@ export default function ImageSelectPage() {
                 />
             </label>
 
+            <p className="memory-select-page__camera-note">
+                카메라 촬영은 모바일 환경에서 지원됩니다. PC에서는 저장된 사진을 선택해주세요.
+            </p>
+
             <label className="select-box">
                 <span>🖼️</span>
-                <strong>앨범에서 선택</strong>
+                <strong>파일에서 선택하기</strong>
                 <input
                     hidden
                     type="file"
