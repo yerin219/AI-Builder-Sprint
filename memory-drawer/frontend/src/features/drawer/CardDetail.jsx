@@ -356,6 +356,7 @@ function getTicketAnswerDensity(question, answer) {
 }
 
 function TicketBackContent({ back }) {
+  const isDirect = back.writingMode === 'DIRECT'
   const answers = Array.isArray(back.answers) && back.answers.length > 0
     ? back.answers
     : [{ question: '추억 기록', answer: back.memoryText }]
@@ -384,12 +385,18 @@ function TicketBackContent({ back }) {
         <span>기분: {back.mood || '-'}</span>
       </p>
 
-      <section className="memory-card__ticket-page" aria-live="polite">
-        <h2>질문 {page.questionIndex + 1}{page.isContinuation ? ' (계속)' : ''}. {page.question || '추억을 떠올려보세요.'}</h2>
-        <p>{page.answer}</p>
-      </section>
+      {isDirect ? (
+        <section className="memory-card__ticket-page memory-card__ticket-page--direct" aria-label="직접 작성한 추억">
+          <p>{back.memoryText || '기록한 추억이 없어요.'}</p>
+        </section>
+      ) : (
+        <section className="memory-card__ticket-page" aria-live="polite">
+          <h2>질문 {page.questionIndex + 1}{page.isContinuation ? ' (계속)' : ''}. {page.question || '추억을 떠올려보세요.'}</h2>
+          <p>{page.answer}</p>
+        </section>
+      )}
 
-      {pages.length > 1 && (
+      {!isDirect && pages.length > 1 && (
         <nav className="memory-card__ticket-page-navigation" aria-label="회상 질문 페이지 이동">
           <button type="button" onClick={() => setSelectedPage((index) => Math.max(0, index - 1))} disabled={currentPage === 0} aria-label="이전 질문">‹</button>
           <span>{currentPage + 1} / {pages.length}</span>
