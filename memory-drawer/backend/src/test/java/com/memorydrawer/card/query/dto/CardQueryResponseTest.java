@@ -105,12 +105,18 @@ class CardQueryResponseTest {
 	}
 
 	@Test
-	void letterDetailContainsOcrTextWithoutFrontImageAndKeepsBackPhotoUrls() throws Exception {
+	void textOnlyLetterDetailContainsNoFrontImageUrl() throws Exception {
 		CardDetailResponse response = new CardDetailResponse(
 			UUID.fromString("e89ed42d-1a89-4eea-8ddc-dca90a5c78c4"),
 			DocumentType.LETTER,
 			LocalDate.of(2026, 3, 1),
-			new CardDetailResponse.LetterFront("편지 본문"),
+			new CardDetailResponse.LetterFront(
+				"편지 본문",
+				"보낸 사람",
+				"받는 사람",
+				com.memorydrawer.card.FrontImageMode.TEXT_ONLY,
+				null
+			),
 			new CardDetailResponse.DiaryBack(
 				List.of(), "흐림", "감동", "다시 읽어 보았다.", List.of("/files/cards/back/1")
 			)
@@ -119,8 +125,10 @@ class CardQueryResponseTest {
 		JsonNode json = objectMapper.valueToTree(response);
 
 		assertThat(json.at("/front/ocrText").asText()).isEqualTo("편지 본문");
-		assertThat(json.at("/front/frontImageMode").isMissingNode()).isTrue();
-		assertThat(json.at("/front/frontImageUrl").isMissingNode()).isTrue();
+		assertThat(json.at("/front/sender").asText()).isEqualTo("보낸 사람");
+		assertThat(json.at("/front/recipient").asText()).isEqualTo("받는 사람");
+		assertThat(json.at("/front/frontImageMode").asText()).isEqualTo("TEXT_ONLY");
+		assertThat(json.at("/front/frontImageUrl").isNull()).isTrue();
 		assertThat(json.at("/back/backPhotoUrls/0").asText()).isEqualTo("/files/cards/back/1");
 	}
 }
