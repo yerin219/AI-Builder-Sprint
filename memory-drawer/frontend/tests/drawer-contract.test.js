@@ -33,7 +33,7 @@ const {
 } = await import("../src/features/drawer/drawerApi.js");
 const { setAccessToken } = await import("../src/utils/tokenStorage.js");
 const { resolveApiUrl } = await import("../src/api/http.js");
-const { getImageUrl } = await import("../src/features/drawer/drawerViewUtils.js");
+const { getFrontImageUrl, getImageUrl } = await import("../src/features/drawer/drawerViewUtils.js");
 
 const successResponse = (data) => ({
     ok: true,
@@ -126,6 +126,44 @@ describe("API 8 drawer read contracts", () => {
         );
         assert.equal(getImageUrl("https://cdn.example.com/card.jpg"), null);
         assert.equal(getImageUrl("/files/cards/card-1/front"), "/files/cards/card-1/front");
+    });
+
+    it("shows only background-removed letter front images", () => {
+        assert.equal(
+            getFrontImageUrl({
+                documentType: "LETTER",
+                front: {
+                    frontImageMode: "BACKGROUND_REMOVED",
+                    frontImageUrl: "/files/cards/letter-1/front",
+                },
+            }),
+            "/files/cards/letter-1/front",
+        );
+
+        for (const frontImageMode of ["ORIGINAL", "TEXT_ONLY", "UNKNOWN"]) {
+            assert.equal(
+                getFrontImageUrl({
+                    documentType: "LETTER",
+                    front: { frontImageMode, frontImageUrl: "/files/cards/letter-1/front" },
+                }),
+                null,
+            );
+        }
+
+        assert.equal(
+            getFrontImageUrl({
+                documentType: "RECEIPT",
+                front: { frontImageMode: "ORIGINAL", frontImageUrl: "/files/cards/receipt-1/front" },
+            }),
+            null,
+        );
+        assert.equal(
+            getFrontImageUrl({
+                documentType: "TICKET",
+                front: { frontImageMode: "ORIGINAL", frontImageUrl: "/files/cards/ticket-1/front" },
+            }),
+            null,
+        );
     });
 
     it("preserves AbortError so route changes can cancel drawer requests", async () => {
