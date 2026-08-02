@@ -1,7 +1,15 @@
 import { useEffect, useMemo, useState } from 'react'
 import { deleteCard, fetchCardDetail, updateCard } from './drawerApi'
 import AuthorizedImage from './AuthorizedImage'
-import { DOCUMENT_LABELS, formatMemoryDate, formatRelativeMemoryDate, getDaysAgo, getFrontImageUrl, getImageUrl } from './drawerViewUtils'
+import {
+  DOCUMENT_LABELS,
+  formatMemoryDate,
+  formatRelativeMemoryDate,
+  getDaysAgo,
+  getFrontImageUrl,
+  getImageUrl,
+  normalizeLetterDisplayText,
+} from './drawerViewUtils'
 import './CardDetail.css'
 
 function getTicketTextDensity(front) {
@@ -429,6 +437,7 @@ function CardFront({ card }) {
   const isReceipt = card.documentType === 'RECEIPT'
   const isLetter = card.documentType === 'LETTER'
   const ticketTextDensity = isTicket ? getTicketTextDensity(card.front) : ''
+  const letterText = isLetter ? normalizeLetterDisplayText(card.front.ocrText) : ''
 
   return (
     <article className={`memory-card memory-card--front${card.documentType === 'LETTER' ? ' memory-card--letter' : ''}${card.documentType === 'TICKET' ? ' memory-card--ticket' : ''}${card.documentType === 'RECEIPT' ? ' memory-card--receipt' : ''}`}>
@@ -454,14 +463,14 @@ function CardFront({ card }) {
         </div>
       )}
       {isLetter && (
-        <>
+        <div className="memory-card__letter-front-content">
           {(card.front.sender || card.front.recipient) && (
             <p className="memory-card__letter-correspondents">
               {card.front.sender || '쓴 사람 미확인'} → {card.front.recipient || '받는 사람 미확인'}
             </p>
           )}
-          <p className="memory-card__letter-text">{card.front.ocrText}</p>
-        </>
+          <p className="memory-card__letter-text">{letterText}</p>
+        </div>
       )}
     </article>
   )
@@ -547,11 +556,8 @@ function CardBack({ card }) {
 
       {isTicket && <TicketBackContent back={back} />}
 
-      {isReceipt && (back.diaryText || photoUrls.length > 0) && (
-        <section
-          className={`memory-card__receipt-content${photoUrls.length > 0 ? ' memory-card__receipt-content--with-photos' : ''}`}
-          aria-label="영수증 뒷면 기록"
-        >
+      {(isReceipt || isLetter) && (back.diaryText || photoUrls.length > 0) && (
+        <section className="memory-card__record-content" aria-label={`${isReceipt ? '영수증' : '손편지'} 뒷면 기록`}>
           {back.diaryText && <p className="memory-card__diary">{back.diaryText}</p>}
           {photoUrls.length > 0 && (
             <div className="memory-card__photos" aria-label="추가 사진">
@@ -563,7 +569,6 @@ function CardBack({ card }) {
         </section>
       )}
 
-      {!isReceipt && card.documentType !== 'TICKET' && back.diaryText && <p className="memory-card__diary">{back.diaryText}</p>}
       {card.documentType === 'TICKET' && (
         <section className="memory-card__ticket-memory">
           <h1>{back.title}</h1>
@@ -577,7 +582,7 @@ function CardBack({ card }) {
         </section>
       )}
 
-      {!isReceipt && photoUrls.length > 0 && (
+      {isTicket && photoUrls.length > 0 && (
         <div className="memory-card__photos" aria-label="추가 사진">
           {photoUrls.map((photoUrl, index) => (
             <AuthorizedImage key={`${photoUrl}-${index}`} imageUrl={getImageUrl(photoUrl)} alt={`추가 사진 ${index + 1}`} loading="lazy" />

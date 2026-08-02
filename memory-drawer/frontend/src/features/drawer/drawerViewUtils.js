@@ -167,6 +167,21 @@ export function getCardTitle(card) {
   return '기록'
 }
 
+export function normalizeLetterDisplayText(ocrText) {
+  if (typeof ocrText !== 'string' || !ocrText.trim()) return ''
+
+  return ocrText
+    .replace(/\r\n?/g, '\n')
+    .trim()
+    .split(/\n[\t ]*\n+/)
+    .map((paragraph) => paragraph
+      .replace(/[\t ]*\n[\t ]*/g, '')
+      .replace(/[\t ]+/g, ' ')
+      .trim())
+    .filter(Boolean)
+    .join('\n\n')
+}
+
 export function getImageUrl(imageUrl) {
   if (typeof imageUrl !== 'string' || !imageUrl.trim()) return null
 

@@ -59,7 +59,7 @@
 .memory-card--letter {
   aspect-ratio: 1944 / 1468;
   min-height: 0;
-  padding: clamp(1rem, 5vw, 1.8rem) clamp(1rem, 6vw, 2rem);
+  padding: clamp(1rem, 5vw, 1.8rem) clamp(1rem, 4%, 2rem) clamp(1rem, 5vw, 1.8rem) clamp(3.25rem, 13%, 6.5rem);
   border: 0;
   border-radius: 0;
   background-color: transparent;
@@ -68,11 +68,6 @@
   background-repeat: no-repeat;
   background-size: 100% 100%;
   box-shadow: 0 0.8rem 1.5rem rgb(70 45 26 / 14%);
-}
-
-.memory-card--letter.memory-card--back {
-  padding-right: clamp(1rem, 4vw, 2rem);
-  padding-left: clamp(5rem, 14vw, 7.25rem);
 }
 
 .memory-card--letter .memory-card__date {
@@ -89,8 +84,11 @@
   font-family: "NanumGoDing", "Noto Sans KR", sans-serif;
 }
 
-.memory-card--letter.memory-card--front .memory-card__letter-text {
-  margin-left: clamp(3.5rem, 10vw, 5.25rem);
+.memory-card--letter .memory-card__letter-front-content {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  min-height: 0;
 }
 
 .memory-card--letter.memory-card--front .memory-card__front-image {
@@ -101,9 +99,18 @@
 }
 
 .memory-card--letter .memory-card__letter-correspondents {
-  margin: 0 0 0.5rem clamp(3.5rem, 10vw, 5.25rem);
+  margin: 0 0 0.5rem;
   color: #766c61;
   font-size: 0.85rem;
+}
+
+.memory-card--letter.memory-card--front .memory-card__letter-text {
+  margin: 1rem 0 0;
+  padding-right: 0.35rem;
+  overflow-wrap: anywhere;
+  word-break: keep-all;
+  line-break: auto;
+  text-wrap: pretty;
 }
 
 .memory-card--letter .memory-card__metadata {
@@ -548,73 +555,42 @@
   padding-bottom: 42%;
 }
 
-.memory-card--receipt.memory-card--back .memory-card__metadata {
+.memory-card--receipt.memory-card--back .memory-card__metadata,
+.memory-card--letter.memory-card--back .memory-card__metadata {
   flex: 0 0 auto;
 }
 
-.memory-card--receipt.memory-card--back .memory-card__receipt-content {
+.memory-card--receipt.memory-card--back .memory-card__record-content,
+.memory-card--letter.memory-card--back .memory-card__record-content {
   display: flex;
   flex: 1 1 auto;
   flex-direction: column;
-  width: 100%;
   min-height: 0;
-  min-width: 0;
-  max-width: 100%;
   margin-top: 0.75rem;
-  overflow-x: hidden;
-  overflow-y: hidden;
-}
-
-.memory-card--receipt.memory-card--back .memory-card__receipt-content .memory-card__diary {
-  flex: 0 0 auto;
-  width: 100%;
-  min-width: 0;
-  max-width: 100%;
-  margin: 0;
-  padding-right: 0;
-  overflow-x: hidden;
-  overflow-y: visible;
-  overflow-wrap: anywhere;
-  word-break: break-word;
-}
-
-.memory-card--receipt.memory-card--back .memory-card__receipt-content--with-photos .memory-card__diary {
-  max-height: calc(1.8em * 3);
-  padding-right: 0.4rem;
+  padding-right: 0.25rem;
   overflow-y: auto;
-  overscroll-behavior-block: contain;
-  scrollbar-color: #999 transparent;
+  scrollbar-color: rgb(84 71 57 / 35%) transparent;
+  scrollbar-gutter: stable;
   scrollbar-width: thin;
 }
 
-.memory-card--receipt.memory-card--back .memory-card__receipt-content--with-photos .memory-card__diary::-webkit-scrollbar {
-  width: 0.35rem;
+.memory-card__record-content .memory-card__diary {
+  flex: 0 0 auto;
+  min-height: auto;
+  margin: 0;
+  overflow: visible;
+  overflow-wrap: anywhere;
+  word-break: keep-all;
 }
 
-.memory-card--receipt.memory-card--back .memory-card__receipt-content--with-photos .memory-card__diary::-webkit-scrollbar-track,
-.memory-card--receipt.memory-card--back .memory-card__receipt-content--with-photos .memory-card__diary::-webkit-scrollbar-corner {
-  background: transparent;
-}
-
-.memory-card--receipt.memory-card--back .memory-card__receipt-content--with-photos .memory-card__diary::-webkit-scrollbar-thumb {
-  border-radius: 999px;
-  background: #999;
-}
-
-.memory-card--receipt.memory-card--back .memory-card__receipt-content--with-photos .memory-card__diary::-webkit-scrollbar-button {
-  display: none;
-  width: 0;
-  height: 0;
-}
-
-.memory-card--receipt.memory-card--back .memory-card__receipt-content .memory-card__photos {
+.memory-card__record-content .memory-card__photos {
   grid-template-columns: repeat(auto-fit, minmax(5rem, 1fr));
   flex: 0 0 auto;
   margin-top: 0.75rem;
   overflow: visible;
 }
 
-.memory-card--receipt.memory-card--back .memory-card__receipt-content .memory-card__photos img {
+.memory-card__record-content .memory-card__photos img {
   height: clamp(6rem, 26vw, 9rem);
   max-height: none;
   aspect-ratio: auto;
@@ -724,23 +700,6 @@
   aspect-ratio: 1;
   border-radius: 0.5rem;
   object-fit: cover;
-}
-
-.memory-card--letter.memory-card--back .memory-card__photos {
-  grid-template-columns: 1fr;
-  flex: 1 1 auto;
-  min-height: 0;
-  margin-top: 0.35rem;
-  padding-right: 0.25rem;
-  overflow-y: auto;
-}
-
-.memory-card--letter.memory-card--back .memory-card__photos img {
-  width: 100%;
-  height: auto;
-  max-height: none;
-  aspect-ratio: auto;
-  object-fit: contain;
 }
 
 .card-navigation {
